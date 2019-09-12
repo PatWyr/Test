@@ -9,13 +9,15 @@ TODO TODO WORK IN PROGRESS
 and write the data back into the database. No JPA dirty tricks are used: no runtime
 enhancements, no lazy loading, no `DetachedExceptions`, no change tracking
 behind the scenes - everything happens explicitly. No compiler
-plugin is needed - `vok-orm` uses Kotlin language features to add a standard
+plugin is needed - `jdbi-orm` uses Java 8 language features to add a standard
 set of finders to your entities. You can add any number of business logic methods as
 you like to your entities; the database transaction is easy to launch simply by calling the
-global `db {}` function.
+global `jdbi().useHandle(handle -> { ... });` function.
+
+See [JDBI](http://jdbi.org) for more information.
 
 No dependency injection framework is required - the library works in all
-sorts of environments.
+sorts of environments. The library requires Java 8 or higher to work.
 
 ## Usage
 
