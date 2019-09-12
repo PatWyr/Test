@@ -58,8 +58,8 @@ dependencies {
     testCompile("mysql:mysql-connector-java:5.1.48")
     testCompile("org.mariadb.jdbc:mariadb-java-client:2.4.0")
 
-    // IDEA language injections
-    testCompile("com.intellij:annotations:12.0")
+    // Java has no nullable types
+    compile("com.intellij:annotations:12.0")
 }
 
 val sourceJar = task("sourceJar", Jar::class) {
