@@ -15,14 +15,12 @@ class DaoTest : DynaTest({
                 expect(null) { Person.findById(25) }
                 val p = Person(name = "Albedo", age = 130)
                 p.save()
-                p.modified = p.modified!!.withZeroNanos
-                expect(p) { Person.findById(p.id!!) }
+                expect(p.withZeroNanos()) { Person.findById(p.id!!)?.withZeroNanos() }
             }
             test("GetById") {
                 val p = Person(name = "Albedo", age = 130)
                 p.save()
-                p.modified = p.modified!!.withZeroNanos
-                expect(p) { Person.getById(p.id!!) }
+                expect(p.withZeroNanos()) { Person.getById(p.id!!).withZeroNanos() }
             }
             test("GetById fails if there is no such entity") {
                 expectThrows(IllegalStateException::class, message = "There is no Person for id 25") {
@@ -33,7 +31,9 @@ class DaoTest : DynaTest({
                 test("succeeds if there is exactly one matching entity") {
                     val p = Person(name = "Albedo", age = 130)
                     p.save()
-                    expect(p.withZeroNanos()) { Person.getOneBy("name = :name") { it.bind("name", "Albedo") } }
+                    expect(p.withZeroNanos()) {
+                        Person.getOneBy("name = :name") { it.bind("name", "Albedo") } .withZeroNanos()
+                    }
                 }
 
                 test("fails if there is no such entity") {
@@ -95,7 +95,9 @@ class DaoTest : DynaTest({
                 test("succeeds if there is exactly one matching entity") {
                     val p = Person(name = "Albedo", age = 130)
                     p.save()
-                    expect(p.withZeroNanos()) { Person.findOneBy("name = :name") { it.bind("name", "Albedo") } }
+                    expect(p.withZeroNanos()) {
+                        Person.findOneBy("name = :name") { it.bind("name", "Albedo") } ?.withZeroNanos()
+                    }
                 }
 
                 test("returns null if there is no such entity") {
@@ -119,8 +121,9 @@ class DaoTest : DynaTest({
                 test("test filter by date") {
                     val p = Person(name = "Albedo", age = 130, dateOfBirth = LocalDate.of(1980, 2, 2))
                     p.save()
-                    p.modified = p.modified!!.withZeroNanos
-                    expect(p) { Person.findOneBy("dateOfBirth = :dateOfBirth") { q -> q.bind("dateOfBirth", LocalDate.of(1980, 2, 2)) } }
+                    expect(p.withZeroNanos()) {
+                        Person.findOneBy("dateOfBirth = :dateOfBirth") { q -> q.bind("dateOfBirth", LocalDate.of(1980, 2, 2)) } ?.withZeroNanos()
+                    }
                     // here I don't care about whether it selects something or not, I'm only testing the database compatibility
                     Person.findOneBy("dateOfBirth = :dateOfBirth") { q -> q.bind("dateOfBirth", Instant.now()) }
                     Person.findOneBy("dateOfBirth = :dateOfBirth") { q -> q.bind("dateOfBirth", Date()) }
