@@ -9,6 +9,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
+ * Auto-detects {@link Quirks} which needs to be activated for certain databases.
+ * If {@link JdbiOrm#quirks} is set, then the whole auto-detection mechanism
+ * is disabled.
  * @author mavi
  */
 public class DatabaseQuirksDetectorJdbiPlugin extends JdbiPlugin.Singleton {

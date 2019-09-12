@@ -1,7 +1,7 @@
 package com.gitlab.mvysny.jdbiorm.quirks;
 
+import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.argument.Arguments;
-import org.jdbi.v3.core.config.Configurable;
 import org.jdbi.v3.core.mapper.ColumnMappers;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
+ * Adds MySQL and MariaDB quirks support.
  * @author mavi
  */
 public class MySqlQuirks implements Quirks {
@@ -19,8 +20,8 @@ public class MySqlQuirks implements Quirks {
     }
 
     @Override
-    public void configure(@NotNull Configurable<?> jdbi) {
-        jdbi.getConfig(Arguments.class).register(new MySqlArgumentFactory());
-        jdbi.getConfig(ColumnMappers.class).register(new MySqlColumnMapperFactory());
+    public void configure(@NotNull Handle handle) {
+        handle.getConfig(Arguments.class).register(new MySqlArgumentFactory());
+        handle.getConfig(ColumnMappers.class).register(new MySqlColumnMapperFactory());
     }
 }
