@@ -1,8 +1,6 @@
 package com.gitlab.mvysny.jdbiorm;
 
-import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.mapper.RowMapper;
-import org.jdbi.v3.core.mapper.reflect.BeanMapper;
 import org.jdbi.v3.core.mapper.reflect.FieldMapper;
 import org.jdbi.v3.core.result.ResultIterable;
 import org.jdbi.v3.core.result.ResultIterator;
@@ -16,9 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
