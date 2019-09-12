@@ -1,5 +1,6 @@
 package com.gitlab.mvysny.jdbiorm;
 
+import org.jdbi.v3.core.mapper.reflect.ColumnName;
 import org.jdbi.v3.core.result.ResultBearing;
 import org.jdbi.v3.core.statement.Update;
 import org.jetbrains.annotations.Nullable;
@@ -20,8 +21,10 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  * To exclude fields, either mark them {@code transient} or {@link org.jdbi.v3.core.annotation.Unmappable}.
  * <p>
  * If your table has no primary key or there is other reason you don't want to use this interface, you can still use
- * the DAO methods (see [DaoOfAny] for more details); you only lose the ability to {@link #save()},
+ * the DAO methods (see todo [DaoOfAny] for more details); you only lose the ability to {@link #save()},
  * {@link #create()} and {@link #delete()}.
+ * <h3>Mapping columns</h3>
+ * Use the {@link ColumnName} annotation to change the name of the column.
  * <h3>Auto-generated IDs vs pre-provided IDs</h3>
  * There are generally three cases for entity ID generation:
  * <ul>
@@ -42,9 +45,9 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  * For entities with IDs created by the application you can make [save] work properly, by overriding the {@link #create(boolean)} method
  * as follows:
  * <pre>
- * override fun create(validate: Boolean) {
- * id = UUID.randomUUID()
- * super.create(validate)
+ * public void create(boolean validate) {
+ *   id = UUID.randomUUID()
+ *   Entity.super.create(validate)
  * }
  * </pre>
  *
