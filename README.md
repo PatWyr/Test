@@ -66,11 +66,33 @@ create UNIQUE INDEX idx_category_name ON CATEGORY(name);
 use of the DDL capabilities of the underlying database.
 We will therefore not hide the DDL behind some type-safe generator API.
 
-Such entity can be mapped to a data class as follows:
-```kotlin
-data class Category(override var id: Long? = null, var name: String = "") : Entity<Long>
+Such entity can be mapped to a Java class as follows:
+```java
+public class Category implements Entity<Long> {
+    private Long id;
+    private String name;
+
+    @Nullable
+    @Override
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
 ```
-(the `id` is nullable since its value is initially `null` until the category is actually created and the id is assigned by the database).
+(the `id` is a nullable `Long` since its value is initially `null` until the category
+is actually created and the id is assigned by the database).
 
 The `Category` class is just a simple data class: there are no hidden private fields added by
 runtime enhancements, no hidden lazy loading - everything is pre-fetched upfront. Because of that,
@@ -79,32 +101,46 @@ without the fear of failing with
 `DetachedException` when accessing properties. Since `Entity` is `Serializable`, you can
 also store the entity into a session. 
 
-> The Category class (or any entity class for that matter) must have all fields pre-initialized, so that Kotlin creates a zero-arg constructor.
-Zero-arg constructor is mandated by Sql2o, in order for Sql2o to be able to construct
-instances of entity class for every row returned.
+> The Category class (or any entity class for that matter) must have a zero-arg constructor.
+Zero-arg constructor is mandated by JDBI, in order for JDBI to be able to construct
+instances of entity class for every row returned. It's possible to use `ConstructorMapper`
+to construct any entities; please consult [JDBI Documentation](http://jdbi.org/) for more
+details.
 
-By implementing the `Entity<Long>` interface, we are telling vok-orm that the primary key is of type `Long`; this will be important later on when using Dao.
-The [Entity](src/main/kotlin/com/github/vokorm/Mapping.kt) interface brings in three useful methods:
+By implementing the `Entity<Long>` interface, we are telling jdbi-orm that the primary key is of type `Long`;
+this will be important later on when using Dao.
+The [Entity](src/main/java/com/gitlab/mvysny/jdbiorm/Entity.java) interface brings 
+in the following useful methods:
 
-* `save()` which either creates a new row by generating the INSERT statement (if the ID is null), or updates the row by generating the UPDATE statement (if the ID is not null)
-* `create()` for special cases when the ID is pre-known (social security number) and `save()` wouldn't work. More info in the 'Pre-known IDs' chapter.
+* `save()` which either creates a new row by generating the INSERT statement (if the ID is null),
+   or updates the row by generating the UPDATE statement (if the ID is not null)
+* `create()` for special cases when the ID is pre-known (social security number) and
+   `save()` wouldn't work. More info in the 'Pre-known IDs' chapter.
 * `delete()` which deletes the row identified by the `id` primary key from the database.
-* `validate()` validates the bean. By default all `javax.validation` annotations are validated; you can override this method to provide further bean-level validations.
+* `validate()` validates the bean. By default all `javax.validation` annotations are 
+  validated; you can override this method to provide further bean-level validations.
   Please read the 'Validation' chapter below, for further details.
 
-The INSERT/UPDATE statement is automatically constructed by the `save()` method, simply by enumerating all non-transient and non-ignored properties of
-the bean using reflection and fetching their values. See the [Entity](src/main/kotlin/com/github/vokorm/Mapping.kt) sources for more details.
-You can annotate the `Category` class with the `@Table(dbname = "Categories")` annotation, to specify a different table name.
+The INSERT/UPDATE SQL statement is automatically constructed by the `save()` method, 
+simply by enumerating all non-transient and non-ignored properties of
+the bean using reflection and fetching their values. See the 
+[Entity](src/main/java/com/gitlab/mvysny/jdbiorm/Entity.java) sources for more details.
+You can annotate the `Category` class with the `@Table(dbname = "Categories")`
+annotation, to specify a different table name.
 
 The category can now be created easily:
 
-```kotlin
-Category(name = "Beer").save()
+```java
+Category cat = new Category();
+cat.setName("Beer");
+cat.save()
 ```
 
 But how do we specify the target database where to store the category in? 
 
 ### Connecting to a database
+
+TODO REVIEW
 
 As a bare minimum, you need to specify the JDBC URL
 to the `VokOrm.dataSourceConfig` first. It's a [Hikari-CP](https://brettwooldridge.github.io/HikariCP/) configuration file which contains lots of other options as well.
