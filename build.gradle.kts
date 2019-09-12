@@ -32,15 +32,14 @@ tasks.withType<KotlinCompile> {
 }
 
 dependencies {
-    compile(kotlin("stdlib-jdk8"))
-    compile("com.github.mvysny.vokdataloader:vok-dataloader:0.5")
+    testCompile(kotlin("stdlib-jdk8"))
 
     // logging
     compile("org.slf4j:slf4j-api:1.7.25")
 
     // db
     compile("org.jdbi:jdbi3-core:3.10.0")
-    compile("com.zaxxer:HikariCP:3.3.1")
+    testCompile("com.zaxxer:HikariCP:3.3.1")
 
     // validation support
     compile("javax.validation:validation-api:2.0.0.Final")  // to have JSR303 validations in the entities
