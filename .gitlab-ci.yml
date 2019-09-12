@@ -2,6 +2,7 @@ services:
   - docker:dind
 variables:
     GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+    DOCKER_DRIVER: overlay
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
   - rm -f  .gradle/caches/modules-2/modules-2.lock
