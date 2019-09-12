@@ -5,8 +5,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Every database has its quirks. This object serves the purpose of configuring
@@ -36,9 +34,4 @@ public interface Quirks {
         public void configure(@NotNull Handle handle) {
         }
     };
-
-    /**
-     * @todo mavi use service loader
-     */
-    List<Quirks> ALL_QUIRKS = Arrays.asList(new MySqlQuirks());
 }

@@ -7,6 +7,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Auto-detects {@link Quirks} which needs to be activated for certain databases.
@@ -21,7 +24,7 @@ public class DatabaseQuirksDetectorJdbiPlugin extends JdbiPlugin.Singleton {
         if (JdbiOrm.quirks != null) {
             return JdbiOrm.quirks;
         }
-        for (Quirks quirks : Quirks.ALL_QUIRKS) {
+        for (Quirks quirks : ALL_QUIRKS) {
             if (quirks.shouldActivate(dataSource)) {
                 return quirks;
             }
@@ -35,4 +38,9 @@ public class DatabaseQuirksDetectorJdbiPlugin extends JdbiPlugin.Singleton {
         quirks.configure(handle);
         return handle;
     }
+
+    /**
+     * A mutable list of all quirks. Add your own quirk detectors as necessary.
+     */
+    public static final List<Quirks> ALL_QUIRKS = new CopyOnWriteArrayList<>(Arrays.asList(new MySqlQuirks()));
 }
