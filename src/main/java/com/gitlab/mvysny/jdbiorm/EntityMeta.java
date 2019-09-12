@@ -2,6 +2,7 @@ package com.gitlab.mvysny.jdbiorm;
 
 import org.jdbi.v3.core.annotation.Unmappable;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -62,15 +63,21 @@ public final class EntityMeta {
         return getProperties().stream().map(it -> it.getDbColumnName()).collect(Collectors.toSet());
     }
 
+    @Nullable
+    private PropertyMeta idPropertyCache;
+
     /**
      * The {@code id} property as declared in the entity.
      */
     @NotNull
     public PropertyMeta getIdProperty() {
-        return getProperties().stream()
-                .filter(it -> it.getName().equals("id"))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Unexpected: entity " + entityClass + " has no id column?"));
+        if (idPropertyCache == null) {
+            idPropertyCache = getProperties().stream()
+                    .filter(it -> it.getName().equals("id"))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Unexpected: entity " + entityClass + " has no id column?"));
+        }
+        return idPropertyCache;
     }
 
     /**
