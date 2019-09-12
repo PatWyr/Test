@@ -8,14 +8,14 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Objects;
 
-import static com.gitlab.mvysny.jdbiorm.Jdbiorm.jdbi;
+import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
 
 /**
  * Data access object, provides instances of given {@link Entity}.
  * To use, just add a static field to your entity as follows:
  * <pre>
  * public class Person implements Entity<Long> {
- *   public static final Dao<Person, Long> dao = new Dao(Person.class);
+ *   public static final Dao&lt;Person, Long> dao = new Dao<>(Person.class);
  * }
  * </pre>
  * You can now use `Person.dao.findAll()`, `Person.dao.get(25)` and other nice methods :)

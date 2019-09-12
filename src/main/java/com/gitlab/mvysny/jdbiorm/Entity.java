@@ -1,6 +1,8 @@
 package com.gitlab.mvysny.jdbiorm;
 
 import org.jdbi.v3.core.result.ResultBearing;
+import org.jdbi.v3.core.statement.Update;
+import org.jetbrains.annotations.Nullable;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -8,7 +10,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.gitlab.mvysny.jdbiorm.Jdbiorm.jdbi;
+import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
 
 /**
  * Allows you to fetch rows of a database table, and adds useful utility methods {@link #save()}
@@ -55,6 +57,7 @@ public interface Entity<ID> extends Serializable {
      *
      * @return the ID primary key, may be null.
      */
+    @Nullable
     ID getId();
 
     /**
@@ -62,7 +65,7 @@ public interface Entity<ID> extends Serializable {
      *
      * @param id the ID primary key, may be null.
      */
-    void setId(ID id);
+    void setId(@Nullable ID id);
 
     /**
      * Validates current entity. By default performs the java validation: just add {@code javax.validation}
@@ -76,7 +79,7 @@ public interface Entity<ID> extends Serializable {
      * @throws javax.validation.ValidationException when validation fails.
      */
     default void validate() {
-        final Set<ConstraintViolation<Entity<ID>>> violations = Jdbiorm.get().getValidator().validate(this);
+        final Set<ConstraintViolation<Entity<ID>>> violations = JdbiOrm.getValidator().validate(this);
         if (!violations.isEmpty()) {
             throw new ConstraintViolationException(violations);
         }
@@ -131,11 +134,14 @@ public interface Entity<ID> extends Serializable {
                 fields = new HashSet<>(fields);
                 fields.remove(idProperty.getDbColumnName());
             }
-            final ResultBearing resultBearing = handle.createUpdate("insert into <TABLE> (<FIELDS>) values (<FIELD_VALUES>)")
+            final Update update = handle.createUpdate("insert into <TABLE> (<FIELDS>) values (<FIELD_VALUES>)")
                     .define("TABLE", meta.getDatabaseTableName())
-                    .defineList("FIELDS", new ArrayList<>(fields))
-                    .defineList("FIELD_VALUES", fields.stream().map(it -> ":" + it).collect(Collectors.toList()))
-                    .bindBean(this)
+                    .define("FIELDS", String.join(", ", fields))
+                    .define("FIELD_VALUES", fields.stream().map(it -> ":" + it).collect(Collectors.joining(", ")));
+            if (!fields.isEmpty()) {
+                update.bindBean(this);
+            }
+            final ResultBearing resultBearing = update
                     .executeAndReturnGeneratedKeys(idProperty.getDbColumnName());
             final Object generatedKey = resultBearing
                     .mapTo(idProperty.getValueType())

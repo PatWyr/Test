@@ -9,24 +9,26 @@ import javax.sql.DataSource;
 import javax.validation.NoProviderFoundException;
 import javax.validation.Validation;
 import javax.validation.Validator;
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Objects;
 
 /**
  * Initializes the ORM in the current JVM. By default uses the {@link HikariDataSourceAccessor} which uses [javax.sql.DataSource] pooled with HikariCP.
  * To configure this accessor, just fill in [dataSourceConfig] properly and then call [init] once per JVM. When the database services
- * are no longer needed, call [destroy] to release all JDBC connections and close the pool.
+ * are no longer needed, call {@link #destroy()} to release all JDBC connections and close the pool.
  *
  * If you're using a customized [DatabaseAccessor], you don't have to fill in the [dataSourceConfig]. Just set proper [databaseAccessorProvider]
  * and then call [init].
 
  * @author mavi
  */
-public class Jdbiorm {
-    private volatile Validator validator;
-    private volatile DataSource dataSource;
+public final class JdbiOrm {
+    private static volatile Validator validator;
+    private static volatile DataSource dataSource;
 
-    private static final Logger log = LoggerFactory.getLogger(Jdbiorm.class);
-    private Jdbiorm() {
+    private static final Logger log = LoggerFactory.getLogger(JdbiOrm.class);
+    static {
         try {
             validator = Validation.buildDefaultValidatorFactory().getValidator();
         } catch (NoProviderFoundException ex) {
@@ -36,28 +38,24 @@ public class Jdbiorm {
         }
     }
 
-    private static final Jdbiorm INSTANCE = new Jdbiorm();
-
-    public static Jdbiorm get() {
-        return INSTANCE;
-    }
-
     @NotNull
-    public Validator getValidator() {
+    public static Validator getValidator() {
         return validator;
     }
 
-    public void setValidator(@NotNull Validator validator) {
-        this.validator = Objects.requireNonNull(validator);
+    public static void setValidator(@NotNull Validator validator) {
+        JdbiOrm.validator = Objects.requireNonNull(validator);
     }
 
     @NotNull
-    public DataSource getDataSource() {
+    public static DataSource getDataSource() {
         return Objects.requireNonNull(dataSource, "The data source has not been set. Please call Jdbiorm.get().setDataSource() first.");
     }
 
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public static void setDataSource(@NotNull DataSource dataSource) {
+        Objects.requireNonNull(dataSource);
+        destroy();
+        JdbiOrm.dataSource = dataSource;
     }
 
     /**
@@ -66,6 +64,19 @@ public class Jdbiorm {
      */
     @NotNull
     public static Jdbi jdbi() {
-        return Jdbi.create(get().getDataSource());
+        return Jdbi.create(getDataSource());
+    }
+
+    /**
+     * Closes the current {@link #getDataSource()}. Does nothing if data source is null (has not been set).
+     */
+    public static void destroy() {
+        if (dataSource != null && dataSource instanceof Closeable) {
+            try {
+                ((Closeable) dataSource).close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }
