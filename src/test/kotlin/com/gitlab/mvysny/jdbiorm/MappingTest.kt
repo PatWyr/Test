@@ -5,6 +5,7 @@ package com.gitlab.mvysny.jdbiorm
 import com.github.mvysny.dynatest.DynaTest
 import com.github.mvysny.dynatest.expectList
 import com.github.mvysny.dynatest.expectThrows
+import com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi
 import com.google.gson.Gson
 import java.lang.IllegalStateException
 import java.lang.Long
@@ -182,6 +183,10 @@ class MappingTest : DynaTest({
                     expect(it) { loaded.enumTest }
                 }
             }
+        }
+        test("custom select") {
+            Person(name = "Albedo", age = 130).save()
+            expectList("Albedo") { Person.dao.findAll2().map { it.name } }
         }
     }
 })

@@ -1,5 +1,6 @@
 package com.gitlab.mvysny.jdbiorm
 
+import com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi
 import org.hibernate.validator.constraints.Length
 import org.jdbi.v3.core.mapper.reflect.ColumnName
 import java.time.Instant
@@ -49,11 +50,19 @@ data class Person(
     // should not be persisted into the database since it's not backed by a field.
     val someOtherComputedValue: Int get() = age
 
-    companion object : Dao<Person, Long>(Person::class.java) {
+    companion object : PersonDao() {
         val IGNORE_THIS_FIELD: Int = 0
         @JvmStatic
-        val dao = Dao(Person::class.java)
+        val dao = PersonDao()
     }
 
     fun withZeroNanos() = copy(modified = modified?.withZeroNanos)
+}
+
+open class PersonDao : Dao<Person, Long>(Person::class.java) {
+    fun findAll2(): List<Person> = jdbi().withHandle<List<Person>, Exception> { handle ->
+        handle.createQuery("select p.* from Test p")
+                .map(rowMapper)
+                .list()
+    }
 }
