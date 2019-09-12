@@ -1,13 +1,21 @@
 package com.gitlab.mvysny.jdbiorm;
 
+import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.mapper.reflect.BeanMapper;
 import org.jdbi.v3.core.mapper.reflect.FieldMapper;
+import org.jdbi.v3.core.statement.Binding;
+import org.jdbi.v3.core.statement.Query;
+import org.jdbi.v3.core.statement.SqlStatement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
 
@@ -60,8 +68,11 @@ public class Dao<T extends Entity<ID>, ID> {
      */
     @NotNull
     public T getById(@NotNull ID id) {
-        return Objects.requireNonNull(findById(id), () ->
-                "There is no " + entityClass.getSimpleName() + " for id " + id);
+        final T result = findById(id);
+        if (result == null) {
+            throw new IllegalArgumentException("There is no " + entityClass.getSimpleName() + " for id " + id);
+        }
+        return result;
     }
 
     /**
@@ -79,6 +90,41 @@ public class Dao<T extends Entity<ID>, ID> {
     }
 
     /**
+     * @todo
+     */
+    @Nullable
+    public T findOneBy(@NotNull String where, Consumer<Query> queryConsumer) {
+        return jdbi().withHandle(handle -> {
+                    final Query query = handle.createQuery("select * from <TABLE> where <WHERE>")
+                            .define("TABLE", meta.getDatabaseTableName())
+                            .define("WHERE", where);
+                    queryConsumer.accept(query);
+                    return query
+                            .map(getRowMapper())
+                            .findOne().orElse(null);
+                }
+        );
+    }
+
+    /**
+     * @todo
+     */
+    @NotNull
+    public T getOneBy(@NotNull String where, Consumer<Query> queryConsumer) {
+        return jdbi().withHandle(handle -> {
+                    final Query query = handle.createQuery("select * from <TABLE> where <WHERE>")
+                            .define("TABLE", meta.getDatabaseTableName())
+                            .define("WHERE", where);
+                    queryConsumer.accept(query);
+                    return query
+                            .map(getRowMapper())
+                            .findOne().orElseThrow(() -> new IllegalArgumentException("no " + entityClass.getSimpleName()
+                                    + " satisfying '" + where + "'" + toString(query)));
+                }
+        );
+    }
+
+    /**
      * Deletes all rows from this database table.
      */
     public void deleteAll() {
@@ -90,7 +136,7 @@ public class Dao<T extends Entity<ID>, ID> {
     /**
      * Counts all rows in this table.
      */
-    public long getCount() {
+    public long count() {
         return jdbi().withHandle(handle -> handle.createQuery("select count(*) from <TABLE>")
                 .define("TABLE", meta.getDatabaseTableName())
                 .mapTo(Long.class).one());
@@ -113,5 +159,27 @@ public class Dao<T extends Entity<ID>, ID> {
                 .define("TABLE", meta.getDatabaseTableName())
                 .define("ID", meta.getIdProperty().getDbColumnName())
                 .mapTo(Long.class).one() > 0);
+    }
+    /**
+     * Deletes row with given ID. Does nothing if there is no such row.
+     */
+    public void deleteById(@NotNull ID id) {
+        jdbi().withHandle(handle -> handle.createUpdate("delete from <TABLE> where <ID>=:id")
+                .define("TABLE", meta.getDatabaseTableName())
+                .define("ID", meta.getIdProperty().getDbColumnName())
+                .bind("id", id)
+                .execute());
+    }
+
+    @NotNull
+    protected String toString(@NotNull SqlStatement<?> statement) {
+        try {
+            final Method getBinding = SqlStatement.class.getDeclaredMethod("getBinding");
+            getBinding.setAccessible(true);
+            final Binding binding = (Binding) getBinding.invoke(statement);
+            return binding.toString();
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
