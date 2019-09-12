@@ -3,6 +3,8 @@ package com.gitlab.mvysny.jdbiorm;
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 /**
  * Tests for https://github.com/mvysny/vok-orm/issues/7
  */
@@ -14,6 +16,10 @@ public class EntityWithAliasedId implements Entity<Long> {
 
     public EntityWithAliasedId(Long id, String name) {
         this.id = id;
+        this.name = name;
+    }
+
+    public EntityWithAliasedId(String name) {
         this.name = name;
     }
 
@@ -40,4 +46,26 @@ public class EntityWithAliasedId implements Entity<Long> {
     }
 
     public static final Dao<EntityWithAliasedId, Long> dao = new Dao<>(EntityWithAliasedId.class);
+
+    @Override
+    public String toString() {
+        return "EntityWithAliasedId{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        EntityWithAliasedId that = (EntityWithAliasedId) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name);
+    }
 }
