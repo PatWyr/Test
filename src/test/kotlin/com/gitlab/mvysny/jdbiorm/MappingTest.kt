@@ -22,8 +22,7 @@ class MappingTest : DynaTest({
             p.save()
             expect(true) { p.id != null }
             p.ignored2 = null
-            p.modified = p.modified!!.withZeroNanos
-            expectList(p) { Person.findAll() }
+            expectList(p.withZeroNanos()) { Person.findAll().map { it.withZeroNanos() } }
         }
         group("Person") {
             group("save") {
@@ -48,8 +47,7 @@ class MappingTest : DynaTest({
                             createQuery("select maritalStatus from Test").mapToBean(Foo::class.java).list().map { it.maritalStatus }
                         }
                     }
-                    p.modified = p.modified!!.withZeroNanos
-                    expect(p) { db { Person.findAll()[0] } }
+                    expect(p.withZeroNanos()) { db { Person.findAll()[0].withZeroNanos() } }
                 }
                 test("SaveLocalDate") {
                     val p = Person(name = "Zaphod", age = 42, dateOfBirth = LocalDate.of(1990, 1, 14))
@@ -57,13 +55,13 @@ class MappingTest : DynaTest({
                     expect(LocalDate.of(1990, 1, 14)) { db { Person.findAll()[0].dateOfBirth!! } }
                 }
                 test("save date and instant") {
-                    val p = Person(name = "Zaphod", age = 20, created = Instant.ofEpochMilli(1000), modified = Instant.ofEpochMilli(120398123))
+                    val p = Person(name = "Zaphod", age = 20, created = Date(1000), modified = Instant.ofEpochMilli(120398123))
                     p.save()
-                    expect(1000) { db { Person.findAll()[0].created!!.toEpochMilli() } }
+                    expect(1000) { db { Person.findAll()[0].created!!.time } }
                     expect(Instant.ofEpochMilli(120398123)) { db { Person.findAll()[0].modified!! } }
                 }
                 test("updating non-existing row fails") {
-                    val p = Person(id = 15, name = "Zaphod", age = 20, created = Instant.ofEpochMilli(1000), modified = Instant.ofEpochMilli(120398123))
+                    val p = Person(id = 15, name = "Zaphod", age = 20, created = Date(1000), modified = Instant.ofEpochMilli(120398123))
                     expectThrows(IllegalStateException::class, "We expected to update only one row but we updated 0 - perhaps there is no row with id 15?") {
                         p.save()
                     }
