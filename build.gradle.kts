@@ -21,7 +21,7 @@ plugins {
 defaultTasks("clean", "build")
 
 group = "com.gitlab.mvysny.jdbiorm"
-version = "0.1"
+version = "0.2-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -86,7 +86,7 @@ publishing {
             pom {
                 description.set("A very simple persistence framework, built on top of JDBI")
                 name.set("JDBI-ORM")
-                url.set("https://github.com/mvysny/vok-orm")
+                url.set("https://gitlab.com/mvysny/jdbi-orm")
                 licenses {
                     license {
                         name.set("The MIT License")
