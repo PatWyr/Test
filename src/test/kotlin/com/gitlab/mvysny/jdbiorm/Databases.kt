@@ -46,6 +46,12 @@ data class Person(
     // should not be persisted into the database since it's not backed by a field.
     fun getSomeComputedValue(): Int = age + 2
 
+    override fun toString(): String {
+        return "Person(id=$id, name='$name', age=$age, ignored=$ignored, ignored2=$ignored2, " +
+                "dateOfBirth=$dateOfBirth, created=$created, modified=$modified, " +
+                "isAlive25=$isAlive25, maritalStatus=$maritalStatus) type of created: ${created?.javaClass}"
+    }
+
     // should not be persisted into the database since it's not backed by a field.
     val someOtherComputedValue: Int get() = age
 
@@ -54,6 +60,8 @@ data class Person(
         @JvmStatic
         val dao = Dao(Person::class.java)
     }
+
+
 }
 
 enum class MaritalStatus {
