@@ -1,5 +1,5 @@
 [![pipeline status](https://gitlab.com/mvysny/jdbi-orm/badges/master/pipeline.svg)](https://gitlab.com/mvysny/jdbi-orm/commits/master)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.mvysny.vokorm/vok-orm/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.mvysny.vokorm/vok-orm)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gitlab.mvysny.jdbiorm/jdbi-orm/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gitlab.mvysny.jdbiorm/jdbi-orm)
 
 # JDBI-ORM database mapping library
 
