@@ -1,5 +1,7 @@
 package com.gitlab.mvysny.jdbiorm;
 
+import com.gitlab.mvysny.jdbiorm.quirks.DatabaseQuirksDetectorJdbiPlugin;
+import com.gitlab.mvysny.jdbiorm.quirks.Quirks;
 import org.jdbi.v3.core.Jdbi;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -26,6 +28,10 @@ import java.util.Objects;
 public final class JdbiOrm {
     private static volatile Validator validator;
     private static volatile DataSource dataSource;
+    /**
+     * If set to non-null, this takes precedence over {@link DatabaseQuirksDetectorJdbiPlugin} detection mechanism.
+     */
+    public static volatile Quirks quirks = null;
 
     private static final Logger log = LoggerFactory.getLogger(JdbiOrm.class);
     static {
@@ -64,7 +70,9 @@ public final class JdbiOrm {
      */
     @NotNull
     public static Jdbi jdbi() {
-        return Jdbi.create(getDataSource());
+        final Jdbi jdbi = Jdbi.create(getDataSource());
+        jdbi.installPlugin(new DatabaseQuirksDetectorJdbiPlugin());
+        return jdbi;
     }
 
     /**

@@ -47,7 +47,7 @@ public final class EntityMeta {
 
     /**
      * Lists all properties in this entity. Only lists persisted properties
-     * (e.g. not annotated with {@link Unmappable}).
+     * (e.g. not annotated with {@link Ignore}).
      */
     @NotNull
     public Set<PropertyMeta> getProperties() {
@@ -102,6 +102,7 @@ public final class EntityMeta {
                 && !field.isSynthetic()
                 && !Modifier.isStatic(field.getModifiers())
                 && !field.isAnnotationPresent(Unmappable.class)
+                && !field.isAnnotationPresent(Ignore.class)
                 && !field.getName().equals("Companion");  // Kotlin support
     }
 
@@ -128,5 +129,18 @@ public final class EntityMeta {
                         .map(it -> new PropertyMeta(it))
                         .collect(Collectors.toSet())
         );
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        EntityMeta that = (EntityMeta) o;
+        return entityClass.equals(that.entityClass);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(entityClass);
     }
 }

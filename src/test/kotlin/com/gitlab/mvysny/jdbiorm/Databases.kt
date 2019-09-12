@@ -19,8 +19,8 @@ import java.util.*
 data class Person(
         private var id: Long? = null,
         @field:Length(min = 1)
-    var name: String,
-        var age: Int,
+        var name: String = "",
+        var age: Int = -1,
         @field:Ignore var ignored: String? = null,
         @Transient var ignored2: Any? = null,
         var dateOfBirth: LocalDate? = null,
@@ -66,7 +66,7 @@ enum class MaritalStatus {
 /**
  * A table demoing natural person with government-issued ID (birth number, social security number, etc).
  */
-data class NaturalPerson(private var id: String? = null, var name: String, var bytes: ByteArray) : Entity<String> {
+data class NaturalPerson(private var id: String? = null, var name: String = "", var bytes: ByteArray = byteArrayOf()) : Entity<String> {
     override fun getId(): String? = id
     override fun setId(id: String?) { this.id = id }
     companion object : Dao<NaturalPerson, String>(NaturalPerson::class.java)
@@ -77,8 +77,10 @@ data class NaturalPerson(private var id: String? = null, var name: String, var b
  *
  * Warning: do NOT add any additional fields in here, since that would make java place synthetic `setId(Object) before
  * `setId(UUID)` and we wouldn't test the metadata hook that fixes this issue.
+ *
+ * [id] is mapped to UUID in MySQL which is binary(16)
  */
-data class LogRecord(private var id: UUID? = null, var text: String) : UuidEntity {
+data class LogRecord(private var id: UUID? = null, var text: String = "") : UuidEntity {
     override fun getId(): UUID? = id
     override fun setId(id: UUID?) { this.id = id }
     companion object : Dao<LogRecord, UUID>(LogRecord::class.java)

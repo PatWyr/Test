@@ -2,6 +2,7 @@ package com.gitlab.mvysny.jdbiorm;
 
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.mapper.reflect.BeanMapper;
+import org.jdbi.v3.core.mapper.reflect.FieldMapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,7 +36,7 @@ public class Dao<T extends Entity<ID>, ID> {
 
     @NotNull
     protected RowMapper<T> getRowMapper() {
-        return BeanMapper.of(entityClass);
+        return FieldMapper.of(entityClass);
     }
 
     /**
