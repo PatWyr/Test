@@ -3,8 +3,6 @@
 
 # JDBI-ORM database mapping library
 
-TODO TODO WORK IN PROGRESS
-
 `jdbi-orm` allows you to load the data from database rows into objects (POJOs)
 and write the data back into the database. No JPA dirty tricks are used: no runtime
 enhancements, no lazy loading, no `DetachedExceptions`, no change tracking
@@ -27,25 +25,27 @@ repositories {
     jcenter()  // or mavenCentral()
 }
 dependencies {
-    compile("com.github.mvysny.vokorm:vok-orm:x.y")
+    compile("com.gitlab.mvysny.jdbiorm:jdbi-orm:x.y")
 }
 ```
 
 > Note: obtain the newest version from the tag name at the top of the page
 
-Maven: (it's very simple since vok-orm is in Maven Central):
+Maven: (it's very simple since jdbi-orm is in Maven Central):
 
 ```xml
 <project>
 	<dependencies>
 		<dependency>
-			<groupId>com.github.mvysny.vokorm</groupId>
-			<artifactId>vok-orm</artifactId>
+			<groupId>com.gitlab.mvysny.jdbiorm</groupId>
+			<artifactId>jdbi-orm</artifactId>
 			<version>x.y</version>
 		</dependency>
     </dependencies>
 </project>
 ```
+
+TODO TODO WORK IN PROGRESS
 
 See the [vok-orm-playground](https://gitlab.com/mvysny/vok-orm-playground) for a very simple example project
 using `vok-orm`.
