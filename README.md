@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/mvysny/vok-orm.svg?branch=master)](https://travis-ci.org/mvysny/vok-orm)
+[![pipeline status](https://gitlab.com/mvysny/jdbi-orm/badges/master/pipeline.svg)](https://gitlab.com/mvysny/jdbi-orm/commits/master)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.mvysny.vokorm/vok-orm/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.mvysny.vokorm/vok-orm)
 
 # JDBI-ORM database mapping library
