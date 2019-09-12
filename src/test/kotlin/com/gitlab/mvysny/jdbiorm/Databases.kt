@@ -24,7 +24,7 @@ data class Person(
         @field:Ignore var ignored: String? = null,
         @Transient var ignored2: Any? = null,
         var dateOfBirth: LocalDate? = null,
-        var created: Date? = null,
+        var created: Instant? = null,
         var modified: Instant? = null,
     // test of aliased field
         @field:ColumnName("alive")
@@ -37,7 +37,7 @@ data class Person(
 
     override fun save(validate: Boolean) {
         if (id == null) {
-            if (created == null) created = java.sql.Timestamp(System.currentTimeMillis())
+            if (created == null) created = Instant.now()
             if (modified == null) modified = Instant.now()
         }
         super.save(validate)
@@ -45,12 +45,6 @@ data class Person(
 
     // should not be persisted into the database since it's not backed by a field.
     fun getSomeComputedValue(): Int = age + 2
-
-    override fun toString(): String {
-        return "Person(id=$id, name='$name', age=$age, ignored=$ignored, ignored2=$ignored2, " +
-                "dateOfBirth=$dateOfBirth, created=$created, modified=$modified, " +
-                "isAlive25=$isAlive25, maritalStatus=$maritalStatus) type of created: ${created?.javaClass}"
-    }
 
     // should not be persisted into the database since it's not backed by a field.
     val someOtherComputedValue: Int get() = age
