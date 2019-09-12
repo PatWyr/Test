@@ -30,6 +30,7 @@ object Docker {
             ProcessExecutor().command("docker", "version").execute().exitValue == 0
         } catch (e: ProcessInitException) {
             if (e.errorCode == 2) {
+                println(e.message)
                 // no such file or directory
                 false
             } else {
