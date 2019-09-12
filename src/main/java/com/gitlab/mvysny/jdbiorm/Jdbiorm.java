@@ -1,14 +1,18 @@
 package com.gitlab.mvysny.jdbiorm;
 
+import org.jdbi.v3.core.Jdbi;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
 import javax.validation.NoProviderFoundException;
 import javax.validation.Validation;
 import javax.validation.Validator;
+import java.util.Objects;
 
 /**
- * Initializes the ORM in the current JVM. By default uses the [HikariDataSourceAccessor] which uses [javax.sql.DataSource] pooled with HikariCP.
+ * Initializes the ORM in the current JVM. By default uses the {@link HikariDataSourceAccessor} which uses [javax.sql.DataSource] pooled with HikariCP.
  * To configure this accessor, just fill in [dataSourceConfig] properly and then call [init] once per JVM. When the database services
  * are no longer needed, call [destroy] to release all JDBC connections and close the pool.
  *
@@ -18,7 +22,9 @@ import javax.validation.Validator;
  * @author mavi
  */
 public class Jdbiorm {
-    private Validator validator;
+    private volatile Validator validator;
+    private volatile DataSource dataSource;
+
     private static final Logger log = LoggerFactory.getLogger(Jdbiorm.class);
     private Jdbiorm() {
         try {
@@ -36,11 +42,30 @@ public class Jdbiorm {
         return INSTANCE;
     }
 
+    @NotNull
     public Validator getValidator() {
         return validator;
     }
 
-    public void setValidator(Validator validator) {
-        this.validator = validator;
+    public void setValidator(@NotNull Validator validator) {
+        this.validator = Objects.requireNonNull(validator);
+    }
+
+    @NotNull
+    public DataSource getDataSource() {
+        return Objects.requireNonNull(dataSource, "The data source has not been set. Please call Jdbiorm.get().setDataSource() first.");
+    }
+
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    /**
+     * Returns the Jdbi instance. Just static-import this method for easy usage.
+     * @return
+     */
+    @NotNull
+    public static Jdbi jdbi() {
+        return Jdbi.create(get().getDataSource());
     }
 }

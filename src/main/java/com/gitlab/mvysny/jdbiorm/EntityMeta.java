@@ -54,7 +54,8 @@ public final class EntityMeta {
     }
 
     /**
-     * A list of database names of all persisted fields in this entity.
+     * A set of database names of all persisted fields in this entity.
+     * @return immutable hash set of SQL field names, not null.
      */
     @NotNull
     public Set<String> getPersistedFieldDbNames() {
