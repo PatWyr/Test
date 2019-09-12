@@ -1,4 +1,4 @@
-package com.gitlab.jdbiorm;
+package com.gitlab.mvysny.jdbiorm;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ValidationException;

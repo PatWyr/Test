@@ -1,4 +1,4 @@
-package com.gitlab.jdbiorm;
+package com.gitlab.mvysny.jdbiorm;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

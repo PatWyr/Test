@@ -1,4 +1,4 @@
-package com.gitlab.jdbiorm;
+package com.gitlab.mvysny.jdbiorm;
 
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 import org.jetbrains.annotations.NotNull;
