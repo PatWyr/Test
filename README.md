@@ -550,27 +550,25 @@ then checked for valid values with the JSR303 Validator (invoked when
 `entity.validate()`/`entity.save()`/`entity.create()` is called). The validation is
 also mentioned in [Vaadin-on-Kotlin Forms](http://www.vaadinonkotlin.eu/forms.html) documentation.
 
-TODO TODO
-
 For example:
+```java
+public class Person implements Entity<Long> {
+    private Long id;
+    @Length(min = 1)
+    @NotNull
+    private String name;
+    @NotNull
+    @Min(15)
+    @Max(100)
+    private Integer age;
+    // etc
+}
+
+new Person("John", 10).validate() // throws an exception since age must be at least 15
 ```
-data class Person(
-        override var id: Long? = null,
 
-        @field:NotNull
-        @field:Size(min = 1, max = 200)
-        var name: String? = null,
-
-        @field:NotNull
-        @field:Min(15)
-        @field:Max(100)
-        var age: Int? = null) : Entity<Long>
-val p = Person(name = "John", age = 10)
-p.validate() // throws an exception since age must be at least 15
-```
-
-*Important note:* the validation is an optional feature in `vok-orm`, and by default
-the validation is disabled. This fact is advertised in the `vok-orm` logs as the following message:
+*Important note:* the validation is an optional feature in `jdbi-orm`, and by default
+the validation is disabled. This fact is advertised in the `jdbi-orm` logs as the following message:
 
 > JSR 303 Validator Provider was not found on your classpath, disabling entity validation
 
@@ -578,7 +576,7 @@ In order to activate the entity validations, you need to add a JSR303 Validation
 to your classpath. Just use Hibernate-Validator (don't worry it will not pull in Hibernate nor
 JPA) and add this to your `build.gradle`:
 
-```
+```groovy
 dependencies {
   compile("org.hibernate.validator:hibernate-validator:6.0.13.Final")
   // EL is required: http://hibernate.org/validator/documentation/getting-started/
@@ -586,10 +584,12 @@ dependencies {
 }
 ```
 
-You can check out the [vok-orm-playground](https://gitlab.com/mvysny/vok-orm-playground) which
+You can check out the [jdbi-orm-playground](https://gitlab.com/mvysny/jdbi-orm-playground) which
 has validations enabled and all necessary jars included.
 
 ## Data Loaders
+
+NOT YET IMPLEMENTED
 
 Very often the UI frameworks provide some kind of tabular component which allows for viewing database tables, or even outcomes of any SELECT
 command (possibly joined). An example of such tabular component is the Vaadin Grid; you can see the [live demo](https://vok-crud.herokuapp.com/crud)
@@ -663,66 +663,81 @@ The `@As` annotation is honored both by `Dao`s and by all data loaders.
 ## A main() method Example
 
 Using the vok-orm library from a JavaSE main method;
-see the [vok-orm-playground](https://gitlab.com/mvysny/vok-orm-playground) for a very simple example project
-using `vok-orm`.
+see the [jdbi-orm-playground](https://gitlab.com/mvysny/jdbi-orm-playground) for a very simple example project
+using `jdbi-orm`.
 
+```java
+public class Category implements Entity<Long> {
+    private Long id;
+    private String name;
 
-```kotlin
-data class Person(
-    override var id: Long? = null,
-    var name: String,
-    var age: Int,
-    var dateOfBirth: LocalDate? = null,
-    var recordCreatedAt: Instant? = null
-) : Entity<Long> {
-    override fun save() {
-        if (id == null) {
-            if (modified == null) modified = Instant.now()
+    @Override
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public long findTotalCountForReviews() {
+        return Review.dao.getTotalCountForReviewsInCategory(getId());
+    }
+
+    public static final CategoryDao dao = new CategoryDao();
+
+    public static class CategoryDao extends Dao<Category, Long> {
+
+        public CategoryDao() {
+            super(Category.class);
         }
-        super.save()
-    }
-    
-    companion object : Dao<Person>
-}
 
-fun main(args: Array<String>) {
-    VokOrm.dataSourceConfig.apply {
-        minimumIdle = 0
-        maximumPoolSize = 30
-        jdbcUrl = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
+        @Nullable
+        public Category findByName(@NotNull String name) {
+            return findOneBy("name=:name", q -> q.bind("name", name));
+        }
     }
-    VokOrm.init()
-    db {
-        con.createQuery(
-            """create table if not exists Test (
-            id bigint primary key auto_increment,
-            name varchar not null,
-            age integer not null,
-            dateOfBirth date,
-            recordCreatedAt timestamp
-             )"""
-        ).executeUpdate()
+
+    public static void main(String[] args) {
+        final HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        JdbiOrm.setDataSource(new HikariDataSource(hikariConfig));
+        jdbi().useHandle(handle -> handle
+                .createUpdate("create TABLE CATEGORY (id bigint auto_increment PRIMARY KEY, name varchar(200) NOT NULL );")
+                .execute());
+
+        // runs SELECT * FROM Category
+        // prints []
+        System.out.println(Category.dao.findAll());
+
+        // runs INSERT INTO Category (name) values (:name)
+        final Category category = new Category();
+        category.setName("my category");
+        category.save();
+
+        // runs SELECT * FROM Category where id=:id
+        // prints "my category"
+        System.out.println(Category.dao.getById(1L).getName());
+
+        // mass-saves 10 categories in a single transaction.
+        jdbi().useTransaction(handle -> {
+            for (int i = 0; i < 10; i++) {
+                final Category cat = new Category();
+                cat.setName("my category " + i);
+                cat.save();
+            }
+        });
+
+        JdbiOrm.destroy();
     }
-    
-    // runs SELECT * FROM Person
-    // prints []
-    println(Person.findAll())
-    
-    // runs INSERT INTO Person (name, age, recordCreatedAt) values (:p1, :p2, :p3)
-    Person(name = "John", age = 42).save()
-    
-    // runs SELECT * FROM Person
-    // prints [Person(id=1, name=John, age=42, dateOfBirth=null, recordCreatedAt=2011-12-03T10:15:30Z)]
-    println(Person.findAll())
-    
-    // runs SELECT * FROM Person where id=:id
-    // prints John
-    println(Person.getById(1L).name)
-    
-    // mass-saves 11 persons in a single transaction.
-    db { (0..10).forEach { Person(name = "person $it", age = it).save() } }
-    
-    VokOrm.destroy()
 }
 ```
 
@@ -756,34 +771,21 @@ The next one will be `V02__CreateIndexCategoryName.sql`:
 create UNIQUE INDEX idx_category_name ON CATEGORY(name);
 ```
 
-In order to run the migrations, just run the following after `VokOrm.init()`:
-```kotlin
-val flyway = Flyway()
-flyway.dataSource = VokOrm.dataSource
+In order to run the migrations, just run the following after a datasource is set to `JdbiOrm`:
+```java
+Flyway flyway = new Flyway()
+flyway.setDataSource(JdbiOrm.getDataSource());
 flyway.migrate()
 ```
 
 # Using with Spring or JavaEE
 
-By default VoK-ORM connects to the JDBC database directly and uses its own instance of
-Hikari-CP to pool JDBC connections. That of course doesn't work with containers such as Spring or
-JavaEE which manage JDBC resources themselves.
+Very easy: simply create a singleton bean, inject a `DataSource` to it and
+when the bean is constructed, just pass the datasource to `JdbiOrm.setDataSource()`.
 
-It is possible to use VoK-ORM with Spring or JavaEE. First, you have to implement the
-[DatabaseAccessor](src/main/kotlin/com/github/vokorm/DatabaseAccessor.kt) interface.
-The interface is really simple: it's just a single method `runInTransaction()` which runs a block
-in a transaction, committing on success, rolling back on failure. You typically implement this
-interface simply by invoking a bean's method annotated with `@Transactional`, running the block inside
-of that method. That way the container will handle the transactions.
+# `jdbi-orm` design principles
 
-Then, you just need to set the producer for your implementation into the
-`VokOrm.databaseAccessorProvider` field and call `VokOrm.init()` and `VokOrm.destroy()` appropriately.
-Or, if the accessor doesn't even need to be closed, you can simply set the `VokOrm.databaseAccessor` field
-directly. Then you don't have to call `VokOrm.init()` nor `VokOrm.destroy()`.
-
-# `vok-orm` design principles
-
-`vok-orm` is a very simple object-relational mapping library, built around the following ideas:
+`jdbi-orm` is a very simple object-relational mapping library, built around the following ideas:
 
 * Simplicity is the most valued property; working with plain SQL commands is preferred over having a type-safe
   query language. If you want a type-safe database mapping library, try [Exposed](https://github.com/JetBrains/Exposed).
@@ -795,18 +797,18 @@ directly. Then you don't have to call `VokOrm.init()` nor `VokOrm.destroy()`.
   values back into the database. They are not runtime-enhanced and can be final.
 * A switch from one type of database to another never happens. We understand that the programmer
   wants to exploit the full potential of the database, by writing SQLs tailored for that particular database.
-  `vok-orm` should not attempt to generate SELECTs on behalf of the programmer (except for the very basic ones related to CRUD);
+  `jdbi-orm` should not attempt to generate SELECTs on behalf of the programmer (except for the very basic ones related to CRUD);
   instead it should simply allow SELECTs to be passed as Strings, and then map the result
   to an object of programmer's choosing.
 
-As such, `vok-orm` has much in common with the [ActiveJDBC](https://github.com/javalite/activejdbc) project, in terms
-of design principles. The advantage of `vok-orm` is that it doesn't require any instrumentation to work
-(instead it uses Kotlin language features), and it's even simpler than ActiveJDBC.
+As such, `jdbi-orm` has much in common with the [ActiveJDBC](https://github.com/javalite/activejdbc) project, in terms
+of design principles. The advantage of `jdbi-orm` is that it doesn't require any instrumentation to work
+(instead it uses Java language features), and it's even simpler than ActiveJDBC.
 
 Please read [Back to Base - make SQL great again](http://mavi.logdown.com/posts/5771422)
 for the complete explanation of ideas behind this framework.
 
-This framework uses [Sql2o](https://www.sql2o.org/) to map data from the JDBC `ResultSet` to POJOs; in addition it provides a very simple
+This framework uses [JDBI](http://jdbi.org/) to map data from the JDBC `ResultSet` to POJOs; in addition it provides a very simple
 mechanism to store/update the data back to the database.
 
 ## Why not JPA
