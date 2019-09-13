@@ -121,7 +121,7 @@ public class Dao<T extends Entity<ID>, ID> {
     }
 
     /**
-     * Retrieves entity with given {@code id}. Fails if there is no such entity. See [Dao] on how to add this to your entities.
+     * Retrieves entity with given {@code id}. Fails if there is no such entity.
      *
      * @throws IllegalStateException if there is no entity with given id.
      */
