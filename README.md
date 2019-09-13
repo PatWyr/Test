@@ -416,8 +416,6 @@ Note how freely and simply we can add useful business logic methods to entities.
   in order to activate those annotations and injections.
   Those are things of the past.
 
-TODO TODO
-
 ### Auto-generated IDs vs pre-provided IDs
 There are generally three cases for entity ID generation:
 
@@ -431,33 +429,36 @@ case, `save()` emits `INSERT` when the ID is null, and `UPDATE` when the ID is n
 When the ID is pre-provided, you can only use `save()` method to update a row in the database; using `save()` to create a
 row in the database will throw an exception. In order to create an
 entity with a pre-provided ID, you need to use the `create()` method:
-```
-NaturalPerson(id = "12345678", name = "Albedo").create()
+```java
+new NaturalPerson(id = "12345678", name = "Albedo").create()
 ```
 
 For entities with IDs created by the application you can make `save()` work properly, by overriding the `create()` method
-in your every entity as follows:
-```
-override fun create(validate: Boolean) {
+in your entity as follows:
+```java
+public void create(boolean validate) {
   id = UUID.randomUUID()
-  super.create(validate)
+  Entity.super.create(validate)
 }
 ```
 
-Even better, you can inherit from the `Entity` interface as follows:
+Even better, you can create a new interface which inherits from the `Entity` interface as follows:
 
-```
-interface UuidEntity : Entity<UUID> {
-    override fun create(validate: Boolean) {
-        id = UUID.randomUUID()
-        super.create(validate)
+```java
+interface UuidEntity extends Entity<UUID> {
+    @Override
+    default void create(boolean validate) {
+        setId(UUID.randomUUID());
+        Entity.super.create(validate);
     }
 }
 ```
 
-And simply make all of your entities implement the `UuidEntity` interface.
+And simply make your entities implement the `UuidEntity` interface.
 
 ### Joins
+
+TODO TODO
 
 When we display a list of reviews (say, in a Vaadin Grid), we want to display an actual category name instead of the numeric category ID.
 We can take advantage of Sql2o simply matching all SELECT column names into bean fields; all we have to do is to:

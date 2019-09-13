@@ -42,7 +42,7 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  * new NaturalPerson("12345678", "Albedo").create()
  * </pre>
  * <p>
- * For entities with IDs created by the application you can make [save] work properly, by overriding the {@link #create(boolean)} method
+ * For entities with IDs created by the application you can make {@link #save(boolean)} work properly, by overriding the {@link #create(boolean)} method
  * as follows:
  * <pre>
  * public void create(boolean validate) {
