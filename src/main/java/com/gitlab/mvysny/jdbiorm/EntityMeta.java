@@ -56,7 +56,7 @@ public final class EntityMeta {
 
     /**
      * A set of database names of all persisted fields in this entity.
-     * @return immutable hash set of SQL field names, not null.
+     * @return immutable hash set of SQL column names, not null.
      */
     @NotNull
     public Set<String> getPersistedFieldDbNames() {
@@ -81,15 +81,17 @@ public final class EntityMeta {
     }
 
     /**
-     * Returns a persisted property with given [propertyName] for this entity. Fails if there
-     * is no such property. See [properties] for a list of all properties.
+     * Returns a persisted property with given {@code propertyName} for this entity. Fails if there
+     * is no such property. See {@link #getProperties()} for a list of all properties.
+     * @param propertyName the Java field name, not null.
+     * @throws IllegalArgumentException if there is no such property.
      */
     @NotNull
     public PropertyMeta getProperty(@NotNull String propertyName) {
         return getProperties().stream()
                 .filter(it -> it.getName().equals(propertyName))
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("There is no such property "
+                .orElseThrow(() -> new IllegalArgumentException("There is no such property "
                         + propertyName + " in " + entityClass + ", available fields: "
                         + getProperties().stream().map(it -> it.getName()) .collect(Collectors.joining(", "))));
     }
