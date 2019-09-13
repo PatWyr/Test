@@ -45,10 +45,8 @@ Maven: (it's very simple since jdbi-orm is in Maven Central):
 </project>
 ```
 
-TODO TODO WORK IN PROGRESS
-
-See the [vok-orm-playground](https://gitlab.com/mvysny/vok-orm-playground) for a very simple example project
-using `vok-orm`.
+See the [jdbi-orm-playground](https://gitlab.com/mvysny/jdbi-orm-playground) for a very simple example project
+using `jdbi-orm`.
 
 ## Usage Examples
 
