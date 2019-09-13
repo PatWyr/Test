@@ -47,6 +47,9 @@ private fun DynaNodeGroup.joinTableTestSuite() {
                 expectList(p) {
                     JoinTable.dao.findAllBy("customerId = :cid", null, null) { it.bind("cid", 130) }
                 }
+                expectList(p) {
+                    JoinTable.dao.findAllBy("customerId = :cid") { it.bind("cid", 130) }
+                }
             }
             test("paged") {
                 db { (0..100).forEach { JoinTable(it, it).save() } }

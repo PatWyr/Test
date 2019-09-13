@@ -125,6 +125,16 @@ public class DaoOfAny<T> {
     }
 
     /**
+     * Finds all matching rows in given table. Fails if there is no table in the database with the
+     * name of {@link EntityMeta#getDatabaseTableName()}.
+     * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
+     */
+    @NotNull
+    public List<T> findAllBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
+        return findAllBy(where, null, null, queryConsumer);
+    }
+
+    /**
      * Retrieves single entity matching given {@code where} clause.
      * Returns null if there is no such entity; fails if there are two or more entities matching the criteria.
      * <p></p>
