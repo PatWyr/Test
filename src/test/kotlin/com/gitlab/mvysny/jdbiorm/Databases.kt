@@ -94,6 +94,7 @@ private fun DynaNodeGroup.usingDockerizedPosgresql(databasePort: Int) {
         EntityWithAliasedId.dao.deleteAll()
         NaturalPerson.deleteAll()
         LogRecord.deleteAll()
+        JoinTable.dao.deleteAll()
     }
     beforeEach { clearDb() }
     afterEach { clearDb() }
@@ -138,6 +139,7 @@ fun DynaNodeGroup.usingDockerizedMysql(databasePort: Int) {
         NaturalPerson.deleteAll()
         LogRecord.deleteAll()
         TypeMappingEntity.deleteAll()
+        JoinTable.dao.deleteAll()
     }
     beforeEach { clearDb() }
     afterEach { clearDb() }
@@ -225,6 +227,7 @@ private fun DynaNodeGroup.usingDockerizedMariaDB(databasePort: Int) {
         EntityWithAliasedId.dao.deleteAll()
         NaturalPerson.deleteAll()
         LogRecord.deleteAll()
+        JoinTable.dao.deleteAll()
     }
     beforeEach { clearDb() }
     afterEach { clearDb() }
