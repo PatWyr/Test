@@ -258,27 +258,24 @@ public class Category implements Entity<Long> {
 The Category class will now be outfitted
 with several useful finder methods present in the [Dao](src/main/java/com/gitlab/mvysny/jdbiorm/Dao.java) class itself):
 
-TODO TODO
-
 * `Category.dao.findAll()` will return a list of all categories
 * `Category.dao.getById(25L)` will fetch a category with the ID of 25, failing if there is no such category
 * `Category.dao.findById(25L)` will fetch a category with ID of 25, returning `null` if there is no such category
 * `Category.dao.deleteAll()` will delete all categories
 * `Category.dao.deleteById(42L)` will delete a category with ID of 42
 * `Category.dao.count()` will return the number of rows in the Category table.
-* `Category.dao.findBy { "name = :name1 or name = :name2"("name1" to "Beer", "name2" to "Cider") }` will find all categories with the name of "Beer" or "Cider".
+* `Category.dao.findAllBy("name = :name1 or name = :name2", null, null, q -> q.bind("name1", "Beer").bind("name2", "Cider"))` will find all categories with the name of "Beer" or "Cider".
   This is an example of a parametrized select, from which you only need to provide the WHERE clause.
-* `Category.deleteBy { (Category::name eq "Beer") or (Category::name eq "Cider") }` will delete all categories
-  matching given criteria. This is an example of a statically-typed matching criteria which
-  is converted into the WHERE clause.
-* `Category.getBy { "name = :name"("name" to "Beer") }` will fetch exactly one matching category, failing if there is no such category or there are more than one.
-* `Category.findSpecificBy { "name = :name"("name" to "Beer") }` will fetch one matching category, failing if there are more than one. Returns `null` if there is none.
-* `Category.count { "name = :name"("name" to "Beer") }` will return the number of rows in the Category table matching given query.
+* `Category.dao.getOneBy("name = :name", q -> q.bind("name", "Beer"));` will fetch exactly one matching category, failing if there is no such category or there are more than one.
+* `Category.dao.findOneBy("name = :name", q -> q.bind("name", "Beer"));` will fetch one matching category, failing if there are more than one. Returns `null` if there is none.
+* `Category.dao.countBy("name = :name", q -> q.bind("name", "Beer"));` will return the number of rows in the Category table matching given query.
 
 In the spirit of type safety, the finder methods will only accept `Long` (or whatever is the type of
 the primary key in the `Entity<x>` implementation clause). 
 
 You can of course add your own custom finder methods into the Category companion object. For example:
+
+TODO TODO
 
 ```kotlin
 data class Category(override var id: Long? = null, var name: String = "") : Entity<Long> {
