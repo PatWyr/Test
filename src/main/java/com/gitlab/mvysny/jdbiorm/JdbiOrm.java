@@ -21,6 +21,9 @@ import java.util.Objects;
  * <p></p>
  * To configure JDBI-ORM, simply call {@link #setDataSource(DataSource)} once per JVM. When the database services
  * are no longer needed, call {@link #destroy()} to release all JDBC connections and close the pool.
+ * <p></p>
+ * See <a href="https://gitlab.com/mvysny/jdbi-orm-playground">JDBI-ORM Playground</a>
+ * project for code examples and the quickest way to try out JDBI-ORM.
  * @author mavi
  */
 public final class JdbiOrm {
