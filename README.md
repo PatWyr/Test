@@ -70,7 +70,6 @@ public class Category implements Entity<Long> {
     private Long id;
     private String name;
 
-    @Nullable
     @Override
     public Long getId() {
         return id;
@@ -138,45 +137,55 @@ But how do we specify the target database where to store the category in?
 
 ### Connecting to a database
 
-TODO REVIEW
+To configure jdbi-orm, all you need is to set a `DataSource` to it:
 
-As a bare minimum, you need to specify the JDBC URL
-to the `VokOrm.dataSourceConfig` first. It's a [Hikari-CP](https://brettwooldridge.github.io/HikariCP/) configuration file which contains lots of other options as well.
-It comes pre-initialized with sensible default settings.
-
-> Hikari-CP is a JDBC connection pool which manages a pool of JDBC connections since they are expensive to create. Typically all projects
-use some sort of JDBC connection pooling, and `vok-orm` uses Hikari-CP.
-
-For example, to use an in-memory H2 database, just add H2 onto the classpath as a Gradle dependency: `compile 'com.h2database:h2:1.4.196'`. Then,
-configure vok-orm as follows:
-
-```kotlin
-VokOrm.dataSourceConfig.apply {
-    jdbcUrl = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
-}
+```java
+JdbiOrm.setDataSource(dataSource);
 ```
 
-After you have configured the JDBC URL, just call `VokOrm.init()` which will initialize
-Hikari-CP's connection pool. After the connection pool is initialized, you can simply call
-the `db{}` function to run the
-block in a database transaction. The `db{}` function will acquire new connection from the
+You can use a DataSource from your Spring app or JavaEE app, or you can simply
+use [Hikari-CP](https://brettwooldridge.github.io/HikariCP/) to create a
+`HikariDataSource` out of a `HikariConfig`. Just specify the JDBC URL
+to the `HikariConfig` and you're good to go.
+It comes pre-initialized with sensible default settings, but it contains lots of other options as well.
+
+> Hikari-CP is a JDBC connection pool which manages a pool of JDBC connections since they are expensive to create. Typically all projects
+use some sort of JDBC connection pooling.
+
+For example, to use an in-memory H2 database, just add H2 onto the classpath as a Gradle dependency: `compile 'com.h2database:h2:1.4.196'`. Then,
+configure jdbi-orm as follows:
+
+```java
+final HikariConfig hikariConfig = new HikariConfig();
+hikariConfig.setJdbcUrl(jdbcUrl);
+hikariConfig.setUsername(username);
+hikariConfig.setPassword(password);
+hikariConfig.setMinimumIdle(0);
+
+JdbiOrm.setDataSource(new HikariDataSource(hikariConfig));
+```
+
+After the connection pool is initialized, you can simply call
+the `jdbi().withHandle()` function to run the
+block in a database transaction. JDBI will acquire new connection from the
 connection pool; then it will start a transaction and it will provide you with means to execute SQL commands:
 
-```kotlin
-db {
-    con.createQuery("delete from Category where id = :id")
-        .addParameter("id", id)
-        .executeUpdate()
-}
+```java
+jdbi().withHandle(handle -> handle
+        .createUpdate("delete from Category where id = :id")
+        .bind("id", 25)
+        .execute());
 ```
 
 You can call this function from anywhere; you don't need to use dependency injection or anything like that.
-That is precisely how the `save()` function saves the bean - it simply calls the `db {}` function and executes
+That is precisely how the `save()` function saves the bean - it simply calls the `jdbi()` function and executes
 an appropriate INSERT/UPDATE statement.
 
 The function will automatically roll back the transaction on any exception thrown out from the block (both checked and unchecked).
 
-After you're done, call `VokOrm.destroy()` to close the pool.
+After you're done, call `JdbiOrm.destroy()` to close the pool. You should only do so
+if you have created the `DataSource`: Spring or JavaEE containers typically manage
+data source instances for you and in such setup you must not call `JdbiOrm.destroy()`.
 
 > You can call methods of this library from anywhere. You don't need to be running inside of the JavaEE or Spring container or
 any container at all - you can actually use this library from a plain JavaSE main method.
@@ -184,22 +193,27 @@ any container at all - you can actually use this library from a plain JavaSE mai
 Full example of a `main()` method that does all of the above:
 
 ```kotlin
-fun main(args: Array<String>) {
-    VokOrm.dataSourceConfig.apply {
-        jdbcUrl = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
+public class Main {
+    public static void main(String[] args) {
+        final HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        JdbiOrm.setDataSource(new HikariDataSource(hikariConfig));
+        jdbi().withHandle(handle -> handle
+                .createUpdate("create TABLE CATEGORY (id bigint auto_increment PRIMARY KEY, name varchar(200) NOT NULL );")
+                .execute());
+        jdbi().useTransaction(handle -> {
+            for (int i = 0; i < 100; i++) {
+                final Category cat = new Category();
+                cat.setName("cat " + i);
+                cat.save();
+            }
+        });
+        JdbiOrm.destroy();
     }
-    VokOrm.init()
-    db {
-        con.createQuery("create TABLE CATEGORY (id bigint auto_increment PRIMARY KEY, name varchar(200) NOT NULL );").executeUpdate()
-    }
-    db {
-        (0..100).forEach { Category(name = "cat $it").save() }
-    }
-    VokOrm.destroy()
 }
 ```
 
-See the [vok-orm-playground](https://gitlab.com/mvysny/vok-orm-playground)
+See the [jdbi-orm-playground](https://gitlab.com/mvysny/jdbi-orm-playground)
 project which contains such `main` method, all JDBC drivers pre-loaded and
 simple instructions on how to query different database kinds.
 
@@ -208,28 +222,51 @@ it's definitely better to use [Flyway](https://flywaydb.org/) as described below
 
 ### Finding Categories
 
-The so-called finder (or Dao) methods actually resemble factory methods since they also produce instances of Categories. The best place for such
-methods is on the `Category` class itself. We can write all of the necessary finders ourselves, by using the `db{}`
-method as stated above; however vok-orm already provides a set of handy methods for you. All you need
-to do is for the companion object to implement the `Dao` interface:
+The so-called finder (or Dao) methods actually resemble factory methods since they
+also produce instances of Categories. The best place for such
+methods is on the `Category` class itself. We can write all of the necessary
+finders ourselves, by using the `jdbi()`
+method as stated above; however jdbi-orm already provides a set of handy methods for you. All you need
+to do is to add a static field to `Category` which creates the `Dao` class:
 
-```kotlin
-data class Category(override var id: Long? = null, var name: String = "") : Entity<Long> {
-    companion object : Dao<Category>
+```java
+public class Category implements Entity<Long> {
+    private Long id;
+    private String name;
+
+    @Override
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public static final Dao<Category, Long> dao = new Dao<>(Category.class);
 }
 ```
 
-Since Category's companion object implements the `Dao` interface, Category will now be outfitted
-with several useful finder methods (static extension methods
-that are attached to the [Dao](src/main/kotlin/com/github/vokorm/Dao.kt) interface itself):
+The Category class will now be outfitted
+with several useful finder methods present in the [Dao](src/main/java/com/gitlab/mvysny/jdbiorm/Dao.java) class itself):
 
-* `Category.findAll()` will return a list of all categories
-* `Category.getById(25L)` will fetch a category with the ID of 25, failing if there is no such category
-* `Category.findById(25L)` will fetch a category with ID of 25, returning `null` if there is no such category
-* `Category.deleteAll()` will delete all categories
-* `Category.deleteById(42L)` will delete a category with ID of 42
-* `Category.count()` will return the number of rows in the Category table.
-* `Category.findBy { "name = :name1 or name = :name2"("name1" to "Beer", "name2" to "Cider") }` will find all categories with the name of "Beer" or "Cider".
+TODO TODO
+
+* `Category.dao.findAll()` will return a list of all categories
+* `Category.dao.getById(25L)` will fetch a category with the ID of 25, failing if there is no such category
+* `Category.dao.findById(25L)` will fetch a category with ID of 25, returning `null` if there is no such category
+* `Category.dao.deleteAll()` will delete all categories
+* `Category.dao.deleteById(42L)` will delete a category with ID of 42
+* `Category.dao.count()` will return the number of rows in the Category table.
+* `Category.dao.findBy { "name = :name1 or name = :name2"("name1" to "Beer", "name2" to "Cider") }` will find all categories with the name of "Beer" or "Cider".
   This is an example of a parametrized select, from which you only need to provide the WHERE clause.
 * `Category.deleteBy { (Category::name eq "Beer") or (Category::name eq "Cider") }` will delete all categories
   matching given criteria. This is an example of a statically-typed matching criteria which
