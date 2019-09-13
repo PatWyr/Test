@@ -82,6 +82,7 @@ private fun DynaNodeGroup.usingDockerizedPosgresql(databasePort: Int) {
             ddl("""create table if not exists LogRecord(id UUID primary key, text varchar(400) not null)""")
             ddl("""CREATE TYPE marital_status AS ENUM ('Single', 'Married', 'Widowed', 'Divorced')""")
             ddl("""CREATE TABLE IF NOT EXISTS TypeMappingEntity(id bigserial primary key, enumTest marital_status)""")
+            ddl("""create table JOIN_TABLE(customerId integer, orderId integer)""")
         }
     }
 
@@ -124,6 +125,7 @@ fun DynaNodeGroup.usingDockerizedMysql(databasePort: Int) {
             ddl("""create table if not exists NaturalPerson(id varchar(10) primary key, name varchar(400) not null, bytes binary(16) not null)""")
             ddl("""create table if not exists LogRecord(id binary(16) primary key, text varchar(400) not null)""")
             ddl("""create table TypeMappingEntity(id bigint primary key auto_increment, enumTest ENUM('Single', 'Married', 'Divorced', 'Widowed'))""")
+            ddl("""create table JOIN_TABLE(customerId bigint, orderId bigint)""")
         }
     }
 
@@ -171,6 +173,7 @@ fun DynaNodeGroup.usingH2Database() {
             ddl("""create table NaturalPerson(id varchar(10) primary key, name varchar(400) not null, bytes binary(16) not null)""")
             ddl("""create table LogRecord(id UUID primary key, text varchar(400) not null)""")
             ddl("""create table TypeMappingEntity(id bigint primary key auto_increment, enumTest ENUM('Single', 'Married', 'Divorced', 'Widowed'))""")
+            ddl("""create table JOIN_TABLE(customerId bigint, orderId bigint)""")
         }
     }
     afterEach {
@@ -210,6 +213,7 @@ private fun DynaNodeGroup.usingDockerizedMariaDB(databasePort: Int) {
             ddl("""create table if not exists NaturalPerson(id varchar(10) primary key, name varchar(400) not null, bytes binary(16) not null)""")
             ddl("""create table if not exists LogRecord(id binary(16) primary key, text varchar(400) not null)""")
             ddl("""create table TypeMappingEntity(id bigint primary key auto_increment, enumTest ENUM('Single', 'Married', 'Divorced', 'Widowed'))""")
+            ddl("""create table JOIN_TABLE(customerId bigint, orderId bigint)""")
         }
     }
 

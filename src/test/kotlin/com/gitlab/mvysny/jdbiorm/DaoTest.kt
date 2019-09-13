@@ -23,7 +23,7 @@ class DaoTest : DynaTest({
     }
 })
 
-fun DynaNodeGroup.personTestSuite() {
+private fun DynaNodeGroup.personTestSuite() {
     group("findAll") {
         test("no rows returned on empty table") {
             expectList() { Person.findAll() }
@@ -115,7 +115,7 @@ fun DynaNodeGroup.personTestSuite() {
             expect(3) { Person.count() }
         }
         test("count with filters") {
-            expect(0) { Person.count() }
+            expect(0) { Person.countBy("age > :age") { q -> q.bind("age", 6) } }
             listOf("Albedo", "Nigredo", "Rubedo").forEach { Person(name = it, age = it.length).save() }
             expect(1) { Person.countBy("age > :age") { q -> q.bind("age", 6) } }
         }
@@ -206,7 +206,7 @@ fun DynaNodeGroup.personTestSuite() {
     }
 }
 
-fun DynaNodeGroup.entityWithAliasedIdTestSuite() {
+private fun DynaNodeGroup.entityWithAliasedIdTestSuite() {
     test("FindById") {
         expect(null) { EntityWithAliasedId.dao.findById(25) }
         val p = EntityWithAliasedId("Albedo")
