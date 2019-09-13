@@ -21,7 +21,7 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  * To exclude fields, either mark them {@code transient} or {@link org.jdbi.v3.core.annotation.Unmappable}.
  * <p>
  * If your table has no primary key or there is other reason you don't want to use this interface, you can still use
- * the DAO methods (see todo [DaoOfAny] for more details); you only lose the ability to {@link #save()},
+ * the DAO methods (see {@link DaoOfAny} for more details); you only lose the ability to {@link #save()},
  * {@link #create()} and {@link #delete()}.
  * <h3>Mapping columns</h3>
  * Use the {@link ColumnName} annotation to change the name of the column.
