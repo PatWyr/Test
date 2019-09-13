@@ -63,6 +63,64 @@ public class Dao<T extends Entity<ID>, ID> {
     }
 
     /**
+     * Finds all rows in given table. Fails if there is no table in the database with the
+     * name of {@link EntityMeta#getDatabaseTableName()}. If both offset and limit
+     * are specified, then the LIMIT and OFFSET sql paging is used.
+     * @param offset start from this row. If not null, must be 0 or greater.
+     * @param limit return this count of row at most. If not null, must be 0 or greater.
+     */
+    @NotNull
+    public List<T> findAll(@Nullable final Long offset, @Nullable final Long limit) {
+        final StringBuilder sql = new StringBuilder("select * from <TABLE>");
+        if (offset != null && limit != null) {
+            if (offset < 0) {
+                throw new IllegalArgumentException("Parameter offset: invalid value " + offset + ": must be 0 or greater");
+            }
+            if (limit < 0) {
+                throw new IllegalArgumentException("Parameter limit: invalid value " + limit + ": must be 0 or greater");
+            }
+            sql.append(" LIMIT " + Math.min(limit, Integer.MAX_VALUE) + " OFFSET " + Math.min(offset, Integer.MAX_VALUE));
+        }
+        return jdbi().withHandle(handle -> handle.createQuery(sql.toString())
+                .define("TABLE", meta.getDatabaseTableName())
+                .map(getRowMapper())
+                .list()
+        );
+    }
+
+    /**
+     * Finds all matching rows in given table. Fails if there is no table in the database with the
+     * name of {@link EntityMeta#getDatabaseTableName()}. If both offset and limit
+     * are specified, then the LIMIT and OFFSET sql paging is used.
+     * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
+     * @param offset start from this row. If not null, must be 0 or greater.
+     * @param limit return this count of row at most. If not null, must be 0 or greater.
+     */
+    @NotNull
+    public List<T> findAllBy(@NotNull String where, @Nullable final Long offset, @Nullable final Long limit, @NotNull Consumer<Query> queryConsumer) {
+        final StringBuilder sql = new StringBuilder("select * from <TABLE> where <WHERE>");
+        if (offset != null && limit != null) {
+            if (offset < 0) {
+                throw new IllegalArgumentException("Parameter offset: invalid value " + offset + ": must be 0 or greater");
+            }
+            if (limit < 0) {
+                throw new IllegalArgumentException("Parameter limit: invalid value " + limit + ": must be 0 or greater");
+            }
+            sql.append(" LIMIT " + Math.min(limit, Integer.MAX_VALUE) + " OFFSET " + Math.min(offset, Integer.MAX_VALUE));
+        }
+        return jdbi().withHandle(handle -> {
+                    final Query query = handle.createQuery(sql.toString())
+                            .define("TABLE", meta.getDatabaseTableName())
+                            .define("WHERE", where);
+                    queryConsumer.accept(query);
+                    return query
+                            .map(getRowMapper())
+                            .list();
+                }
+        );
+    }
+
+    /**
      * Retrieves entity with given {@code id}. Fails if there is no such entity. See [Dao] on how to add this to your entities.
      *
      * @throws IllegalStateException if there is no entity with given id.
@@ -98,21 +156,22 @@ public class Dao<T extends Entity<ID>, ID> {
      * <pre>
      * Person.findOneBy("name = :name", q -> q.bind("name", "Albedo"))
      * </pre>
-     *
+     * <p>
      * This function returns null if there is no item matching. Use {@link #getOneBy(String, Consumer)}
      * if you wish to return `null` in case that the entity does not exist.
+     *
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
      * @throws IllegalStateException if there are two or more matching entities.
      */
     @Nullable
-    public T findOneBy(@NotNull String where, Consumer<Query> queryConsumer) {
+    public T findOneBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
         return jdbi().withHandle(handle -> {
             final Query query = handle.createQuery("select * from <TABLE> where <WHERE>")
                     .define("TABLE", meta.getDatabaseTableName())
                     .define("WHERE", where);
             queryConsumer.accept(query);
             final ResultIterable<T> iterable = query.map(getRowMapper());
-            return findOne(iterable, () -> formatQuery(where, query));
+            return findOneFromIterable(iterable, () -> formatQuery(where, query));
         });
     }
 
@@ -128,9 +187,10 @@ public class Dao<T extends Entity<ID>, ID> {
      * <pre>
      * Person.getOneBy("name = :name", q -> q.bind("name", "Albedo"))
      * </pre>
-     *
+     * <p>
      * This function fails if there is no such entity or there are 2 or more. Use [findSpecificBy] if you wish to return `null` in case that
      * the entity does not exist.
+     *
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
      * @throws IllegalStateException if there is no entity matching given criteria, or if there are two or more matching entities.
      */
@@ -142,7 +202,7 @@ public class Dao<T extends Entity<ID>, ID> {
                             .define("WHERE", where);
                     queryConsumer.accept(query);
                     final ResultIterable<T> result = query.map(getRowMapper());
-                    return one(result, () -> formatQuery(where, query));
+                    return getOneFromIterable(result, () -> formatQuery(where, query));
                 }
         );
     }
@@ -167,6 +227,7 @@ public class Dao<T extends Entity<ID>, ID> {
 
     /**
      * Counts all matching rows in this table.
+     *
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
      */
     public long countBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
@@ -190,6 +251,7 @@ public class Dao<T extends Entity<ID>, ID> {
 
     /**
      * Checks whether there exists any row in this table.
+     *
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
      */
     public boolean existsBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
@@ -203,7 +265,7 @@ public class Dao<T extends Entity<ID>, ID> {
     }
 
     /**
-     * Checks whether there exists any instance of [clazz] with given id.
+     * Checks whether there exists any row with given id.
      */
     public boolean existsById(@NotNull ID id) {
         return jdbi().withHandle(handle -> handle.createQuery("select count(1) from <TABLE> where <ID> = :id")
@@ -225,7 +287,8 @@ public class Dao<T extends Entity<ID>, ID> {
     }
 
     /**
-     * Deletes row with given ID. Does nothing if there is no such row.
+     * Deletes rows matching given where clause.
+     *
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
      */
     public void deleteBy(@NotNull String where, @NotNull Consumer<Update> updateConsumer) {
@@ -261,7 +324,7 @@ public class Dao<T extends Entity<ID>, ID> {
      * @throws IllegalStateException if the result set contains multiple rows
      */
     @Nullable
-    protected T findOne(@NotNull ResultIterable<T> iterable, @NotNull Supplier<String> errorSupplier) {
+    protected T findOneFromIterable(@NotNull ResultIterable<T> iterable, @NotNull Supplier<String> errorSupplier) {
         try (ResultIterator<T> iter = iterable.iterator()) {
             if (!iter.hasNext()) {
                 return null;
@@ -288,7 +351,7 @@ public class Dao<T extends Entity<ID>, ID> {
      * @throws IllegalStateException if the result set contains zero or multiple rows
      */
     @NotNull
-    protected T one(ResultIterable<T> iterable, @NotNull Supplier<String> errorSupplier) {
+    protected T getOneFromIterable(ResultIterable<T> iterable, @NotNull Supplier<String> errorSupplier) {
         try (ResultIterator<T> iter = iterable.iterator()) {
             if (!iter.hasNext()) {
                 throw new IllegalStateException("no row matching " + errorSupplier.get());
