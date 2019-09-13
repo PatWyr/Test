@@ -16,16 +16,15 @@ import java.io.IOException;
 import java.util.Objects;
 
 /**
- * Initializes the ORM in the current JVM. By default uses the {@link HikariDataSourceAccessor} which uses [javax.sql.DataSource] pooled with HikariCP.
- * To configure this accessor, just fill in [dataSourceConfig] properly and then call [init] once per JVM. When the database services
+ * Initializes the ORM in the current JVM. Wraps any given {@link DataSource};
+ * just use <a href="https://github.com/brettwooldridge/HikariCP">HikariCP</a>.
+ * <p></p>
+ * To configure JDBI-ORM, simply call {@link #setDataSource(DataSource)} once per JVM. When the database services
  * are no longer needed, call {@link #destroy()} to release all JDBC connections and close the pool.
- *
- * If you're using a customized [DatabaseAccessor], you don't have to fill in the [dataSourceConfig]. Just set proper [databaseAccessorProvider]
- * and then call [init].
-
  * @author mavi
  */
 public final class JdbiOrm {
+    private JdbiOrm() {}
     private static volatile Validator validator;
     private static volatile DataSource dataSource;
     /**
@@ -59,9 +58,11 @@ public final class JdbiOrm {
     }
 
     public static void setDataSource(@NotNull DataSource dataSource) {
-        Objects.requireNonNull(dataSource);
-        destroy();
-        JdbiOrm.dataSource = dataSource;
+        if (JdbiOrm.dataSource != dataSource) {
+            Objects.requireNonNull(dataSource);
+            destroy();
+            JdbiOrm.dataSource = dataSource;
+        }
     }
 
     /**
@@ -85,6 +86,7 @@ public final class JdbiOrm {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+            dataSource = null;
         }
     }
 }
