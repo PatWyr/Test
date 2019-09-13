@@ -458,66 +458,80 @@ And simply make your entities implement the `UuidEntity` interface.
 
 ### Joins
 
-TODO TODO
-
 When we display a list of reviews (say, in a Vaadin Grid), we want to display an actual category name instead of the numeric category ID.
-We can take advantage of Sql2o simply matching all SELECT column names into bean fields; all we have to do is to:
+We can take advantage of JDBI simply matching all SELECT column names into bean fields; all we have to do is to:
 
 * extend the `Review` class and add the `categoryName` field which will carry the category name information;
 * write a SELECT that will return all of the `Review` fields, and, additionally, the `categoryName` field
 
 Let's thus create a `ReviewWithCategory` class:
 
-```kotlin
-open class ReviewWithCategory : Review() {
-    @As("name")
-    var categoryName: String? = null
+```java
+public class ReviewWithCategory extends Review {
+    @ColumnName("name")
+    private String categoryName;
+
+    // getters & setters
 }
 ```
 
-> Note the `@As` annotation which tells vok-orm that the field is named differently in the database. Often the database naming schema
-is different from Kotlin's naming schema, for example `NUMBER_OF_PETS` would be represented by the `numberOfPets` in the Kotlin class.
+> Note the `@ColumnName` annotation which tells jdbi-orm that the field is named differently in the database. Often the database naming schema
+is different from Java's naming schema, for example `NUMBER_OF_PETS` would be represented by the `numberOfPets` in the Java class.
 You can use database aliases, for example `SELECT NUMBER_OF_PETS AS numberOfPets`. However note that you can't then add a `WHERE` clause on
 the `numberOfPets` alias - that's not supported by SQL databases. See [Issue #5](https://github.com/mvysny/vok-orm/issues/5) for more details.
 Currently we don't use WHERE in our examples so you're free to use aliases, but aliases do not work with Data Loaders and therefore it's a good
-practice to use `@As` instead of SQL aliases.
-
-> *Warning:* `@As` does not automatically apply to Sql2o Queries - you need to call
-`setColumnMappings(clazz.entityMeta.getSql2oColumnMappings())` on your Query in order
-for the mapping to work. See [Issue 9](https://github.com/mvysny/vok-orm/issues/9) for more details.
+practice to use `@ColumnName` instead of SQL aliases.
 
 Now we can add a new finder function into `Review`'s companion object:
 
-```kotlin
-companion object : Dao<Review> {
-    ...
-    fun findReviews(): List<ReviewWithCategory> = db {
-        con.createQuery("""select r.*, c.name
-            FROM Review r left join Category c on r.category = c.id
-            ORDER BY r.name""")
-                .executeAndFetch(ReviewWithCategory::class.java)
-    }
-}
-```
+```java
+public class ReviewWithCategory extends Review {
+    // ...
 
-We can take Sql2o's mapping capabilities to full use: we can craft any SELECT we want,
-and then we can create a holder class that will not be an entity itself, but will merely hold the result of that SELECT.
-The only thing that matters is that the class will have properties named exactly as the columns in the SELECT statement (or properly aliased
-using the `@As` annotation):
+    public static final ReviewWithCategoryDao dao = new ReviewWithCategoryDao();
 
-```kotlin
-data class Beverage(@As("beverageName") var name: String = "", @As("name") var category: String? = null) : Serializable {
-    companion object {
-        fun findAll(): List<Beverage> = db {
-            con.createQuery("select r.beverageName, c.name from Review r left join Category c on r.category = c.id")
-                .executeAndFetch(Beverage::class.java)
+    public static class ReviewWithCategoryDao extends Dao<ReviewWithCategory, Long> {
+        protected ReviewWithCategoryDao() {
+            super(ReviewWithCategory.class);
+        }
+
+        public List<ReviewWithCategory> findReviews() {
+            return jdbi().withHandle(handle -> handle
+                    .createQuery("select r.*, c.name\n" +
+                            "FROM Review r left join Category c on r.category = c.id\n" +
+                            "ORDER BY c.name")
+                    .map(getRowMapper())
+                    .list());
         }
     }
 }
 ```
 
-We just have to make sure that all of the `Beverage`'s fields are pre-initialized, so that the `Beverage` class has a zero-arg constructor.
-If not, Sql2o will throw an exception in runtime, stating that the `Beverage` class has no zero-arg constructor.
+We can take JDBI's mapping capabilities to full use: we can craft any SELECT we want,
+and then we can create a holder class that will not be an entity itself, but will merely hold the result of that SELECT.
+The only thing that matters is that the class will have properties named exactly as the columns in the SELECT statement (or properly aliased
+using the `@ColumnName` annotation):
+
+```java
+public class Beverage implements Serializable {
+    @ColumnName("beverageName")
+    private String name;
+    @ColumnName("name")
+    private String category;
+
+    // getters & setters
+
+    public static List<Beverage> findAll() {
+        return jdbi().withHandle(handle -> handle
+                .createQuery("select r.beverageName, c.name from Review r left join Category c on r.category = c.id")
+                .map(FieldMapper.of(Beverage.class))
+                .list());
+    }
+}
+```
+
+We just have to make sure that the `Beverage` has zero-arg constructor otherwise
+JDBI will throw an exception.
 
 ## Validations
 
@@ -525,16 +539,18 @@ Often the database entities are connected to UI forms which need to provide sens
 validation errors to the users as they enter invalid values. The validation
 could be done on the database level, but databases tend to provide unlocalized
 cryptic error messages. Also, some validations are either impossible to do, or very hard
-to do on the database level. That's why `vok-orm` provides additional validation
+to do on the database level. That's why `jdbi-orm` provides additional validation
 layer for your entities.
 
-`vok-orm` uses [JSR303 Java Standard for Validation](https://en.wikipedia.org/wiki/Bean_Validation); you can
+`jdbi-orm` uses [JSR303 Java Standard for Validation](https://en.wikipedia.org/wiki/Bean_Validation); you can
 quickly skim over [JSR303 tutorial](https://dzone.com/articles/bean-validation-made-simple) to see how to start
 using the validation.
 In a nutshell, you annotate your Entity's fields with validation annotations; the fields are
 then checked for valid values with the JSR303 Validator (invoked when
 `entity.validate()`/`entity.save()`/`entity.create()` is called). The validation is
 also mentioned in [Vaadin-on-Kotlin Forms](http://www.vaadinonkotlin.eu/forms.html) documentation.
+
+TODO TODO
 
 For example:
 ```
