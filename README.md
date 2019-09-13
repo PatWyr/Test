@@ -192,7 +192,7 @@ any container at all - you can actually use this library from a plain JavaSE mai
 
 Full example of a `main()` method that does all of the above:
 
-```kotlin
+```java
 public class Main {
     public static void main(String[] args) {
         final HikariConfig hikariConfig = new HikariConfig();
@@ -234,22 +234,7 @@ public class Category implements Entity<Long> {
     private Long id;
     private String name;
 
-    @Override
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+    // getters & setters
 
     public static final Dao<Category, Long> dao = new Dao<>(Category.class);
 }
@@ -275,21 +260,41 @@ the primary key in the `Entity<x>` implementation clause).
 
 You can of course add your own custom finder methods into the Category companion object. For example:
 
-TODO TODO
+```java
+public class Category implements Entity<Long> {
+    private Long id;
+    private String name;
 
-```kotlin
-data class Category(override var id: Long? = null, var name: String = "") : Entity<Long> {
-    companion object : Dao<Category> {
-        fun findByName(name: String): Category? = findSpecificBy { Category::name eq name }
-        fun getByName(name: String): Category = getBy { Category::name eq name }
-        fun existsWithName(name: String): Boolean = count { Category::name eq name } > 0
+    // getters & setters
+
+    public static class CategoryDao extends Dao<Category, Long> {
+
+        protected CategoryDao() {
+            super(Category.class);
+        }
+
+        @Nullable
+        public Category findByName(@NotNull String name) {
+            return findOneBy("name = :name", q -> q.bind("name", name));
+        }
+
+        @NotNull
+        public Category getByName(@NotNull String name) {
+            return getOneBy("name = :name", q -> q.bind("name", name));
+        }
+
+        public boolean existsByName(@NotNull String name) {
+            return existsBy("name = :name", q -> q.bind("name", name));
+        }
     }
 }
 ```  
 
-> **Note**: If you don't want to use the Entity interface for some reason (for example when the table has no primary key), you can still include
-useful finder methods by making the companion object to implement the `DaoOfAny` interface. The finder methods such as `findById()` will accept
-`Any` as a primary key.
+> **Note**: If you don't want to use the Entity interface for some reason (for example
+when the table has no primary key), you can still include
+useful finder methods by making the Dao extend the `DaoOfAny` class.
+The ID-related methods such as `findById()` will be missing, but you can still
+use all other Dao methods.
 
 ### Adding Reviews
 
@@ -312,22 +317,33 @@ create INDEX idx_beverage_name ON Review(beverageName);
 ```
 
 The mapping class is as follows:
-```kotlin
+```java
 /**
  * Represents a beverage review.
- * @property score the score, 1..5, 1 being worst, 5 being best
- * @property date when the review was done
- * @property category the beverage category [Category.id]
- * @property count times tasted, 1..99
  */
-open class Review(override var id: Long? = null,
-                  var score: Int = 1,
-                  var beverageName: String = "",
-                  var date: LocalDate = LocalDate.now(),
-                  var category: Long? = null,
-                  var count: Int = 1) : Entity<Long> {
+public class Review implements Entity<Long> {
+    private Long id;
+    /**
+     * the score, 1..5, 1 being worst, 5 being best
+     */
+    private Integer score = 1;
+    private String beverageName = "";
+    /**
+     * when the review was done
+     */
+    private LocalDate date = LocalDate.now();
+    /**
+     * the beverage category {@link Category#getId()}
+     */
+    private Long category = null;
+    /**
+     * times tasted, 1..99
+     */
+    private Integer count = 1;
 
-    companion object : Dao<Review>
+    // getters and setters
+
+    public static final Dao<Review, Long> dao = new Dao<>(Review.class);
 }
 ```
 
@@ -336,53 +352,71 @@ are linked to that very category, otherwise
 we will get a foreign constraint violation. It's quite easy: just override the `delete()` method in the
 `Category` class as follows:
 
-```kotlin
-data class Category(...) : Entity<Long> {
-    ...
-    override fun delete() {
-        db {
-            if (id != null) {
-                con.createQuery("update Review set category = NULL where category=:catId")
-                        .addParameter("catId", id!!)
-                        .executeUpdate()
-            }
-            super.delete()
+```java
+public class Category implements Entity<Long> {
+    // ...
+    @Override
+    public void delete() {
+        jdbi().useHandle(handle -> {
+            handle.createUpdate("update Review set category = NULL where category=:catId")
+                    .bind("catId", getId())
+                    .execute();
+        });
+        Entity.super.delete();
+    }
+}
+```
+
+> **Note:** for all slightly more complex queries it's a good practice to simply use the JDBI API - we will simply pass in the SQL command as a String to JDBI.
+
+As you can see, you can use the JDBI connection yourself, to execute any kind of SELECT/UPDATE/INSERT/DELETE statements as you like.
+For example you can define static finder or computation method into the `Review` companion object:
+
+```java
+public class Review implements Entity<Review> {
+    // ...
+
+    public static final ReviewDao dao = new ReviewDao();
+
+    public static class ReviewDao extends Dao<Review, Long> {
+
+        protected ReviewDao() {
+            super(Review.class);
+        }
+
+        /**
+         * Computes the total sum of [count] for all reviews belonging to given [categoryId].
+         * @return the total sum, 0 or greater.
+         */
+        public long getTotalCountForReviewsInCategory(long categoryId) {
+            final Long count = jdbi().withHandle(handle -> handle
+                    .createQuery("select sum(r.count) from Review r where r.category = :catId")
+                    .bind("catId", categoryId)
+                    .mapTo(Long.class)
+                    .one()
+            );
+            return count == null ? 0 : count;
         }
     }
 }
 ```
 
-> **Note:** for all slightly more complex queries it's a good practice to simply use the Sql2o API - we will simply pass in the SQL command as a String to Sql2o.
-
-As you can see, you can use the Sql2o connection yourself, to execute any kind of SELECT/UPDATE/INSERT/DELETE statements as you like.
-For example you can define static finder or computation method into the `Review` companion object:
-
-```kotlin
-    companion object : Dao<Review> {
-        /**
-         * Computes the total sum of [count] for all reviews belonging to given [categoryId].
-         * @return the total sum, 0 or greater.
-         */
-        fun getTotalCountForReviewsInCategory(categoryId: Long): Long = db {
-            con.createQuery("select sum(r.count) from Review r where r.category = :catId")
-                    .addParameter("catId", categoryId)
-                    .executeScalar(Long::class.java) ?: 0L
-        }
+Then we can outfit the Category itself with this functionality, by adding a method to the Category class:
+```java
+    public long findTotalCountForReviews() {
+        return Review.dao.getTotalCountForReviewsInCategory(getId());
     }
-```
-
-Then we can outfit the Category itself with this functionality, by adding an extension method to compute this value:
-```kotlin
-fun Category.getTotalCountForReviews(): Long = Review.getTotalCountForReviewsInCategory(id!!)
 ```
 
 Note how freely and simply we can add useful business logic methods to entities. It's because:
 
 * the entities are just plain old classes with no hidden fields and no runtime enhancements, and
-* because we can invoke `db{}` freely from anywhere. You don't need transaction annotations and injected entity managers,
+* because we can invoke `jdbi()` freely from anywhere. You don't need transaction annotations and injected entity managers,
   and you don't need huge container such as Spring or JavaEE which must instantiate your classes
   in order to activate those annotations and injections.
   Those are things of the past.
+
+TODO TODO
 
 ### Auto-generated IDs vs pre-provided IDs
 There are generally three cases for entity ID generation:

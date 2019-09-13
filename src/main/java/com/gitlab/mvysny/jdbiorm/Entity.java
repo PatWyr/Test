@@ -107,8 +107,7 @@ public interface Entity<ID> extends Serializable {
         }
         jdbi().useHandle(handle -> {
             final EntityMeta meta = new EntityMeta(getClass());
-            handle
-                    .createUpdate("delete from <TABLE> where <ID> = :id")
+            handle.createUpdate("delete from <TABLE> where <ID> = :id")
                     .define("TABLE", meta.getDatabaseTableName())
                     .define("ID", meta.getIdProperty().getDbColumnName())
                     .bind("id", getId())
