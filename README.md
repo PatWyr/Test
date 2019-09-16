@@ -46,7 +46,8 @@ Maven: (it's very simple since jdbi-orm is in Maven Central):
 ```
 
 See the [jdbi-orm-playground](https://gitlab.com/mvysny/jdbi-orm-playground) for a very simple example project
-using `jdbi-orm`.
+using `jdbi-orm`. See [JDBI-ORM Vaadin 14 CRUD demo](https://github.com/mvysny/jdbi-orm-vaadin14-crud-demo)
+for a CRUD demo using `jdbi-orm`.
 
 ## Usage Examples
 
