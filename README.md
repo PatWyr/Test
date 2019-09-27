@@ -15,7 +15,8 @@ global `jdbi().useHandle(handle -> { ... });` function.
 See [JDBI](http://jdbi.org) for more information.
 
 No dependency injection framework is required - the library works in all
-sorts of environments. The library requires Java 8 or higher to work.
+sorts of environments. The library requires Java 8 or higher to work. No Maven compiler
+plugins needed - only Java 8 language features are used.
 
 ## Usage
 
@@ -235,7 +236,7 @@ public class Category implements Entity<Long> {
     private Long id;
     private String name;
 
-    // getters & setters
+    // omitted for brevity: getters & setters
 
     public static final Dao<Category, Long> dao = new Dao<>(Category.class);
 }
@@ -266,7 +267,7 @@ public class Category implements Entity<Long> {
     private Long id;
     private String name;
 
-    // getters & setters
+    // omitted for brevity: getters & setters
 
     public static class CategoryDao extends Dao<Category, Long> {
 
@@ -342,7 +343,7 @@ public class Review implements Entity<Long> {
      */
     private Integer count = 1;
 
-    // getters and setters
+    // omitted for brevity: getters & setters
 
     public static final Dao<Review, Long> dao = new Dao<>(Review.class);
 }
@@ -472,7 +473,7 @@ public class ReviewWithCategory extends Review {
     @ColumnName("name")
     private String categoryName;
 
-    // getters & setters
+    // omitted for brevity: getters & setters
 }
 ```
 
@@ -520,7 +521,7 @@ public class Beverage implements Serializable {
     @ColumnName("name")
     private String category;
 
-    // getters & setters
+    // omitted for brevity: getters & setters
 
     public static List<Beverage> findAll() {
         return jdbi().withHandle(handle -> handle
@@ -587,6 +588,69 @@ dependencies {
 
 You can check out the [jdbi-orm-playground](https://gitlab.com/mvysny/jdbi-orm-playground) which
 has validations enabled and all necessary jars included.
+
+## Listing Subset of Table Columns
+
+Sometimes only a subset of columns is needed to be loaded from a database. Take
+a list of images for example: when you display images in a Grid, you definitely
+don't want to load the image BLOBs into memory - those should be loaded only
+when the image is actually edited or created. This is easy: just create a view and
+a bean which inherits from the view:
+
+```java
+@Table("images")
+public class ImageView implements Entity<Long> {
+
+    private Long id;
+
+    @Length(max = 45)
+    @ColumnName("image_name")
+    private String imageName;
+
+    @Length(max = 255)
+    @ColumnName("image_filename")
+    private String imageFileName;
+
+    // omitted for brevity: getters + setters
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ImageView)) return false;
+        ImageView imageBank = (ImageView) o;
+        return Objects.equals(id, imageBank.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    public static final Dao<ImageView, Long> dao = new Dao<>(ImageView.class);
+
+    /**
+     * Loads a full-blown image, with image data.
+     * @return image
+     */
+    @NotNull
+    public ImageBank load() {
+        return ImageBank.dao.getById(getId());
+    }
+}
+
+public final class ImageBank extends ImageView {
+
+    private byte[] image;
+
+    // omitted for brevity: getters + setters
+
+    public static final Dao<ImageBank, Long> dao = new Dao<>(ImageBank.class);
+}
+```
+
+Now you can find all images via `ImageView.dao.findAll()` without the overhead
+of loading BLOBs; you can call `imageView.load()` to get the full-blown entity
+with BLOB which can be edited.
 
 ## Data Loaders
 
