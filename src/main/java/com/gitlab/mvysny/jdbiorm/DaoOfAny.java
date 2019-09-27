@@ -140,7 +140,7 @@ public class DaoOfAny<T> {
      * <p></p>
      * Example:
      * <pre>
-     * Person.findOneBy("name = :name", q -> q.bind("name", "Albedo"))
+     * Person.dao.findOneBy("name = :name", q -> q.bind("name", "Albedo"))
      * </pre>
      * <p>
      * This function returns null if there is no item matching. Use {@link #getOneBy(String, Consumer)}
@@ -152,13 +152,41 @@ public class DaoOfAny<T> {
     @Nullable
     public T findOneBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
         return jdbi().withHandle(handle -> {
-            final Query query = handle.createQuery("select * from <TABLE> where <WHERE>")
+            final Query query = handle.createQuery("select * from <TABLE> where <WHERE> LIMIT 2")
                     .define("TABLE", meta.getDatabaseTableName())
                     .define("WHERE", where);
             queryConsumer.accept(query);
             final ResultIterable<T> iterable = query.map(getRowMapper());
             return findOneFromIterable(iterable, () -> formatQuery(where, query));
         });
+    }
+
+    /**
+     * Retrieves single random entity. Returns null if there is no such entity.
+     */
+    @Nullable
+    public T findFirst() {
+        final List<T> first = findAll(0L, 1L);
+        return first.isEmpty() ? null : first.get(0);
+    }
+
+    /**
+     * Retrieves first entity from the list of entities matching given {@code where} clause.
+     * Returns null if there is no such entity.
+     * <p></p>
+     * Example:
+     * <pre>
+     * Person.dao.findFirstBy("name = :name", q -> q.bind("name", "Albedo"))
+     * </pre>
+     * <p>
+     * This function returns null if there is no item matching.
+     *
+     * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
+     */
+    @Nullable
+    public T findFirstBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
+        final List<T> first = findAllBy(where, 0L, 1L, queryConsumer);
+        return first.isEmpty() ? null : first.get(0);
     }
 
     protected String formatQuery(@NotNull String sql, @NotNull SqlStatement<?> statement) {
@@ -171,7 +199,7 @@ public class DaoOfAny<T> {
      * <p></p>
      * Example:
      * <pre>
-     * Person.getOneBy("name = :name", q -> q.bind("name", "Albedo"))
+     * Person.dao.getOneBy("name = :name", q -> q.bind("name", "Albedo"))
      * </pre>
      * <p>
      * This function fails if there is no such entity or there are 2 or more. Use [findSpecificBy] if you wish to return `null` in case that
@@ -183,7 +211,7 @@ public class DaoOfAny<T> {
     @NotNull
     public T getOneBy(@NotNull String where, Consumer<Query> queryConsumer) {
         return jdbi().withHandle(handle -> {
-                    final Query query = handle.createQuery("select * from <TABLE> where <WHERE>")
+                    final Query query = handle.createQuery("select * from <TABLE> where <WHERE> LIMIT 2")
                             .define("TABLE", meta.getDatabaseTableName())
                             .define("WHERE", where);
                     queryConsumer.accept(query);

@@ -141,6 +141,50 @@ private fun DynaNodeGroup.joinTableTestSuite() {
             }
         }
     }
+    group("findFirst() tests") {
+        test("succeeds if there is exactly one entity") {
+            val p = JoinTable(130, 130)
+            p.save()
+            expect(p) {
+                JoinTable.dao.findFirst()
+            }
+        }
+
+        test("returns null if there is no such entity") {
+            expect(null) {
+                JoinTable.dao.findFirst()
+            }
+        }
+
+        test("returns random if there are two matching entities") {
+            repeat(2) { JoinTable(130, 130).save() }
+            expect(JoinTable(130, 130)) {
+                JoinTable.dao.findFirst()
+            }
+        }
+    }
+    group("findFirstBy() tests") {
+        test("succeeds if there is exactly one matching entity") {
+            val p = JoinTable(130, 130)
+            p.save()
+            expect(p) {
+                JoinTable.dao.findFirstBy("customerId = :cid") { it.bind("cid", 130) }
+            }
+        }
+
+        test("returns null if there is no such entity") {
+            expect(null) {
+                JoinTable.dao.findFirstBy("customerId = :cid") { it.bind("cid", 130) }
+            }
+        }
+
+        test("returns random if there are two matching entities") {
+            repeat(2) { JoinTable(130, 130).save() }
+            expect(JoinTable(130, 130)) {
+                JoinTable.dao.findFirstBy("customerId = :cid") { it.bind("cid", 130) }
+            }
+        }
+    }
     group("exists") {
         test("returns false on empty table") {
             expect(false) { JoinTable.dao.existsAny() }
