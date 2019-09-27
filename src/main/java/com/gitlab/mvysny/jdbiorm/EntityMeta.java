@@ -4,6 +4,7 @@ import org.jdbi.v3.core.annotation.Unmappable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -40,7 +41,7 @@ public final class EntityMeta {
      */
     @NotNull
     public String getDatabaseTableName() {
-        final Table annotation = entityClass.getAnnotation(Table.class);
+        final Table annotation = findAnnotationRecursively(entityClass, Table.class);
         final String name = annotation == null ? null : annotation.value();
         return name == null || name.trim().isEmpty() ? entityClass.getSimpleName() : name;
     }
@@ -144,5 +145,20 @@ public final class EntityMeta {
     @Override
     public int hashCode() {
         return Objects.hash(entityClass);
+    }
+
+    private static <A extends Annotation> A findAnnotationRecursively(Class<?> entityClass, Class<A> annotationClass) {
+        if (entityClass == Object.class) {
+            return null;
+        }
+        final A annotation = entityClass.getAnnotation(annotationClass);
+        if (annotation != null) {
+            return annotation;
+        }
+        final Class<?> superclass = entityClass.getSuperclass();
+        if (superclass == null) {
+            return null;
+        }
+        return findAnnotationRecursively(superclass, annotationClass);
     }
 }
