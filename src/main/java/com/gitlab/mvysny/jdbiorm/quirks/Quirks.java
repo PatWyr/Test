@@ -26,7 +26,7 @@ public interface Quirks {
 
     Quirks NO_QUIRKS = new Quirks() {
         @Override
-        public boolean shouldActivate(@NotNull Connection connection) throws SQLException {
+        public boolean shouldActivate(@NotNull Connection connection) {
             return false;
         }
 

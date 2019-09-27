@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.UUID;
 
 /**
  * Adds MySQL and MariaDB quirks support.
@@ -22,6 +23,6 @@ public class MySqlQuirks implements Quirks {
     @Override
     public void configure(@NotNull Handle handle) {
         handle.getConfig(Arguments.class).register(new MySqlArgumentFactory());
-        handle.getConfig(ColumnMappers.class).register(new MySqlColumnMapperFactory());
+        handle.getConfig(ColumnMappers.class).register(UUID.class, new MySqlColumnMapper());
     }
 }
