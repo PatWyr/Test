@@ -70,7 +70,7 @@ public final class JdbiOrm {
 
     /**
      * Returns the Jdbi instance. Just static-import this method for easy usage.
-     * @return
+     * @return the Jdbi instance, not null.
      */
     @NotNull
     public static Jdbi jdbi() {
