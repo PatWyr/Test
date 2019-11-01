@@ -20,7 +20,7 @@ public final class PropertyMeta {
      * @param field the field, not null.
      */
     public PropertyMeta(@NotNull Field field) {
-        this.field = Objects.requireNonNull(field);
+        this.field = Objects.requireNonNull(field, "field");
     }
 
     /**
@@ -57,6 +57,7 @@ public final class PropertyMeta {
 
     @Nullable
     public Object get(@NotNull Object entity) {
+        Objects.requireNonNull(entity, "entity");
         field.setAccessible(true);
         try {
             return field.get(entity);

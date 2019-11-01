@@ -3,6 +3,8 @@ package com.gitlab.mvysny.jdbiorm;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
 
 /**
@@ -30,6 +32,7 @@ public class Dao<T extends Entity<ID>, ID> extends DaoOfAny<T> {
      */
     @NotNull
     public T getById(@NotNull ID id) {
+        Objects.requireNonNull(id, "id");
         final T result = findById(id);
         if (result == null) {
             throw new IllegalStateException("There is no " + entityClass.getSimpleName() + " for id " + id);
@@ -42,6 +45,7 @@ public class Dao<T extends Entity<ID>, ID> extends DaoOfAny<T> {
      */
     @Nullable
     public T findById(@NotNull ID id) {
+        Objects.requireNonNull(id, "id");
         return jdbi().withHandle(handle -> handle.createQuery("select * from <TABLE> where <ID> = :id")
                 .define("TABLE", meta.getDatabaseTableName())
                 .define("ID", meta.getIdProperty().getDbColumnName())
@@ -55,6 +59,7 @@ public class Dao<T extends Entity<ID>, ID> extends DaoOfAny<T> {
      * Checks whether there exists any row with given id.
      */
     public boolean existsById(@NotNull ID id) {
+        Objects.requireNonNull(id, "id");
         return jdbi().withHandle(handle -> handle.createQuery("select count(1) from <TABLE> where <ID> = :id")
                 .define("TABLE", meta.getDatabaseTableName())
                 .define("ID", meta.getIdProperty().getDbColumnName())
@@ -66,6 +71,7 @@ public class Dao<T extends Entity<ID>, ID> extends DaoOfAny<T> {
      * Deletes row with given ID. Does nothing if there is no such row.
      */
     public void deleteById(@NotNull ID id) {
+        Objects.requireNonNull(id, "id");
         jdbi().withHandle(handle -> handle.createUpdate("delete from <TABLE> where <ID>=:id")
                 .define("TABLE", meta.getDatabaseTableName())
                 .define("ID", meta.getIdProperty().getDbColumnName())

@@ -43,7 +43,7 @@ public class DaoOfAny<T> {
     protected final EntityMeta meta;
 
     public DaoOfAny(@NotNull Class<T> entityClass) {
-        this.entityClass = Objects.requireNonNull(entityClass);
+        this.entityClass = Objects.requireNonNull(entityClass, "entityClass");
         meta = new EntityMeta(entityClass);
     }
 
@@ -102,6 +102,8 @@ public class DaoOfAny<T> {
      */
     @NotNull
     public List<T> findAllBy(@NotNull String where, @Nullable final Long offset, @Nullable final Long limit, @NotNull Consumer<Query> queryConsumer) {
+        Objects.requireNonNull(where, "where");
+        Objects.requireNonNull(queryConsumer, "queryConsumer");
         final StringBuilder sql = new StringBuilder("select * from <TABLE> where <WHERE>");
         if (offset != null && limit != null) {
             if (offset < 0) {
@@ -151,6 +153,8 @@ public class DaoOfAny<T> {
      */
     @Nullable
     public T findOneBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
+        Objects.requireNonNull(where, "where");
+        Objects.requireNonNull(queryConsumer, "queryConsumer");
         return jdbi().withHandle(handle -> {
             final Query query = handle.createQuery("select * from <TABLE> where <WHERE> LIMIT 2")
                     .define("TABLE", meta.getDatabaseTableName())
@@ -190,6 +194,7 @@ public class DaoOfAny<T> {
     }
 
     protected String formatQuery(@NotNull String sql, @NotNull SqlStatement<?> statement) {
+        Objects.requireNonNull(sql, "sql");
         return entityClass.getSimpleName() + ": '" + sql + "'" + toString(statement);
     }
 
@@ -210,6 +215,8 @@ public class DaoOfAny<T> {
      */
     @NotNull
     public T getOneBy(@NotNull String where, Consumer<Query> queryConsumer) {
+        Objects.requireNonNull(where, "where");
+        Objects.requireNonNull(queryConsumer, "queryConsumer");
         return jdbi().withHandle(handle -> {
                     final Query query = handle.createQuery("select * from <TABLE> where <WHERE> LIMIT 2")
                             .define("TABLE", meta.getDatabaseTableName())
@@ -245,6 +252,8 @@ public class DaoOfAny<T> {
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
      */
     public long countBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
+        Objects.requireNonNull(where, "where");
+        Objects.requireNonNull(queryConsumer, "queryConsumer");
         return jdbi().withHandle(handle -> {
             final Query query = handle.createQuery("select count(*) from <TABLE> where <WHERE>")
                     .define("TABLE", meta.getDatabaseTableName())
@@ -269,6 +278,8 @@ public class DaoOfAny<T> {
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
      */
     public boolean existsBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
+        Objects.requireNonNull(where, "where");
+        Objects.requireNonNull(queryConsumer, "queryConsumer");
         return jdbi().withHandle(handle -> {
             final Query table = handle.createQuery("select count(1) from <TABLE> where <WHERE>")
                     .define("TABLE", meta.getDatabaseTableName())
@@ -284,6 +295,8 @@ public class DaoOfAny<T> {
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
      */
     public void deleteBy(@NotNull String where, @NotNull Consumer<Update> updateConsumer) {
+        Objects.requireNonNull(where, "where");
+        Objects.requireNonNull(updateConsumer, "updateConsumer");
         jdbi().withHandle(handle -> {
             final Update update = handle.createUpdate("delete from <TABLE> where <WHERE>")
                     .define("TABLE", meta.getDatabaseTableName())
@@ -295,6 +308,7 @@ public class DaoOfAny<T> {
 
     @NotNull
     protected String toString(@NotNull SqlStatement<?> statement) {
+        Objects.requireNonNull(statement, "statement");
         try {
             final Method getBinding = SqlStatement.class.getDeclaredMethod("getBinding");
             getBinding.setAccessible(true);
@@ -317,6 +331,8 @@ public class DaoOfAny<T> {
      */
     @Nullable
     protected T findOneFromIterable(@NotNull ResultIterable<T> iterable, @NotNull Supplier<String> errorSupplier) {
+        Objects.requireNonNull(iterable, "iterable");
+        Objects.requireNonNull(errorSupplier, "errorSupplier");
         try (ResultIterator<T> iter = iterable.iterator()) {
             if (!iter.hasNext()) {
                 return null;

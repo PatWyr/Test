@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,7 +36,7 @@ public class MySqlArgumentFactory implements ArgumentFactory {
         private final UUID uuid;
 
         public MySqlUUIDArgument(@NotNull UUID uuid) {
-            this.uuid = uuid;
+            this.uuid = Objects.requireNonNull(uuid, "uuid");
         }
 
         @Override

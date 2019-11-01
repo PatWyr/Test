@@ -52,7 +52,7 @@ public final class JdbiOrm {
     }
 
     public static void setValidator(@NotNull Validator validator) {
-        JdbiOrm.validator = Objects.requireNonNull(validator);
+        JdbiOrm.validator = Objects.requireNonNull(validator, "validator");
     }
 
     @NotNull
@@ -62,7 +62,7 @@ public final class JdbiOrm {
 
     public static void setDataSource(@NotNull DataSource dataSource) {
         if (JdbiOrm.dataSource != dataSource) {
-            Objects.requireNonNull(dataSource);
+            Objects.requireNonNull(dataSource, "dataSource");
             destroy();
             JdbiOrm.dataSource = dataSource;
         }

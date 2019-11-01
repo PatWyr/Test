@@ -28,7 +28,7 @@ public final class EntityMeta {
      * @param entityClass usually a class implementing {@link Entity} but may be any class. Not null.
      */
     public EntityMeta(@NotNull Class<?> entityClass) {
-        this.entityClass = Objects.requireNonNull(entityClass);
+        this.entityClass = Objects.requireNonNull(entityClass, "entityClass");
     }
 
     /**
@@ -89,6 +89,7 @@ public final class EntityMeta {
      */
     @NotNull
     public PropertyMeta getProperty(@NotNull String propertyName) {
+        Objects.requireNonNull(propertyName, "propertyName");
         return getProperties().stream()
                 .filter(it -> it.getName().equals(propertyName))
                 .findFirst()
