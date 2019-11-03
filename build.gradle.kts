@@ -38,7 +38,7 @@ dependencies {
     compile("org.slf4j:slf4j-api:1.7.28")
 
     // db
-    compile("org.jdbi:jdbi3-core:3.10.0")
+    compile("org.jdbi:jdbi3-core:3.10.1")
     testCompile("com.zaxxer:HikariCP:3.4.0")
 
     // validation support
@@ -51,7 +51,7 @@ dependencies {
     testCompile("com.github.mvysny.dynatest:dynatest-engine:0.15")
     testCompile("com.google.code.gson:gson:2.8.5")
     testCompile("org.slf4j:slf4j-simple:1.7.28")
-    testCompile("com.h2database:h2:1.4.199")
+    testCompile("com.h2database:h2:1.4.200")
 
     testCompile("org.postgresql:postgresql:42.2.5")
     testCompile("org.zeroturnaround:zt-exec:1.10")
