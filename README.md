@@ -535,6 +535,26 @@ public class Beverage implements Serializable {
 We just have to make sure that the `Beverage` has zero-arg constructor otherwise
 JDBI will throw an exception.
 
+### Joins Alternative: @Nested
+
+Even better, you can use the `@Nested` annotation; then you don't need to extend the `Review`
+class:
+
+```java
+public class ReviewWithCategory {
+    @Nested
+    private Review review;
+
+    @ColumnName("name")
+    private String categoryName;
+
+    // omitted for brevity: getters & setters
+}
+```
+
+Just use the same `ReviewWithCategoryDao` as described above, it will also work with the `@Nested`-annotated
+field.
+
 ## Validations
 
 Often the database entities are connected to UI forms which need to provide sensible
