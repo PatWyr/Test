@@ -59,7 +59,8 @@ public class DaoOfAny<T> {
      */
     @NotNull
     public List<T> findAll() {
-        return jdbi().withHandle(handle -> handle.createQuery("select * from <TABLE>")
+        return jdbi().withHandle(handle -> handle.createQuery("select <FIELDS> from <TABLE>")
+                .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
                 .define("TABLE", meta.getDatabaseTableName())
                 .map(getRowMapper())
                 .list()
@@ -75,7 +76,7 @@ public class DaoOfAny<T> {
      */
     @NotNull
     public List<T> findAll(@Nullable final Long offset, @Nullable final Long limit) {
-        final StringBuilder sql = new StringBuilder("select * from <TABLE>");
+        final StringBuilder sql = new StringBuilder("select <FIELDS> from <TABLE>");
         if (offset != null && limit != null) {
             if (offset < 0) {
                 throw new IllegalArgumentException("Parameter offset: invalid value " + offset + ": must be 0 or greater");
@@ -86,6 +87,7 @@ public class DaoOfAny<T> {
             sql.append(" LIMIT " + Math.min(limit, Integer.MAX_VALUE) + " OFFSET " + Math.min(offset, Integer.MAX_VALUE));
         }
         return jdbi().withHandle(handle -> handle.createQuery(sql.toString())
+                .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
                 .define("TABLE", meta.getDatabaseTableName())
                 .map(getRowMapper())
                 .list()
@@ -104,7 +106,7 @@ public class DaoOfAny<T> {
     public List<T> findAllBy(@NotNull String where, @Nullable final Long offset, @Nullable final Long limit, @NotNull Consumer<Query> queryConsumer) {
         Objects.requireNonNull(where, "where");
         Objects.requireNonNull(queryConsumer, "queryConsumer");
-        final StringBuilder sql = new StringBuilder("select * from <TABLE> where <WHERE>");
+        final StringBuilder sql = new StringBuilder("select <FIELDS> from <TABLE> where <WHERE>");
         if (offset != null && limit != null) {
             if (offset < 0) {
                 throw new IllegalArgumentException("Parameter offset: invalid value " + offset + ": must be 0 or greater");
@@ -116,6 +118,7 @@ public class DaoOfAny<T> {
         }
         return jdbi().withHandle(handle -> {
                     final Query query = handle.createQuery(sql.toString())
+                            .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
                             .define("TABLE", meta.getDatabaseTableName())
                             .define("WHERE", where);
                     queryConsumer.accept(query);
@@ -156,7 +159,8 @@ public class DaoOfAny<T> {
         Objects.requireNonNull(where, "where");
         Objects.requireNonNull(queryConsumer, "queryConsumer");
         return jdbi().withHandle(handle -> {
-            final Query query = handle.createQuery("select * from <TABLE> where <WHERE> LIMIT 2")
+            final Query query = handle.createQuery("select <FIELDS> from <TABLE> where <WHERE> LIMIT 2")
+                    .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
                     .define("TABLE", meta.getDatabaseTableName())
                     .define("WHERE", where);
             queryConsumer.accept(query);
@@ -218,7 +222,8 @@ public class DaoOfAny<T> {
         Objects.requireNonNull(where, "where");
         Objects.requireNonNull(queryConsumer, "queryConsumer");
         return jdbi().withHandle(handle -> {
-                    final Query query = handle.createQuery("select * from <TABLE> where <WHERE> LIMIT 2")
+                    final Query query = handle.createQuery("select <FIELDS> from <TABLE> where <WHERE> LIMIT 2")
+                            .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
                             .define("TABLE", meta.getDatabaseTableName())
                             .define("WHERE", where);
                     queryConsumer.accept(query);

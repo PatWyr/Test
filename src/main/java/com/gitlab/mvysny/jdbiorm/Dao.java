@@ -46,7 +46,8 @@ public class Dao<T extends Entity<ID>, ID> extends DaoOfAny<T> {
     @Nullable
     public T findById(@NotNull ID id) {
         Objects.requireNonNull(id, "id");
-        return jdbi().withHandle(handle -> handle.createQuery("select * from <TABLE> where <ID> = :id")
+        return jdbi().withHandle(handle -> handle.createQuery("select <FIELDS> from <TABLE> where <ID> = :id")
+                .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
                 .define("TABLE", meta.getDatabaseTableName())
                 .define("ID", meta.getIdProperty().getDbColumnName())
                 .bind("id", id)
