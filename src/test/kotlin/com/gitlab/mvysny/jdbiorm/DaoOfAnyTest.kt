@@ -5,9 +5,6 @@ import com.github.mvysny.dynatest.DynaTest
 import com.github.mvysny.dynatest.expectList
 import com.github.mvysny.dynatest.expectThrows
 import java.lang.IllegalStateException
-import java.time.Instant
-import java.time.LocalDate
-import java.util.*
 import kotlin.test.expect
 
 class DaoOfAnyTest : DynaTest({
