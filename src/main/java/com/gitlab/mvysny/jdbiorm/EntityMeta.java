@@ -1,6 +1,7 @@
 package com.gitlab.mvysny.jdbiorm;
 
 import org.jdbi.v3.core.annotation.Unmappable;
+import org.jdbi.v3.core.mapper.Nested;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,6 +12,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -140,16 +142,32 @@ public final class EntityMeta {
         return fields;
     }
 
+    private static void visitAllPersistedFields(@NotNull Class<?> clazz,
+                                                @NotNull List<Field> currentPath,
+                                                @NotNull Consumer<List<Field>> discoveredFieldPathConsumer) {
+        for (Field field : computePersistedFields(clazz)) {
+            final ArrayList<Field> newPath = new ArrayList<>(currentPath);
+            newPath.add(field);
+            if (field.getAnnotation(Nested.class) != null) {
+                // nested field. Need to build a chain of fields properly.
+                visitAllPersistedFields(field.getType(), newPath, discoveredFieldPathConsumer);
+            } else {
+                discoveredFieldPathConsumer.accept(newPath);
+            }
+        }
+    }
+
     /**
      * Returns the set of properties in an entity.
      */
     @NotNull
     private static Set<PropertyMeta> getPersistedPropertiesFor(@NotNull Class<?> clazz) {
         // thread-safety: this may compute the same value multiple times during high contention, this is OK
-        return persistedPropertiesCache.computeIfAbsent(clazz, c ->
-                computePersistedFields(c).stream()
-                        .map(it -> new PropertyMeta(it))
-                        .collect(Collectors.toSet())
+        return persistedPropertiesCache.computeIfAbsent(clazz, c -> {
+                    final HashSet<PropertyMeta> metas = new HashSet<>();
+                    visitAllPersistedFields(clazz, Collections.emptyList(), fields -> metas.add(new PropertyMeta(fields)));
+                    return metas;
+                }
         );
     }
 
