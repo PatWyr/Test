@@ -108,7 +108,7 @@ to construct any entities; please consult [JDBI Documentation](http://jdbi.org/)
 details.
 
 By implementing the `Entity<Long>` interface, we are telling jdbi-orm that the primary key is of type `Long`;
-this will be important later on when using Dao.
+this will be important later on when using DAO.
 The [Entity](src/main/java/com/gitlab/mvysny/jdbiorm/Entity.java) interface brings 
 in the following useful methods:
 
@@ -229,7 +229,7 @@ it's definitely better to use [Flyway](https://flywaydb.org/) as described below
 
 ### Finding Categories
 
-The so-called finder (or Dao) methods actually resemble factory methods since they
+The so-called finder (or DAO, short for Data Access Object) methods actually resemble factory methods since they
 also produce instances of Categories. The best place for such
 methods is on the `Category` class itself. We can write all of the necessary
 finders ourselves, by using the `jdbi()`
