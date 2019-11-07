@@ -20,6 +20,10 @@ class DaoTest : DynaTest({
         group("EntityWithAliasedId") {
             entityWithAliasedIdTestSuite()
         }
+
+        group("Composite PK") {
+            compositePKTestSuite()
+        }
     }
 })
 
@@ -281,6 +285,92 @@ private fun DynaNodeGroup.entityWithAliasedIdTestSuite() {
             expect(true) { EntityWithAliasedId.dao.existsById(p.id!!) }
             expect(true) { EntityWithAliasedId.dao.existsBy("name=:name") { it.bind("name", "Albedo") } }
             expect(true) { EntityWithAliasedId.dao.existsBy("myid=:id") { it.bind("id", p.id!!) } }
+        }
+    }
+}
+
+private fun DynaNodeGroup.compositePKTestSuite() {
+    test("FindById") {
+        expect(null) { MappingTable.dao.findById(MappingTable.ID(1, 2)) }
+        val p = MappingTable(1, 2,"Albedo")
+        p.create()
+        expect(p) { MappingTable.dao.findById(MappingTable.ID(1, 2)) }
+    }
+    test("GetById") {
+        val p = MappingTable(1, 2,"Albedo")
+        p.create()
+        expect(p) { MappingTable.dao.getById(MappingTable.ID(1, 2)) }
+    }
+    group("getBy() tests") {
+        test("succeeds if there is exactly one matching entity") {
+            val p = MappingTable(1, 2,"Albedo")
+            p.create()
+            expect(p) { MappingTable.dao.getOneBy("some_data=:name") { it.bind("name", "Albedo") } }
+        }
+    }
+    group("count") {
+        test("basic count") {
+            expect(0) { MappingTable.dao.count() }
+            MappingTable(1, 1, "Albedo").create()
+            MappingTable(2, 2, "Nigredo").create()
+            MappingTable(3, 3, "Rubedo").create()
+            expect(3) { MappingTable.dao.count() }
+        }
+        test("count with filters") {
+            expect(0) { MappingTable.dao.count() }
+            MappingTable(1, 1, "Albedo").create()
+            MappingTable(2, 2, "Nigredo").create()
+            MappingTable(3, 3, "Rubedo").create()
+            expect(1) { MappingTable.dao.countBy("some_data=:name") { it.bind("name", "Albedo") } }
+            val id = MappingTable.dao.findAll().first { it.someData == "Albedo" }.id!!
+        }
+    }
+    test("DeleteAll") {
+        MappingTable(1, 1, "Albedo").create()
+        MappingTable(2, 2, "Nigredo").create()
+        MappingTable(3, 3, "Rubedo").create()
+        expect(3) { MappingTable.dao.count() }
+        MappingTable.dao.deleteAll()
+        expect(0) { MappingTable.dao.count() }
+    }
+    test("DeleteById") {
+        MappingTable(1, 1, "Albedo").create()
+        MappingTable(2, 2, "Nigredo").create()
+        MappingTable(3, 3, "Rubedo").create()
+        expect(3) { MappingTable.dao.count() }
+        MappingTable.dao.deleteById(MappingTable.ID(1, 1))
+        expect(listOf("Nigredo", "Rubedo")) { MappingTable.dao.findAll().map { it.someData } }
+    }
+    test("DeleteByIdDoesNothingOnUnknownId") {
+        MappingTable.dao.deleteById(MappingTable.ID(25, 25))
+        expect(listOf()) { MappingTable.dao.findAll() }
+    }
+    test("DeleteBy") {
+        MappingTable(1, 1, "Albedo").create()
+        MappingTable(2, 2, "Nigredo").create()
+        MappingTable(3, 3, "Rubedo").create()
+        MappingTable.dao.deleteBy("some_data = :name") { it.bind("name", "Albedo") }
+        expect(listOf("Nigredo", "Rubedo")) { MappingTable.dao.findAll().map { it.someData } }
+    }
+    group("findSpecificBy() tests") {
+        test("succeeds if there is exactly one matching entity") {
+            val p = MappingTable(1, 1, "Albedo")
+            p.create()
+            expect(p) { MappingTable.dao.findOneBy("some_data=:name") { it.bind("name", "Albedo") } }
+        }
+    }
+    group("exists") {
+        test("returns false on empty table") {
+            expect(false) { MappingTable.dao.existsAny() }
+            expect(false) { MappingTable.dao.existsById(MappingTable.ID(25, 25)) }
+            expect(false) { MappingTable.dao.existsBy("some_data<=:name") { it.bind("name", "a") } }
+        }
+        test("returns true on matching entity") {
+            val p = MappingTable(3, 3, "Albedo")
+            p.create()
+            expect(true) { MappingTable.dao.existsAny() }
+            expect(true) { MappingTable.dao.existsById(p.id!!) }
+            expect(true) { MappingTable.dao.existsBy("some_data=:name") { it.bind("name", "Albedo") } }
         }
     }
 }
