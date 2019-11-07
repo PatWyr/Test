@@ -46,9 +46,10 @@ Maven: (it's very simple since jdbi-orm is in Maven Central):
 </project>
 ```
 
-See the [jdbi-orm-playground](https://gitlab.com/mvysny/jdbi-orm-playground) for a very simple example project
-using `jdbi-orm`. See [JDBI-ORM Vaadin 14 CRUD demo](https://github.com/mvysny/jdbi-orm-vaadin14-crud-demo)
-for a CRUD demo using `jdbi-orm`.
+See the [jdbi-orm-playground](https://gitlab.com/mvysny/jdbi-orm-playground) project which introduces
+a `main()` method, a single `Person` entity and an in-memory H2 database - perfect for experimenting with `jdbi-orm`.
+See [JDBI-ORM Vaadin 14 CRUD demo](https://github.com/mvysny/jdbi-orm-vaadin14-crud-demo)
+for a CRUD demo app using `jdbi-orm`.
 
 ## Usage Examples
 
