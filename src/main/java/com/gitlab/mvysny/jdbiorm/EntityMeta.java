@@ -10,11 +10,13 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 /**
  * Provides meta-data for given entity.
- *
+ * <p></p>
+ * Thread-safe.
  * @author mavi
  */
 public final class EntityMeta {
@@ -64,21 +66,37 @@ public final class EntityMeta {
         return getProperties().stream().map(it -> it.getDbColumnName()).collect(Collectors.toSet());
     }
 
+    /**
+     * Unmodifiable, thread-safe.
+     */
     @Nullable
-    private PropertyMeta idPropertyCache;
+    private List<PropertyMeta> idPropertyCache;
 
     /**
      * The {@code id} property as declared in the entity.
+     * @return usually a list with one property, but might be more in case of composite primary keys.
      */
     @NotNull
-    public PropertyMeta getIdProperty() {
+    public List<PropertyMeta> getIdProperty() {
         if (idPropertyCache == null) {
-            idPropertyCache = getProperties().stream()
-                    .filter(it -> it.getName().equals("id"))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("Unexpected: entity " + entityClass + " has no id column?"));
+            final List<PropertyMeta> props = getProperties().stream()
+                    .filter(it -> it.getNamePath().get(0).equals("id"))
+                    .collect(Collectors.toList());
+            if (props.isEmpty()) {
+                throw new IllegalStateException("Unexpected: entity " + entityClass + " has no id field?");
+            }
+            idPropertyCache = Collections.unmodifiableList(new CopyOnWriteArrayList<>(props));
         }
         return idPropertyCache;
+    }
+
+    /**
+     * Returns true if this entity has a composite key (the `id` field is annotated with {@link org.jdbi.v3.core.mapper.Nested}
+     * and the referencing class has multiple fields).
+     * @return true if this entity uses a composite key.
+     */
+    public boolean hasCompositeKey() {
+        return getIdProperty().size() > 1;
     }
 
     /**

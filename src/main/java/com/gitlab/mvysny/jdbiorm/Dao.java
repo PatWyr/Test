@@ -1,9 +1,14 @@
 package com.gitlab.mvysny.jdbiorm;
 
+import org.jdbi.v3.core.statement.Query;
+import org.jdbi.v3.core.statement.SqlStatement;
+import org.jdbi.v3.core.statement.Update;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
 
@@ -46,14 +51,47 @@ public class Dao<T extends Entity<ID>, ID> extends DaoOfAny<T> {
     @Nullable
     public T findById(@NotNull ID id) {
         Objects.requireNonNull(id, "id");
-        return jdbi().withHandle(handle -> handle.createQuery("select <FIELDS> from <TABLE> where <ID> = :id")
-                .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
-                .define("TABLE", meta.getDatabaseTableName())
-                .define("ID", meta.getIdProperty().getDbColumnName())
-                .bind("id", id)
-                .map(getRowMapper())
-                .findFirst().orElse(null)
-        );
+        return jdbi().withHandle(handle -> {
+            final List<PropertyMeta> idProperties = meta.getIdProperty();
+
+            final Query query = handle.createQuery("select <FIELDS> from <TABLE> where <ID>")
+                    .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
+                    .define("TABLE", meta.getDatabaseTableName());
+            passIdValuesToQuery(query, id);
+            return query.map(getRowMapper())
+                    .findFirst().orElse(null);
+        });
+    }
+
+    /**
+     * Computes the WHERE clause (without the `WHERE` keyword) and defines it into the query
+     * under the `ID` key. Also retrieves all values from the (potentially composite) id and
+     * binds it into the query.
+     * @param query the query to modify, not null.
+     * @param id the ID value, not null.
+     */
+    protected void passIdValuesToQuery(@NotNull SqlStatement<?> query, @NotNull ID id) {
+        Objects.requireNonNull(id, "id");
+        final List<PropertyMeta> idProperties = meta.getIdProperty();
+        query.define("ID", idProperties.stream().map(it -> it.getDbColumnName() + " = :" + it.getDbColumnName()).collect(Collectors.joining(" AND ")));
+
+        if (meta.hasCompositeKey()) {
+            // in order to be able to call PropertyMeta.get() we need to pass in the Entity instance, not the ID instance.
+            // so we'll use a little trick...
+            final Entity<ID> entity;
+            try {
+                entity = entityClass.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+            entity.setId(id);
+            for (PropertyMeta idProperty : idProperties) {
+                query.bind(idProperty.getDbColumnName(), idProperty.get(entity));
+            }
+        } else {
+            // fall back to the safer+faster simple way
+            query.bind(idProperties.get(0).getDbColumnName(), id);
+        }
     }
 
     /**
@@ -61,11 +99,12 @@ public class Dao<T extends Entity<ID>, ID> extends DaoOfAny<T> {
      */
     public boolean existsById(@NotNull ID id) {
         Objects.requireNonNull(id, "id");
-        return jdbi().withHandle(handle -> handle.createQuery("select count(1) from <TABLE> where <ID> = :id")
-                .define("TABLE", meta.getDatabaseTableName())
-                .define("ID", meta.getIdProperty().getDbColumnName())
-                .bind("id", id)
-                .mapTo(Long.class).one() > 0);
+        return jdbi().withHandle(handle -> {
+            final Query query = handle.createQuery("select count(1) from <TABLE> where <ID>")
+                    .define("TABLE", meta.getDatabaseTableName());
+            passIdValuesToQuery(query, id);
+            return query.mapTo(Long.class).one() > 0;
+        });
     }
 
     /**
@@ -73,10 +112,11 @@ public class Dao<T extends Entity<ID>, ID> extends DaoOfAny<T> {
      */
     public void deleteById(@NotNull ID id) {
         Objects.requireNonNull(id, "id");
-        jdbi().withHandle(handle -> handle.createUpdate("delete from <TABLE> where <ID>=:id")
-                .define("TABLE", meta.getDatabaseTableName())
-                .define("ID", meta.getIdProperty().getDbColumnName())
-                .bind("id", id)
-                .execute());
+        jdbi().withHandle(handle -> {
+            final Update update = handle.createUpdate("delete from <TABLE> where <ID>")
+                    .define("TABLE", meta.getDatabaseTableName());
+            passIdValuesToQuery(update, id);
+            return update.execute();
+        });
     }
 }

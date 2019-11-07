@@ -1,36 +1,79 @@
 package com.gitlab.mvysny.jdbiorm;
 
+import org.jdbi.v3.core.mapper.Nested;
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Provides meta-data for a particular property of a particular {@link Entity}.
+ * <p></p>
+ * Thread-safe.
  */
 public final class PropertyMeta {
 
+    /**
+     * The Java reflection field, used to read the value of this property.
+     * Usually this will be 1-sized list of a single Field reading a field straight
+     * from given entity.
+     * <p></p>
+     * In case of {@link Nested}-annotated fields, this is a chain of fields
+     * used to obtain the final property value. The chain starts with an Entity field,
+     * and iterates over {@link Nested} annotations until a terminal property is reached.
+     * <p></p>
+     * The field path is most useful for composite primary keys, but it may have
+     * other interesting use-cases.
+     * <p></p>
+     * Must not be empty nor null.
+     */
     @NotNull
-    public final Field field;
+    private final LinkedList<Field> fieldPath;
 
     /**
-     * The backing field.
-     * @param field the field, not null.
+     * Computed from {@link #fieldPath}. Unmodifiable.
      */
-    public PropertyMeta(@NotNull Field field) {
-        this.field = Objects.requireNonNull(field, "field");
+    private final List<String> namePath;
+
+    /**
+     * Creates the property.
+     * @param fieldPath the field, not null. See {@link #fieldPath} for more info.
+     */
+    public PropertyMeta(@NotNull List<Field> fieldPath) {
+        this.fieldPath = new LinkedList<>(Objects.requireNonNull(fieldPath, "fieldPath"));
+        if (this.fieldPath.isEmpty()) {
+            throw new IllegalArgumentException("Parameter fieldPath: invalid value " + fieldPath + ": must not be empty");
+        }
+        namePath = Collections.unmodifiableList(fieldPath.stream().map(Field::getName).collect(Collectors.toList()));
     }
 
     /**
-     * The {@link Field#getName()}
+     * Wraps given Java reflection field as an entity property.
+     * @param field the field, not null.
+     */
+    public PropertyMeta(@NotNull Field field) {
+        this(Collections.singletonList(Objects.requireNonNull(field, "field")));
+    }
+
+    /**
+     * The name of the last {@link Field} in the field path.
      *
      * @return The {@link Field#getName()}, not null.
      */
     @NotNull
     public String getName() {
-        return field.getName();
+        return fieldPath.getLast().getName();
+    }
+
+    @NotNull
+    public List<String> getNamePath() {
+        return namePath;
     }
 
     /**
@@ -42,7 +85,7 @@ public final class PropertyMeta {
      */
     @NotNull
     public String getDbColumnName() {
-        final ColumnName annotation = field.getAnnotation(ColumnName.class);
+        final ColumnName annotation = fieldPath.getLast().getAnnotation(ColumnName.class);
         return annotation == null ? getName() : annotation.value();
     }
 
@@ -52,23 +95,28 @@ public final class PropertyMeta {
      */
     @NotNull
     public Class<?> getValueType() {
-        return field.getType();
+        return fieldPath.getLast().getType();
     }
 
     @Nullable
     public Object get(@NotNull Object entity) {
         Objects.requireNonNull(entity, "entity");
-        field.setAccessible(true);
-        try {
-            return field.get(entity);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+        Object current = entity;
+        for (Field field : fieldPath) {
+            field.setAccessible(true);
+            try {
+                current = field.get(current);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
         }
+        return current;
     }
 
     @Override
     public String toString() {
-        return "PropertyMeta{" + field + ", dbColumnName=" + getDbColumnName() + '}';
+        final String path = fieldPath.stream().skip(1).map(Field::getName).collect(Collectors.joining("/"));
+        return "PropertyMeta{" + fieldPath.getFirst() + "/" + path + ", dbColumnName=" + getDbColumnName() + '}';
     }
 
     @Override
@@ -76,11 +124,11 @@ public final class PropertyMeta {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PropertyMeta that = (PropertyMeta) o;
-        return field.equals(that.field);
+        return fieldPath.equals(that.fieldPath);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(field);
+        return fieldPath.hashCode();
     }
 }

@@ -80,21 +80,13 @@ class MappingTest : DynaTest({
             test("Meta") {
                 val meta = Person.meta
                 expect("Test") { meta.databaseTableName }  // since Person is annotated with @Entity("Test")
-                expect("id") { meta.idProperty.dbColumnName }
+                expect(1) { meta.idProperty.size }
+                expect("id") { meta.idProperty[0].dbColumnName }
                 expect(Person::class.java) { meta.entityClass }
-                expect(Long::class.java) { meta.idProperty.valueType }
-                expect(
-                        setOf(
-                                "id",
-                                "name",
-                                "age",
-                                "dateOfBirth",
-                                "created",
-                                "alive",
-                                "maritalStatus",
-                                "modified"
-                        )
-                ) { meta.persistedFieldDbNames }
+                expect(Long::class.java) { meta.idProperty[0].valueType }
+                expect(setOf("id", "name", "age", "dateOfBirth", "created", "alive", "maritalStatus", "modified")) {
+                    meta.persistedFieldDbNames
+                }
             }
         }
         group("EntityWithAliasedId") {
@@ -120,9 +112,10 @@ class MappingTest : DynaTest({
             test("Meta") {
                 val meta = EntityMeta(EntityWithAliasedId::class.java)
                 expect("EntityWithAliasedId") { meta.databaseTableName }
-                expect("myid") { meta.idProperty.dbColumnName }
+                expect(1) { meta.idProperty.size }
+                expect("myid") { meta.idProperty[0].dbColumnName }
                 expect(EntityWithAliasedId::class.java) { meta.entityClass }
-                expect(Long::class.java) { meta.idProperty.valueType }
+                expect(Long::class.java) { meta.idProperty[0].valueType }
                 expect(setOf("myid", "name")) { meta.persistedFieldDbNames }
             }
         }
