@@ -141,6 +141,7 @@ public interface Entity<ID> extends Serializable {
                     // we don't support retrieving generated keys for composite PKs at the moment...
                     throw new UnsupportedOperationException("we don't support retrieving generated keys for composite PKs at the moment...");
                 }
+                update.execute();
             } else {
                 final PropertyMeta idProperty = idProperties.get(0);
                 final ResultBearing resultBearing = update

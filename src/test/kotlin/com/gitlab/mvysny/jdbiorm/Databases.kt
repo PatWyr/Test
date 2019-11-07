@@ -83,6 +83,7 @@ private fun DynaNodeGroup.usingDockerizedPosgresql(databasePort: Int) {
             ddl("""CREATE TYPE marital_status AS ENUM ('Single', 'Married', 'Widowed', 'Divorced')""")
             ddl("""CREATE TABLE IF NOT EXISTS TypeMappingEntity(id bigserial primary key, enumTest marital_status)""")
             ddl("""create table JOIN_TABLE(customerId integer, orderId integer)""")
+            ddl("""create table mapping_table(person_id bigint not null, department_id bigint not null, some_data varchar(400) not null, PRIMARY KEY(person_id, department_id))""")
         }
     }
 
@@ -95,6 +96,7 @@ private fun DynaNodeGroup.usingDockerizedPosgresql(databasePort: Int) {
         NaturalPerson.deleteAll()
         LogRecord.deleteAll()
         JoinTable.dao.deleteAll()
+        MappingTable.dao.deleteAll()
     }
     beforeEach { clearDb() }
     afterEach { clearDb() }
@@ -122,11 +124,12 @@ fun DynaNodeGroup.usingDockerizedMysql(databasePort: Int) {
                 alive boolean,
                 maritalStatus varchar(200)
                  )""")
-            ddl("""create table if not exists EntityWithAliasedId(myid bigint primary key auto_increment, name varchar(400) not null)""")
-            ddl("""create table if not exists NaturalPerson(id varchar(10) primary key, name varchar(400) not null, bytes binary(16) not null)""")
-            ddl("""create table if not exists LogRecord(id binary(16) primary key, text varchar(400) not null)""")
+            ddl("""create table EntityWithAliasedId(myid bigint primary key auto_increment, name varchar(400) not null)""")
+            ddl("""create table NaturalPerson(id varchar(10) primary key, name varchar(400) not null, bytes binary(16) not null)""")
+            ddl("""create table LogRecord(id binary(16) primary key, text varchar(400) not null)""")
             ddl("""create table TypeMappingEntity(id bigint primary key auto_increment, enumTest ENUM('Single', 'Married', 'Divorced', 'Widowed'))""")
             ddl("""create table JOIN_TABLE(customerId bigint, orderId bigint)""")
+            ddl("""create table mapping_table(person_id bigint not null, department_id bigint not null, some_data varchar(400) not null, PRIMARY KEY(person_id, department_id))""")
         }
     }
 
@@ -140,6 +143,7 @@ fun DynaNodeGroup.usingDockerizedMysql(databasePort: Int) {
         LogRecord.deleteAll()
         TypeMappingEntity.deleteAll()
         JoinTable.dao.deleteAll()
+        MappingTable.dao.deleteAll()
     }
     beforeEach { clearDb() }
     afterEach { clearDb() }
@@ -176,6 +180,7 @@ fun DynaNodeGroup.usingH2Database() {
             ddl("""create table LogRecord(id UUID primary key, text varchar(400) not null)""")
             ddl("""create table TypeMappingEntity(id bigint primary key auto_increment, enumTest ENUM('Single', 'Married', 'Divorced', 'Widowed'))""")
             ddl("""create table JOIN_TABLE(customerId bigint, orderId bigint)""")
+            ddl("""create table mapping_table(person_id bigint not null, department_id bigint not null, some_data varchar(400) not null, PRIMARY KEY(person_id, department_id))""")
         }
     }
     afterEach {
@@ -216,6 +221,7 @@ private fun DynaNodeGroup.usingDockerizedMariaDB(databasePort: Int) {
             ddl("""create table if not exists LogRecord(id binary(16) primary key, text varchar(400) not null)""")
             ddl("""create table TypeMappingEntity(id bigint primary key auto_increment, enumTest ENUM('Single', 'Married', 'Divorced', 'Widowed'))""")
             ddl("""create table JOIN_TABLE(customerId bigint, orderId bigint)""")
+            ddl("""create table mapping_table(person_id bigint not null, department_id bigint not null, some_data varchar(400) not null, PRIMARY KEY(person_id, department_id))""")
         }
     }
 
@@ -228,6 +234,7 @@ private fun DynaNodeGroup.usingDockerizedMariaDB(databasePort: Int) {
         NaturalPerson.deleteAll()
         LogRecord.deleteAll()
         JoinTable.dao.deleteAll()
+        MappingTable.dao.deleteAll()
     }
     beforeEach { clearDb() }
     afterEach { clearDb() }

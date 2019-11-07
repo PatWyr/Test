@@ -29,6 +29,9 @@ class MappingTest : DynaTest({
         group("LogRecord") {
             logRecordTestBattery()
         }
+        group("Composite PK") {
+            compositePKTestBattery()
+        }
         group("TypeMapping") {
             test("java enum to native db enum") {
                 for (it in MaritalStatus.values().plusNull) {
@@ -124,7 +127,7 @@ private fun DynaNodeGroup.aliasedIdTestBattery() {
         val p = EntityWithAliasedId("Zaphod")
         p.save()
         expect(true) { p.id != null }
-        expectList("Zaphod") { Person.findAll().map { it.name } }
+        expectList("Zaphod") { EntityWithAliasedId.dao.findAll().map { it.name } }
     }
     test("Save") {
         val p = EntityWithAliasedId(null, "Albedo")
@@ -153,6 +156,43 @@ private fun DynaNodeGroup.aliasedIdTestBattery() {
         expect(EntityWithAliasedId::class.java) { meta.entityClass }
         expect(Long::class.java) { meta.idProperty[0].valueType }
         expect(setOf("myid", "name")) { meta.persistedFieldDbNames }
+    }
+}
+
+private fun DynaNodeGroup.compositePKTestBattery() {
+    test("FindAll") {
+        expectList() { MappingTable.dao.findAll() }
+        val p = MappingTable(1, 2, "Zaphod")
+        p.create()
+        expect(true) { p.id != null }
+        expectList("MappingTable{id=1, 2, Zaphod}") { MappingTable.dao.findAll().map { it.toString() } }
+    }
+    test("Save") {
+        val p = MappingTable(1, 2, "Albedo")
+        p.create()
+        expectList("MappingTable{id=1, 2, Albedo}") { MappingTable.dao.findAll().map { it.toString() } }
+        p.someData = "Rubedo"
+        p.save()
+        expectList("Rubedo") { MappingTable.dao.findAll().map { it.someData } }
+        MappingTable(1, 3, "Nigredo").create()
+        expectList("Rubedo", "Nigredo") { MappingTable.dao.findAll().map { it.someData } }
+    }
+    test("delete") {
+        val p = MappingTable(1, 2, "Albedo")
+        p.create()
+        p.delete()
+        expect(listOf()) { MappingTable.dao.findAll() }
+    }
+    test("Meta") {
+        val meta = EntityMeta(MappingTable::class.java)
+        expect("mapping_table") { meta.databaseTableName }
+        expect(2) { meta.idProperty.size }
+        expect("person_id") { meta.idProperty[0].dbColumnName }
+        expect("department_id") { meta.idProperty[1].dbColumnName }
+        expect(MappingTable::class.java) { meta.entityClass }
+        expect(Long::class.java) { meta.idProperty[0].valueType }
+        expect(Long::class.java) { meta.idProperty[1].valueType }
+        expect(setOf("person_id", "department_id", "some_data")) { meta.persistedFieldDbNames }
     }
 }
 
