@@ -672,6 +672,41 @@ Now you can find all images via `ImageView.dao.findAll()` without the overhead
 of loading BLOBs; you can call `imageView.load()` to get the full-blown entity
 with BLOB which can be edited.
 
+## Composite Primary Keys
+
+Using composite primary keys is very easy. Just create a serializable class for the Primary Key,
+add the fields to it (optionally annotated by `@ColumName`), then use the `@Nested` annotation as
+in the following example:
+
+```sql
+create table mapping_table(person_id bigint not null, department_id bigint not null, some_data varchar(400) not null, PRIMARY KEY(person_id, department_id))
+```
+```java
+@Table("mapping_table")
+public class MappingTable implements Entity<MappingTable.ID> {
+
+    public static class ID implements Serializable {
+        @ColumnName("person_id")
+        public Long personId;
+        @ColumnName("department_id")
+        public Long departmentId;
+
+        // hashCode/equals/toString() omitted for brevity
+    }
+
+    // the field needs to be named "id"
+    @Nested
+    private ID id;
+
+    @ColumnName("some_data")
+    private String someData;
+
+    // getters, setters, equals, hashCode, toString() omitted for brevity
+
+    public static final Dao<MappingTable, ID> dao = new Dao<>(MappingTable.class);
+}
+```
+
 ## Data Loaders
 
 NOT YET IMPLEMENTED
@@ -695,8 +730,8 @@ vok-orm provides two concrete implementations of data loaders out-of-the-box: th
 The [EntityDataLoader](src/main/kotlin/com/github/vokorm/dataloader/EntityDataLoader.kt) is able to provide instances of any class which implements the `Entity` interface. Simply create the `EntityDataLoader`
 instance for your entity class and you're good to go.
 
-The `EntityDataLoader` honors the `@As` annotation when mapping class instances from the outcome of the `SELECT *` clause. If you don't use SQL aliases
-but you stick to use `@As`, then you can use the `Filter` class hierarchy to filter out the results, and you can use `SortClause` to sort
+The `EntityDataLoader` honors the `@ColumnName` annotation when mapping class instances from the outcome of the `SELECT *` clause. If you don't use SQL aliases
+but you stick to use `@ColumnName`, then you can use the `Filter` class hierarchy to filter out the results, and you can use `SortClause` to sort
 the results. Just keep in mind to pass in the database column name into the `Filter` and `SortClause`, and not the bean property name.
 
 Note that the `EntityDataLoader` will construct the entire SQL SELECT command by itself - you cannot change the way it's constructed. This way
@@ -715,8 +750,8 @@ val filter: Filter<CustomerAddress> = buildFilter<CustomerAddress> { "c.age<:age
 val result: List<CustomerAddress> = provider.fetch(filter, sortBy = listOf("name".asc), range = 0L..20L)
 ```
 
-The `SqlDataLoader` honors the `@As` annotation when mapping class instances from the outcome of the `SELECT *` clause. If you don't use SQL aliases
-but you stick to use `@As`, then you can use the `Filter` class hierarchy to filter out the results, and you can use `SortClause` to sort
+The `SqlDataLoader` honors the `@ColumnName` annotation when mapping class instances from the outcome of the `SELECT *` clause. If you don't use SQL aliases
+but you stick to use `@ColumnName`, then you can use the `Filter` class hierarchy to filter out the results, and you can use `SortClause` to sort
 the results. Just keep in mind to pass in the database column name into the `Filter` and `SortClause`, and not the bean property name.
 
 ## Aliases
@@ -735,15 +770,15 @@ The problem with this approach is twofold:
 * INSERTs/UPDATEs issued by your entity `Dao` will fail since they will use the bean field names instead of actual column name
   and will emit `INSERT INTO Customer (customerName) values ($1)` instead of `INSERT INTO Customer (CUSTOMER_NAME) values ($1)` 
 
-Therefore, instead of database-based aliases it's better to use the `@As` annotation on your beans, both natural entities
+Therefore, instead of database-based aliases it's better to use the `@ColumnName` annotation on your beans, both natural entities
 such as `Customer` and projection-only entities such as `CustomerAddress`:
 
 ```kotlin
-data class Customer(@As("CUSTOMER_NAME") var name: String? = null) : Entity<Long>
-data class CustomerAddress(@As("CUSTOMER_NAME") var customerName: String? = null)
+data class Customer(@ColumnName("CUSTOMER_NAME") var name: String? = null) : Entity<Long>
+data class CustomerAddress(@ColumnName("CUSTOMER_NAME") var customerName: String? = null)
 ```
 
-The `@As` annotation is honored both by `Dao`s and by all data loaders.
+The `@ColumnName` annotation is honored both by `Dao`s and by all data loaders.
 
 ## A main() method Example
 
