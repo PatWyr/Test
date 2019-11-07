@@ -105,14 +105,8 @@ public interface Entity<ID> extends Serializable {
         if (getId() == null) {
             throw new IllegalStateException("The id is null, the entity is not yet in the database");
         }
-        jdbi().useHandle(handle -> {
-            final EntityMeta meta = new EntityMeta(getClass());
-            handle.createUpdate("delete from <TABLE> where <ID> = :id")
-                    .define("TABLE", meta.getDatabaseTableName())
-                    .define("ID", meta.getIdProperty().getDbColumnName())
-                    .bind("id", getId())
-                    .execute();
-        });
+        //noinspection unchecked
+        new Dao<>(getClass()).deleteById(getId());
     }
 
     /**
