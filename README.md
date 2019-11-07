@@ -683,9 +683,9 @@ create table mapping_table(person_id bigint not null, department_id bigint not n
 ```
 ```java
 @Table("mapping_table")
-public class MappingTable implements Entity<MappingTable.ID> {
+public final class MappingTable implements Entity<MappingTable.ID> {
 
-    public static class ID implements Serializable {
+    public static final class ID implements Serializable {
         @ColumnName("person_id")
         public Long personId;
         @ColumnName("department_id")
