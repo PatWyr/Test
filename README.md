@@ -155,8 +155,12 @@ It comes pre-initialized with sensible default settings, but it contains lots of
 > Hikari-CP is a JDBC connection pool which manages a pool of JDBC connections since they are expensive to create. Typically all projects
 use some sort of JDBC connection pooling.
 
-For example, to use an in-memory H2 database, just add H2 onto the classpath as a Gradle dependency: `compile 'com.h2database:h2:1.4.196'`. Then,
-configure jdbi-orm as follows:
+For example, to use an in-memory H2 database, just add both H2 and HikariCP as a dependency to your project:
+
+* `compile("com.h2database:h2:1.4.200")` for H2
+* `compile("com.zaxxer:HikariCP:3.4.0")` for HikariCP
+
+Then, configure jdbi-orm as follows:
 
 ```java
 final HikariConfig hikariConfig = new HikariConfig();
@@ -217,7 +221,7 @@ public class Main {
 ```
 
 See the [jdbi-orm-playground](https://gitlab.com/mvysny/jdbi-orm-playground)
-project which contains such `main` method, all JDBC drivers pre-loaded and
+project which contains such `main` method, all JDBC drivers and all dependencies pre-loaded, and
 simple instructions on how to query different database kinds.
 
 > *Note*: for the sake of simplicity we're running the `CREATE TABLE` as a query. For a persistent database
