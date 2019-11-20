@@ -198,4 +198,18 @@ public final class EntityMeta {
         }
         return findAnnotationRecursively(superclass, annotationClass);
     }
+
+    /**
+     * Copies all values of all persisted fields from {@code sourceEntity} to {@code targetEntity}.
+     * @param sourceEntity the entity to copy the values from, not null.
+     * @param targetEntity the entity to copy the values to, not null.
+     */
+    public void copyTo(@NotNull Object sourceEntity, @NotNull Object targetEntity) {
+        Objects.requireNonNull(sourceEntity);
+        Objects.requireNonNull(targetEntity);
+        for (PropertyMeta property : getProperties()) {
+            final Object value = property.get(sourceEntity);
+            property.set(targetEntity, value);
+        }
+    }
 }

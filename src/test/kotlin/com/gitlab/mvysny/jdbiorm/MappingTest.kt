@@ -119,6 +119,15 @@ private fun DynaNodeGroup.personTestBattery() {
             meta.persistedFieldDbNames
         }
     }
+    test("reload") {
+        val p = Person(name = "Albedo", age = 130)
+        p.save()
+        p.age = 25
+        p.name = "Nigredo"
+        p.reload()
+        expect("Albedo") { p.name }
+        expect(130) { p.age }
+    }
 }
 
 private fun DynaNodeGroup.aliasedIdTestBattery() {
@@ -194,6 +203,15 @@ private fun DynaNodeGroup.compositePKTestBattery() {
         expect(Long::class.java) { meta.idProperty[1].valueType }
         expect(setOf("person_id", "department_id", "some_data")) { meta.persistedFieldDbNames }
     }
+    test("reload") {
+        val p = MappingTable(1, 2, "Albedo")
+        p.create()
+        p.someData = "Foo"
+        p.reload()
+        expect("Albedo") { p.someData }
+        expect(2) { p.id!!.departmentId }
+        expect(1) { p.id!!.personId }
+    }
 }
 
 private fun DynaNodeGroup.naturalPersonTestBattery() {
@@ -218,6 +236,14 @@ private fun DynaNodeGroup.naturalPersonTestBattery() {
         p.create()
         p.delete()
         expectList() { NaturalPerson.findAll() }
+    }
+    test("reload") {
+        val p = NaturalPerson(id = "foo", name = "Albedo")
+        p.create()
+        p.name = "Nigredo"
+        p.reload()
+        expect("Albedo") { p.name }
+        expect("foo") { p.id }
     }
 }
 
@@ -244,6 +270,13 @@ private fun DynaNodeGroup.logRecordTestBattery() {
         p.save()
         p.delete()
         expectList() { LogRecord.findAll() }
+    }
+    test("reload") {
+        val p = LogRecord(text = "foo")
+        p.save()
+        p.text = "bar"
+        p.reload()
+        expect("foo") { p.text }
     }
 }
 

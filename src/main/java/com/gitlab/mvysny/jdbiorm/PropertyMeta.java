@@ -131,4 +131,33 @@ public final class PropertyMeta {
     public int hashCode() {
         return fieldPath.hashCode();
     }
+
+    /**
+     * Sets the value of this property for given entity. In case of nested entities,
+     * any null field along the {@link #fieldPath} is automatically set to a non-null value
+     * by invoking the default constructor.
+     * @param entity the entity, not null.
+     * @param value the new value, may be null.
+     */
+    public void set(@NotNull Object entity, @Nullable Object value) {
+        Object current = entity;
+        for (Field field : fieldPath.subList(0, fieldPath.size() - 1)) {
+            field.setAccessible(true);
+            try {
+                Object newCurrent = field.get(current);
+                if (newCurrent == null) {
+                    newCurrent = field.getType().newInstance();
+                    field.set(current, newCurrent);
+                }
+                current = newCurrent;
+            } catch (IllegalAccessException | InstantiationException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        try {
+            fieldPath.get(fieldPath.size() - 1).set(current, value);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

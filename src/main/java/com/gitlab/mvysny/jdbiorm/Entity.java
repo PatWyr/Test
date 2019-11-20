@@ -254,4 +254,19 @@ public interface Entity<ID> extends Serializable {
     default void save() {
         save(true);
     }
+
+    /**
+     * Re-populates this entity with the up-to-date values from the database.
+     * The {@link #getId()} must not be null.
+     * @throws IllegalStateException if the ID is null.
+     */
+    @SuppressWarnings("unchecked")
+    default void reload() {
+        if (getId() == null) {
+            throw new IllegalStateException("Invalid state: id is null");
+        }
+        final Dao dao = new Dao<>(getClass());
+        final Entity current = dao.getById(getId());
+        dao.meta.copyTo(current, this);
+    }
 }
