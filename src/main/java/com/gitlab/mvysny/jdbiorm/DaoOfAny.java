@@ -16,6 +16,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
@@ -168,7 +169,7 @@ public class DaoOfAny<T> {
                     .define("WHERE", where);
             queryConsumer.accept(query);
             final ResultIterable<T> iterable = query.map(getRowMapper());
-            return helper.findOneFromIterable(iterable, () -> helper.formatQuery(where, query));
+            return helper.findOneFromIterable(iterable, binding -> helper.formatQuery(where, binding));
         });
     }
 
@@ -226,7 +227,7 @@ public class DaoOfAny<T> {
                             .define("WHERE", where);
                     queryConsumer.accept(query);
                     final ResultIterable<T> result = query.map(getRowMapper());
-                    return helper.getOneFromIterable(result, () -> helper.formatQuery(where, query));
+                    return helper.getOneFromIterable(result, binding -> helper.formatQuery(where, binding));
                 }
         );
     }
@@ -324,31 +325,13 @@ public class DaoOfAny<T> {
         /**
          * Provides detailed debug info which is helpful when the query fails.
          * @param sql the SQL
-         * @param statement the statement
+         * @param binding the binding
          * @return the entity name, the SQL and values of all the parameters
          */
         @NotNull
-        public String formatQuery(@NotNull String sql, @NotNull SqlStatement<?> statement) {
+        public String formatQuery(@NotNull String sql, @NotNull Binding binding) {
             Objects.requireNonNull(sql, "sql");
-            return entityClass.getSimpleName() + ": '" + sql + "'" + toString(statement);
-        }
-
-        /**
-         * Returns {@link Binding#toString()}.
-         * @param statement get the binding from this statement
-         * @return {@link Binding#toString()}, not null.
-         */
-        @NotNull
-        public String toString(@NotNull SqlStatement<?> statement) {
-            Objects.requireNonNull(statement, "statement");
-            try {
-                final Method getBinding = SqlStatement.class.getDeclaredMethod("getBinding");
-                getBinding.setAccessible(true);
-                final Binding binding = (Binding) getBinding.invoke(statement);
-                return binding.toString();
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
+            return entityClass.getSimpleName() + ": '" + sql + "'" + binding;
         }
 
         /**
@@ -357,12 +340,12 @@ public class DaoOfAny<T> {
          *
          * @param errorSupplier invoked in case of error; should list table name, the {@code where} clause
          *                      and parameters. Prepended by 'too many items matching '. Simply use
-         *                      {@link #formatQuery(String, SqlStatement)}.
+         *                      {@link #formatQuery(String, Binding)}.
          * @return the only row in the result set, if any.
          * @throws IllegalStateException if the result set contains multiple rows
          */
         @Nullable
-        public T findOneFromIterable(@NotNull ResultIterable<T> iterable, @NotNull Supplier<String> errorSupplier) {
+        public T findOneFromIterable(@NotNull ResultIterable<T> iterable, @NotNull Function<Binding, String> errorSupplier) {
             Objects.requireNonNull(iterable, "iterable");
             Objects.requireNonNull(errorSupplier, "errorSupplier");
             try (ResultIterator<T> iter = iterable.iterator()) {
@@ -373,7 +356,7 @@ public class DaoOfAny<T> {
                 final T r = iter.next();
 
                 if (iter.hasNext()) {
-                    throw new IllegalStateException("too many rows matching " + errorSupplier.get());
+                    throw new IllegalStateException("too many rows matching " + errorSupplier.apply(iter.getContext().getBinding()));
                 }
 
                 return r;
@@ -386,21 +369,21 @@ public class DaoOfAny<T> {
          *
          * @param errorSupplier invoked in case of error; should list table name, the {@code where} clause
          *                      and parameters. Prepended by 'too many items matching '. Simply use
-         *                      {@link #formatQuery(String, SqlStatement)} .
+         *                      {@link #formatQuery(String, Binding)} .
          * @return the only row in the result set.
          * @throws IllegalStateException if the result set contains zero or multiple rows
          */
         @NotNull
-        public T getOneFromIterable(ResultIterable<T> iterable, @NotNull Supplier<String> errorSupplier) {
+        public T getOneFromIterable(ResultIterable<T> iterable, @NotNull Function<Binding, String> errorSupplier) {
             try (ResultIterator<T> iter = iterable.iterator()) {
                 if (!iter.hasNext()) {
-                    throw new IllegalStateException("no row matching " + errorSupplier.get());
+                    throw new IllegalStateException("no row matching " + errorSupplier.apply(iter.getContext().getBinding()));
                 }
 
                 final T r = iter.next();
 
                 if (iter.hasNext()) {
-                    throw new IllegalStateException("too many rows matching " + errorSupplier.get());
+                    throw new IllegalStateException("too many rows matching " + errorSupplier.apply(iter.getContext().getBinding()));
                 }
 
                 return r;
