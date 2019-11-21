@@ -30,6 +30,9 @@ public final class JdbiOrm {
     private JdbiOrm() {}
     private static volatile Validator validator;
     private static volatile DataSource dataSource;
+    // beware - we can't simply create new instances of Jdbi, otherwise the transaction nesting will not work
+    // since Jdbi ThreadLocals are not static but bound to the Jdbi instance!
+    private static volatile Jdbi jdbi;
     /**
      * If set to non-null, this takes precedence over {@link DatabaseQuirksDetectorJdbiPlugin} detection mechanism.
      */
@@ -57,7 +60,7 @@ public final class JdbiOrm {
 
     @NotNull
     public static DataSource getDataSource() {
-        return Objects.requireNonNull(dataSource, "The data source has not been set. Please call Jdbiorm.get().setDataSource() first.");
+        return Objects.requireNonNull(dataSource, "The data source has not been set. Please call JdbiOrm.setDataSource() first.");
     }
 
     public static void setDataSource(@NotNull DataSource dataSource) {
@@ -65,6 +68,8 @@ public final class JdbiOrm {
             Objects.requireNonNull(dataSource, "dataSource");
             destroy();
             JdbiOrm.dataSource = dataSource;
+            jdbi = Jdbi.create(dataSource);
+            jdbi.installPlugin(new DatabaseQuirksDetectorJdbiPlugin());
         }
     }
 
@@ -74,15 +79,14 @@ public final class JdbiOrm {
      */
     @NotNull
     public static Jdbi jdbi() {
-        final Jdbi jdbi = Jdbi.create(getDataSource());
-        jdbi.installPlugin(new DatabaseQuirksDetectorJdbiPlugin());
-        return jdbi;
+        return Objects.requireNonNull(jdbi, "The data source has not been set. Please call JdbiOrm.setDataSource() first.");
     }
 
     /**
      * Closes the current {@link #getDataSource()}. Does nothing if data source is null (has not been set).
      */
     public static void destroy() {
+        jdbi = null;
         if (dataSource != null && dataSource instanceof Closeable) {
             try {
                 ((Closeable) dataSource).close();

@@ -149,7 +149,7 @@ fun DynaNodeGroup.usingDockerizedMysql(databasePort: Int) {
     afterEach { clearDb() }
 }
 
-fun <T> db(block: Handle.() -> T): T = jdbi().withHandle<T, Exception>(block)
+fun <T> db(block: Handle.() -> T): T = jdbi().inTransaction<T, Exception>(block)
 
 fun DynaNodeGroup.usingH2Database() {
     beforeGroup {
