@@ -38,7 +38,7 @@ dependencies {
     compile("org.slf4j:slf4j-api:1.7.28")
 
     // db
-    compile("org.jdbi:jdbi3-core:3.11.1")
+    compile("org.jdbi:jdbi3-core:3.10.1")
     testCompile("com.zaxxer:HikariCP:3.4.1")
 
     // validation support
