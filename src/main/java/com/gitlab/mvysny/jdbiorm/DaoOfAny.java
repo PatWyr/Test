@@ -38,17 +38,20 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  */
 public class DaoOfAny<T> {
     @NotNull
-    protected final Class<T> entityClass;
+    public final Class<T> entityClass;  // public because of vok-orm
     @NotNull
     protected final EntityMeta meta;
+    @NotNull
+    protected final Helper<T> helper;  // not public, since anybody can create instances of this class easily
 
     public DaoOfAny(@NotNull Class<T> entityClass) {
         this.entityClass = Objects.requireNonNull(entityClass, "entityClass");
         meta = new EntityMeta(entityClass);
+        helper = new Helper<>(entityClass);
     }
 
     @NotNull
-    protected RowMapper<T> getRowMapper() {
+    public RowMapper<T> getRowMapper() {  // public because of vok-orm
         return FieldMapper.of(entityClass);
     }
 
@@ -165,7 +168,7 @@ public class DaoOfAny<T> {
                     .define("WHERE", where);
             queryConsumer.accept(query);
             final ResultIterable<T> iterable = query.map(getRowMapper());
-            return findOneFromIterable(iterable, () -> formatQuery(where, query));
+            return helper.findOneFromIterable(iterable, () -> helper.formatQuery(where, query));
         });
     }
 
@@ -197,11 +200,6 @@ public class DaoOfAny<T> {
         return first.isEmpty() ? null : first.get(0);
     }
 
-    protected String formatQuery(@NotNull String sql, @NotNull SqlStatement<?> statement) {
-        Objects.requireNonNull(sql, "sql");
-        return entityClass.getSimpleName() + ": '" + sql + "'" + toString(statement);
-    }
-
     /**
      * Retrieves single entity matching given {@code where} clause.
      * Fails if there is no such entity, or if there are two or more entities matching the criteria.
@@ -228,7 +226,7 @@ public class DaoOfAny<T> {
                             .define("WHERE", where);
                     queryConsumer.accept(query);
                     final ResultIterable<T> result = query.map(getRowMapper());
-                    return getOneFromIterable(result, () -> formatQuery(where, query));
+                    return helper.getOneFromIterable(result, () -> helper.formatQuery(where, query));
                 }
         );
     }
@@ -311,72 +309,102 @@ public class DaoOfAny<T> {
         });
     }
 
-    @NotNull
-    protected String toString(@NotNull SqlStatement<?> statement) {
-        Objects.requireNonNull(statement, "statement");
-        try {
-            final Method getBinding = SqlStatement.class.getDeclaredMethod("getBinding");
-            getBinding.setAccessible(true);
-            final Binding binding = (Binding) getBinding.invoke(statement);
-            return binding.toString();
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     /**
-     * Returns the only row in the result set, if any. Returns null if zero
-     * rows are returned, or if the row itself is {@code null}.
-     *
-     * @param errorSupplier invoked in case of error; should list table name, the {@code where} clause
-     *                      and parameters. Prepended by 'too many items matching '. Simply use
-     *                      {@link #formatQuery(String, SqlStatement)}.
-     * @return the only row in the result set, if any.
-     * @throws IllegalStateException if the result set contains multiple rows
+     * Helper functions which should not be auto-completed in {@link DaoOfAny} are placed here.
+     * @param <T>
      */
-    @Nullable
-    protected T findOneFromIterable(@NotNull ResultIterable<T> iterable, @NotNull Supplier<String> errorSupplier) {
-        Objects.requireNonNull(iterable, "iterable");
-        Objects.requireNonNull(errorSupplier, "errorSupplier");
-        try (ResultIterator<T> iter = iterable.iterator()) {
-            if (!iter.hasNext()) {
-                return null;
-            }
+    public static final class Helper<T> {
+        @NotNull
+        public final Class<T> entityClass;
 
-            final T r = iter.next();
-
-            if (iter.hasNext()) {
-                throw new IllegalStateException("too many rows matching " + errorSupplier.get());
-            }
-
-            return r;
+        public Helper(@NotNull Class<T> entityClass) {
+            this.entityClass = Objects.requireNonNull(entityClass);
         }
-    }
 
-    /**
-     * Returns the only row in the result set. Returns {@code null} if the row itself is
-     * {@code null}.
-     *
-     * @param errorSupplier invoked in case of error; should list table name, the {@code where} clause
-     *                      and parameters. Prepended by 'too many items matching '. Simply use
-     *                      {@link #formatQuery(String, SqlStatement)} .
-     * @return the only row in the result set.
-     * @throws IllegalStateException if the result set contains zero or multiple rows
-     */
-    @NotNull
-    protected T getOneFromIterable(ResultIterable<T> iterable, @NotNull Supplier<String> errorSupplier) {
-        try (ResultIterator<T> iter = iterable.iterator()) {
-            if (!iter.hasNext()) {
-                throw new IllegalStateException("no row matching " + errorSupplier.get());
+        /**
+         * Provides detailed debug info which is helpful when the query fails.
+         * @param sql the SQL
+         * @param statement the statement
+         * @return the entity name, the SQL and values of all the parameters
+         */
+        @NotNull
+        public String formatQuery(@NotNull String sql, @NotNull SqlStatement<?> statement) {
+            Objects.requireNonNull(sql, "sql");
+            return entityClass.getSimpleName() + ": '" + sql + "'" + toString(statement);
+        }
+
+        /**
+         * Returns {@link Binding#toString()}.
+         * @param statement get the binding from this statement
+         * @return {@link Binding#toString()}, not null.
+         */
+        @NotNull
+        public String toString(@NotNull SqlStatement<?> statement) {
+            Objects.requireNonNull(statement, "statement");
+            try {
+                final Method getBinding = SqlStatement.class.getDeclaredMethod("getBinding");
+                getBinding.setAccessible(true);
+                final Binding binding = (Binding) getBinding.invoke(statement);
+                return binding.toString();
+            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                throw new RuntimeException(e);
             }
+        }
 
-            final T r = iter.next();
+        /**
+         * Returns the only row in the result set, if any. Returns null if zero
+         * rows are returned, or if the row itself is {@code null}.
+         *
+         * @param errorSupplier invoked in case of error; should list table name, the {@code where} clause
+         *                      and parameters. Prepended by 'too many items matching '. Simply use
+         *                      {@link #formatQuery(String, SqlStatement)}.
+         * @return the only row in the result set, if any.
+         * @throws IllegalStateException if the result set contains multiple rows
+         */
+        @Nullable
+        public T findOneFromIterable(@NotNull ResultIterable<T> iterable, @NotNull Supplier<String> errorSupplier) {
+            Objects.requireNonNull(iterable, "iterable");
+            Objects.requireNonNull(errorSupplier, "errorSupplier");
+            try (ResultIterator<T> iter = iterable.iterator()) {
+                if (!iter.hasNext()) {
+                    return null;
+                }
 
-            if (iter.hasNext()) {
-                throw new IllegalStateException("too many rows matching " + errorSupplier.get());
+                final T r = iter.next();
+
+                if (iter.hasNext()) {
+                    throw new IllegalStateException("too many rows matching " + errorSupplier.get());
+                }
+
+                return r;
             }
+        }
 
-            return r;
+        /**
+         * Returns the only row in the result set. Returns {@code null} if the row itself is
+         * {@code null}.
+         *
+         * @param errorSupplier invoked in case of error; should list table name, the {@code where} clause
+         *                      and parameters. Prepended by 'too many items matching '. Simply use
+         *                      {@link #formatQuery(String, SqlStatement)} .
+         * @return the only row in the result set.
+         * @throws IllegalStateException if the result set contains zero or multiple rows
+         */
+        @NotNull
+        public T getOneFromIterable(ResultIterable<T> iterable, @NotNull Supplier<String> errorSupplier) {
+            try (ResultIterator<T> iter = iterable.iterator()) {
+                if (!iter.hasNext()) {
+                    throw new IllegalStateException("no row matching " + errorSupplier.get());
+                }
+
+                final T r = iter.next();
+
+                if (iter.hasNext()) {
+                    throw new IllegalStateException("too many rows matching " + errorSupplier.get());
+                }
+
+                return r;
+            }
         }
     }
 }

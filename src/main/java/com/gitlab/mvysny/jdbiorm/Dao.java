@@ -68,7 +68,7 @@ public class Dao<T extends Entity<ID>, ID> extends DaoOfAny<T> {
      * @param query the query to modify, not null.
      * @param id the ID value, not null.
      */
-    protected void passIdValuesToQuery(@NotNull SqlStatement<?> query, @NotNull ID id) {
+    public void passIdValuesToQuery(@NotNull SqlStatement<?> query, @NotNull ID id) {
         Objects.requireNonNull(id, "id");
         final List<PropertyMeta> idProperties = meta.getIdProperty();
         query.define("ID", idProperties.stream().map(it -> it.getDbColumnName() + " = :" + it.getDbColumnName()).collect(Collectors.joining(" AND ")));
