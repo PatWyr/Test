@@ -11,7 +11,7 @@ if (localProperties.exists()) {
 }
 
 plugins {
-    kotlin("jvm") version "1.3.50"
+    kotlin("jvm") version "1.3.60"
     id("com.jfrog.bintray") version "1.8.3"
     `maven-publish`
     id("org.jetbrains.dokka") version "0.9.17"
@@ -39,7 +39,7 @@ dependencies {
 
     // db
     compile("org.jdbi:jdbi3-core:3.10.1")
-    testCompile("com.zaxxer:HikariCP:3.4.0")
+    testCompile("com.zaxxer:HikariCP:3.4.1")
 
     // validation support
     compile("javax.validation:validation-api:2.0.1.Final")  // to have JSR303 validations in the entities
