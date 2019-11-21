@@ -40,7 +40,7 @@ public class DaoOfAny<T> {
     @NotNull
     public final Class<T> entityClass;  // public because of vok-orm
     @NotNull
-    protected final EntityMeta meta;
+    protected final EntityMeta meta;   // not public, since anybody can create instances of this class easily
     @NotNull
     protected final Helper<T> helper;  // not public, since anybody can create instances of this class easily
 
