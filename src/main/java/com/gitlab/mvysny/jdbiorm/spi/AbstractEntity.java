@@ -1,4 +1,6 @@
-package com.gitlab.mvysny.jdbiorm;
+package com.gitlab.mvysny.jdbiorm.spi;
+
+import com.gitlab.mvysny.jdbiorm.Entity;
 
 import java.io.Serializable;
 
@@ -9,6 +11,11 @@ import java.io.Serializable;
  * <p></p>
  * It is expected that every entity has at least the methods present in {@link Entity};
  * however, the programming language can use its own native syntax to define those methods.
+ * <p></p>
+ * The user of this library is not supposed to use this interface directly; instead
+ * use an interface tailored towards the programming language of your choice. For example,
+ * when using Java, use {@link Entity}. When using Kotlin, use the vok-orm library.
+ * @param <ID> the type of the ID as returned by getId().
  * @author mavi
  */
 public interface AbstractEntity<ID> extends Serializable {

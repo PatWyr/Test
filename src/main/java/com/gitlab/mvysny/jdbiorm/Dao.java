@@ -1,5 +1,6 @@
 package com.gitlab.mvysny.jdbiorm;
 
+import com.gitlab.mvysny.jdbiorm.spi.AbstractEntity;
 import org.jdbi.v3.core.statement.Query;
 import org.jdbi.v3.core.statement.SqlStatement;
 import org.jdbi.v3.core.statement.Update;
