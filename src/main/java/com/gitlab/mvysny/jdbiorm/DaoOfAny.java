@@ -6,18 +6,14 @@ import org.jdbi.v3.core.result.ResultIterable;
 import org.jdbi.v3.core.result.ResultIterator;
 import org.jdbi.v3.core.statement.Binding;
 import org.jdbi.v3.core.statement.Query;
-import org.jdbi.v3.core.statement.SqlStatement;
 import org.jdbi.v3.core.statement.Update;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
 
@@ -51,6 +47,12 @@ public class DaoOfAny<T> {
         helper = new Helper<>(entityClass);
     }
 
+    /**
+     * Returns JDBI Row Mapper which maps JDBC ResultSet to Java object. By default
+     * returns FieldMapper, and it is recommended to use FieldMapper unless you need
+     * to perform some hard-core JDBI mapper tweaking.
+     * @return FieldMapper.of(entityClass) by default. Not null.
+     */
     @NotNull
     public RowMapper<T> getRowMapper() {  // public because of vok-orm
         return FieldMapper.of(entityClass);
