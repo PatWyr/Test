@@ -57,7 +57,7 @@ private fun DynaNodeGroup.joinTableTestSuite() {
             }
         }
     }
-    group("getBy() tests") {
+    group("getOneBy() tests") {
         test("succeeds if there is exactly one matching entity") {
             val p = JoinTable(130, 10)
             p.save()
@@ -83,6 +83,62 @@ private fun DynaNodeGroup.joinTableTestSuite() {
             repeat(10) { JoinTable(100, 100).save() }
             expectThrows(IllegalStateException::class, message = "too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:100}, finder:[]}") {
                 JoinTable.dao.getOneBy("customerId = :cid") { it.bind("cid", 100) }
+            }
+        }
+    }
+    group("getOne() tests") {
+        test("succeeds if there is exactly one matching entity") {
+            val p = JoinTable(130, 10)
+            p.save()
+            expect(p) {
+                JoinTable.dao.getOne()
+            }
+        }
+
+        test("fails if there is no such entity") {
+            expectThrows(IllegalStateException::class, message = "no row matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:10}, finder:[]}") {
+                JoinTable.dao.getOne()
+            }
+        }
+
+        test("fails if there are two matching entities") {
+            repeat(2) { JoinTable(100, 100).save() }
+            expectThrows(IllegalStateException::class, message = "too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:100}, finder:[]}") {
+                JoinTable.dao.getOne()
+            }
+        }
+
+        test("fails if there are ten matching entities") {
+            repeat(10) { JoinTable(100, 100).save() }
+            expectThrows(IllegalStateException::class, message = "too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:100}, finder:[]}") {
+                JoinTable.dao.getOne()
+            }
+        }
+    }
+    group("findOne() tests") {
+        test("succeeds if there is exactly one matching entity") {
+            val p = JoinTable(130, 10)
+            p.save()
+            expect(p) {
+                JoinTable.dao.findOne()
+            }
+        }
+
+        test("returns null if there is no such entity") {
+            expect(null) { JoinTable.dao.findOne() }
+        }
+
+        test("fails if there are two matching entities") {
+            repeat(2) { JoinTable(100, 100).save() }
+            expectThrows(IllegalStateException::class, message = "too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:100}, finder:[]}") {
+                JoinTable.dao.findOne()
+            }
+        }
+
+        test("fails if there are ten matching entities") {
+            repeat(10) { JoinTable(100, 100).save() }
+            expectThrows(IllegalStateException::class, message = "too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:100}, finder:[]}") {
+                JoinTable.dao.findOne()
             }
         }
     }

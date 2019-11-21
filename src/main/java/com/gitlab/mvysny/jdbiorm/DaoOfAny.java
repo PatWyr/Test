@@ -153,7 +153,7 @@ public class DaoOfAny<T> {
      * </pre>
      * <p>
      * This function returns null if there is no item matching. Use {@link #getOneBy(String, Consumer)}
-     * if you wish to return `null` in case that the entity does not exist.
+     * if you wish to fail with an exception in case that the entity does not exist.
      *
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
      * @throws IllegalStateException if there are two or more matching entities.
@@ -170,6 +170,56 @@ public class DaoOfAny<T> {
             queryConsumer.accept(query);
             final ResultIterable<T> iterable = query.map(getRowMapper());
             return helper.findOneFromIterable(iterable, binding -> helper.formatQuery(where, binding));
+        });
+    }
+
+    /**
+     * Retrieves the single entity from this table. Useful for config table which hosts one row only.
+     * Returns null if there is no such entity; fails if there are two or more entities matching the criteria.
+     * <p></p>
+     * Example:
+     * <pre>
+     * ConfigTable.dao.findOne()
+     * </pre>
+     * <p>
+     * This function returns null if there is no item matching. Use {@link #getOneBy(String, Consumer)}
+     * if you wish to return `null` in case that the entity does not exist.
+     *
+     * @throws IllegalStateException if there are two or more rows.
+     */
+    @Nullable
+    public T findOne() {
+        return jdbi().withHandle(handle -> {
+            final ResultIterable<T> iterable = handle.createQuery("select <FIELDS> from <TABLE> LIMIT 2")
+                    .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
+                    .define("TABLE", meta.getDatabaseTableName())
+                    .map(getRowMapper());
+            return helper.findOneFromIterable(iterable, binding -> helper.formatQuery("", binding));
+        });
+    }
+
+    /**
+     * Retrieves the single entity from this table. Useful for config table which hosts one row only.
+     * Returns null if there is no such entity; fails if there are two or more entities matching the criteria.
+     * <p></p>
+     * Example:
+     * <pre>
+     * ConfigTable.dao.findOne()
+     * </pre>
+     * <p>
+     * This function fails if there is no item matching. Use {@link #findOne}
+     * if you wish to return `null` in case that the entity does not exist.
+     *
+     * @throws IllegalStateException if the table is empty, or if there are two or more rows.
+     */
+    @Nullable
+    public T getOne() {
+        return jdbi().withHandle(handle -> {
+            final ResultIterable<T> iterable = handle.createQuery("select <FIELDS> from <TABLE> LIMIT 2")
+                    .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
+                    .define("TABLE", meta.getDatabaseTableName())
+                    .map(getRowMapper());
+            return helper.getOneFromIterable(iterable, binding -> helper.formatQuery("", binding));
         });
     }
 
