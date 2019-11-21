@@ -109,6 +109,9 @@ public final class PropertyMeta {
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
+            if (current == null) {
+                return null;
+            }
         }
         return current;
     }

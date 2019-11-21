@@ -54,9 +54,9 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  * @param <ID> the type of the primary key. All finder methods will only accept this type of ids.
  * @author mavi
  */
-public interface Entity<ID> extends Serializable {
+public interface Entity<ID> extends AbstractEntity<ID> {
     /**
-     * The ID primary key. You can use the {@link org.jdbi.v3.core.mapper.reflect.ColumnName} annotation to change the actual db column name.
+     * The ID primary key. You can use the {@link ColumnName} annotation to change the actual db column name.
      *
      * @return the ID primary key, may be null.
      */
@@ -266,7 +266,7 @@ public interface Entity<ID> extends Serializable {
             throw new IllegalStateException("Invalid state: id is null");
         }
         final Dao dao = new Dao<>(getClass());
-        final Entity current = dao.getById(getId());
+        final AbstractEntity<?> current = dao.getById(getId());
         dao.meta.copyTo(current, this);
     }
 }

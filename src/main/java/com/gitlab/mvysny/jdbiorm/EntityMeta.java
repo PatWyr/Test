@@ -7,12 +7,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -21,17 +24,17 @@ import java.util.stream.Collectors;
  * Thread-safe.
  * @author mavi
  */
-public final class EntityMeta {
+public final class EntityMeta<E> {
     /**
      * usually a class implementing {@link Entity} but may be any class. Not null.
      */
     @NotNull
-    public final Class<?> entityClass;
+    public final Class<E> entityClass;
 
     /**
      * @param entityClass usually a class implementing {@link Entity} but may be any class. Not null.
      */
-    public EntityMeta(@NotNull Class<?> entityClass) {
+    public EntityMeta(@NotNull Class<E> entityClass) {
         this.entityClass = Objects.requireNonNull(entityClass, "entityClass");
     }
 
@@ -204,12 +207,65 @@ public final class EntityMeta {
      * @param sourceEntity the entity to copy the values from, not null.
      * @param targetEntity the entity to copy the values to, not null.
      */
-    public void copyTo(@NotNull Object sourceEntity, @NotNull Object targetEntity) {
+    public void copyTo(@NotNull E sourceEntity, @NotNull E targetEntity) {
         Objects.requireNonNull(sourceEntity);
         Objects.requireNonNull(targetEntity);
         for (PropertyMeta property : getProperties()) {
             final Object value = property.get(sourceEntity);
             property.set(targetEntity, value);
+        }
+    }
+
+    /**
+     * Creates new empty instance of the entity.
+     * @return the new instance, not null.
+     */
+    @NotNull
+    public E newEntityInstance() {
+        try {
+            return entityClass.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Uses {@link #newEntityInstance()} and {@link #copyTo(Object, Object)}
+     * to clone given entity.
+     * @param source the entity to clone, not null.
+     * @return a clone, not null.
+     */
+    @NotNull
+    public E clone(@NotNull E source) {
+        Objects.requireNonNull(source);
+        final E result = newEntityInstance();
+        copyTo(source, result);
+        return result;
+    }
+
+    private static final ConcurrentMap<Class<?>, Method> getIdCache = new ConcurrentHashMap<>();
+
+    /**
+     * Calls {@code AbstractEntity#setId} on given entity.
+     * @param entity the entity, not null.
+     * @param id the ID, may be null.
+     */
+    public void setId(@NotNull E entity, @Nullable Object id) {
+        final Method setId = getIdCache.computeIfAbsent(entityClass, new Function<Class<?>, Method>() {
+            @Override
+            public Method apply(Class<?> aClass) {
+                final Method setId = Arrays.stream(aClass.getMethods()).filter(it -> it.getName().equals("setId"))
+                        .findFirst().orElse(null);
+                if (setId == null) {
+                    throw new IllegalStateException("Invalid state: setId() not found on " + entityClass);
+                }
+                return setId;
+            }
+        });
+        try {
+            setId.invoke(entity, id);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -25,7 +25,7 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  * @param <T> the type of the {@link Entity} provided by this Dao
  * @param <ID> the type of {@link Entity} ID.
  */
-public class Dao<T extends Entity<ID>, ID> extends DaoOfAny<T> {
+public class Dao<T extends AbstractEntity<ID>, ID> extends DaoOfAny<T> {
     public Dao(@NotNull Class<T> entityClass) {
         super(entityClass);
     }
@@ -76,13 +76,8 @@ public class Dao<T extends Entity<ID>, ID> extends DaoOfAny<T> {
         if (meta.hasCompositeKey()) {
             // in order to be able to call PropertyMeta.get() we need to pass in the Entity instance, not the ID instance.
             // so we'll use a little trick...
-            final Entity<ID> entity;
-            try {
-                entity = entityClass.newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-            entity.setId(id);
+            final T entity = meta.newEntityInstance();
+            meta.setId(entity, id);
             for (PropertyMeta idProperty : idProperties) {
                 query.bind(idProperty.getDbColumnName(), idProperty.get(entity));
             }
