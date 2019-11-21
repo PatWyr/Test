@@ -322,7 +322,7 @@ private fun DynaNodeGroup.compositePKTestSuite() {
             MappingTable(2, 2, "Nigredo").create()
             MappingTable(3, 3, "Rubedo").create()
             expect(1) { MappingTable.dao.countBy("some_data=:name") { it.bind("name", "Albedo") } }
-            val id = MappingTable.dao.findAll().first { it.someData == "Albedo" }.id!!
+            MappingTable.dao.findAll().first { it.someData == "Albedo" }.id!!
         }
     }
     test("DeleteAll") {
