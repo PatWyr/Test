@@ -107,6 +107,7 @@ public class DaoOfAny<T> {
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
      * @param offset start from this row. If not null, must be 0 or greater.
      * @param limit return this count of row at most. If not null, must be 0 or greater.
+     * @param queryConsumer allows you to set parameter values etc, for example {@code q -> q.bind("customerid", customerId")}.
      */
     @NotNull
     public List<T> findAllBy(@NotNull String where, @Nullable final Long offset, @Nullable final Long limit, @NotNull Consumer<Query> queryConsumer) {
@@ -139,6 +140,7 @@ public class DaoOfAny<T> {
      * Finds all matching rows in given table. Fails if there is no table in the database with the
      * name of {@link EntityMeta#getDatabaseTableName()}.
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
+     * @param queryConsumer allows you to set parameter values etc, for example {@code q -> q.bind("customerid", customerId")}.
      */
     @NotNull
     public List<T> findAllBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
@@ -158,6 +160,7 @@ public class DaoOfAny<T> {
      * if you wish to fail with an exception in case that the entity does not exist.
      *
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
+     * @param queryConsumer allows you to set parameter values etc, for example {@code q -> q.bind("customerid", customerId")}.
      * @throws IllegalStateException if there are two or more matching entities.
      */
     @Nullable
@@ -246,6 +249,7 @@ public class DaoOfAny<T> {
      * This function returns null if there is no item matching.
      *
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
+     * @param queryConsumer allows you to set parameter values etc, for example {@code q -> q.bind("customerid", customerId")}.
      */
     @Nullable
     public T findFirstBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
@@ -266,6 +270,7 @@ public class DaoOfAny<T> {
      * the entity does not exist.
      *
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
+     * @param queryConsumer allows you to set parameter values etc, for example {@code q -> q.bind("customerid", customerId")}.
      * @throws IllegalStateException if there is no entity matching given criteria, or if there are two or more matching entities.
      */
     @NotNull
@@ -304,8 +309,8 @@ public class DaoOfAny<T> {
 
     /**
      * Counts all matching rows in this table.
-     *
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
+     * @param queryConsumer allows you to set parameter values etc, for example {@code q -> q.bind("customerid", customerId")}.
      */
     public long countBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
         Objects.requireNonNull(where, "where");
@@ -330,8 +335,8 @@ public class DaoOfAny<T> {
 
     /**
      * Checks whether there exists any row in this table.
-     *
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
+     * @param queryConsumer allows you to set parameter values etc, for example {@code q -> q.bind("customerid", customerId")}.
      */
     public boolean existsBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
         Objects.requireNonNull(where, "where");
@@ -347,8 +352,8 @@ public class DaoOfAny<T> {
 
     /**
      * Deletes rows matching given where clause.
-     *
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
+     * @param updateConsumer allows you to set parameter values etc, for example {@code q -> q.bind("customerid", customerId")}.
      */
     public void deleteBy(@NotNull String where, @NotNull Consumer<Update> updateConsumer) {
         Objects.requireNonNull(where, "where");
