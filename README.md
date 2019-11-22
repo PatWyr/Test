@@ -18,6 +18,9 @@ No dependency injection framework is required - the library works in all
 sorts of environments. The library requires Java 8 or higher to work. No Maven compiler
 plugins needed - only Java 8 language features are used.
 
+> This library is tailored for Java usage. For Kotlin bindings please visit
+[vok-orm](https://github.com/mvysny/vok-orm).
+
 ## Usage
 
 Just add the following lines to your Gradle script, to include this library in your project:
@@ -714,50 +717,9 @@ public final class MappingTable implements Entity<MappingTable.ID> {
 
 ## Data Loaders
 
-NOT YET IMPLEMENTED
-
-Very often the UI frameworks provide some kind of tabular component which allows for viewing database tables, or even outcomes of any SELECT
-command (possibly joined). An example of such tabular component is the Vaadin Grid; you can see the [live demo](https://vok-crud.herokuapp.com/crud)
-of the Grid for yourself.
-
-Typically such tables provide sorting and filtering for the user; since they fetch data lazily as the user scrolls the table, the table must be
-able to fetch data in pages.
-
-vok-orm provide the Data Loaders which offer all of the above-mentioned functionality: sorting, filtering and lazy-loading. You can check out
-the API here: [DataLoader.kt](src/main/kotlin/com/github/vokorm/dataloader/DataLoader.kt). You then need to write a thin wrapper which wraps
-the `DataLoader` and adapts it to the API as required by the particular tabular component from a particular framework. However, since all
-of the functionality is provided, the wrapper is typically thin and easy to write.
-
-vok-orm provides two concrete implementations of data loaders out-of-the-box: the `EntityDataLoader` and the `SqlDataLoader`.
-
-### EntityDataLoader
-
-The [EntityDataLoader](src/main/kotlin/com/github/vokorm/dataloader/EntityDataLoader.kt) is able to provide instances of any class which implements the `Entity` interface. Simply create the `EntityDataLoader`
-instance for your entity class and you're good to go.
-
-The `EntityDataLoader` honors the `@ColumnName` annotation when mapping class instances from the outcome of the `SELECT *` clause. If you don't use SQL aliases
-but you stick to use `@ColumnName`, then you can use the `Filter` class hierarchy to filter out the results, and you can use `SortClause` to sort
-the results. Just keep in mind to pass in the database column name into the `Filter` and `SortClause`, and not the bean property name.
-
-Note that the `EntityDataLoader` will construct the entire SQL SELECT command by itself - you cannot change the way it's constructed. This way
-it is very simple to use the `EntityDataLoader`. If you need a full power of the SQL SELECT command, use the `SqlDataLoader`, or
-create a database view.
-
-### SqlDataLoader
-
-The [SqlDataLoader](src/main/kotlin/com/github/vokorm/dataloader/SqlDataLoader.kt) is able to map the outcome of any SELECT command supplied by you,
-onto a bean. You can use `SqlDataLoader` to map the outcome of joins, stored procedure calls, anything. For example:
-
-```kotlin
-val provider = SqlDataLoader(CustomerAddress::class.java, """select c.name as customerName, a.street || ' ' || a.city as address
-   from Customer c inner join Address a on c.address_id=a.id where 1=1 {{WHERE}} order by 1=1{{ORDER}} {{PAGING}}""")
-val filter: Filter<CustomerAddress> = buildFilter<CustomerAddress> { "c.age<:age"("age" to 48) }
-val result: List<CustomerAddress> = provider.fetch(filter, sortBy = listOf("name".asc), range = 0L..20L)
-```
-
-The `SqlDataLoader` honors the `@ColumnName` annotation when mapping class instances from the outcome of the `SELECT *` clause. If you don't use SQL aliases
-but you stick to use `@ColumnName`, then you can use the `Filter` class hierarchy to filter out the results, and you can use `SortClause` to sort
-the results. Just keep in mind to pass in the database column name into the `Filter` and `SortClause`, and not the bean property name.
+This library does not support integration with [Data Loaders](https://gitlab.com/mvysny/vok-dataloader)
+nor Vaadin 8/14 Grid directly. However, the Kotlin bindings do, please read more at
+[vok-orm](https://github.com/mvysny/vok-orm).
 
 ## Aliases
 
@@ -778,9 +740,15 @@ The problem with this approach is twofold:
 Therefore, instead of database-based aliases it's better to use the `@ColumnName` annotation on your beans, both natural entities
 such as `Customer` and projection-only entities such as `CustomerAddress`:
 
-```kotlin
-data class Customer(@ColumnName("CUSTOMER_NAME") var name: String? = null) : Entity<Long>
-data class CustomerAddress(@ColumnName("CUSTOMER_NAME") var customerName: String? = null)
+```java
+public final class Customer implements Entity<Long> {
+    @ColumnName("CUSTOMER_NAME")
+    private String name;
+}
+public final class CustomerAddress {
+    @ColumnName("CUSTOMER_NAME")
+    private String customerName;
+}
 ```
 
 The `@ColumnName` annotation is honored both by `Dao`s and by all data loaders.
@@ -879,7 +847,7 @@ one creates the table, while other creates the indices.
 You don't need to use Flyway plugin. Just add the following Gradle dependency to your project:
 
 ```gradle
-compile "org.flywaydb:flyway-core:5.2.0"
+compile "org.flywaydb:flyway-core:6.0.7"
 ```
 
 Flyway expects the migration scripts named in a certain format, to know the order in which to execute them.
