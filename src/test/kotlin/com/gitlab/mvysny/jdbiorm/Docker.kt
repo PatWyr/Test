@@ -1,5 +1,6 @@
 package com.gitlab.mvysny.jdbiorm
 
+import org.testcontainers.containers.PostgreSQLContainer
 import org.zeroturnaround.exec.ProcessExecutor
 import org.zeroturnaround.exec.ProcessInitException
 import org.zeroturnaround.exec.ProcessResult
@@ -45,15 +46,6 @@ object Docker {
     }
 
     /**
-     * Runs a new `testing_container` with PostgreSQL 10.3
-     */
-    fun startPostgresql(version: String = "10.3", port: Int = 5432) {
-        stopTestingContainer()
-        exec("docker run --rm --name testing_container -e POSTGRES_PASSWORD=mysecretpassword -p 127.0.0.1:$port:5432 -d postgres:$version")
-        probeJDBC("jdbc:postgresql://localhost:$port/postgres", "postgres", "mysecretpassword")
-    }
-
-    /**
      * @param maxDuration mysql starts sloooooowly
      */
     private fun probeJDBC(url: String, username: String, password: String, maxDuration: Duration = Duration.ofSeconds(30)) {
@@ -77,7 +69,7 @@ object Docker {
 
     fun isRunning(): Boolean = exec("docker ps").contains("testing_container")
 
-    private fun stopTestingContainer() {
+    fun stopTestingContainer() {
         while (isRunning()) {
             exec("docker stop testing_container")
             // pause a bit, to avoid this failure:
@@ -86,13 +78,6 @@ object Docker {
             // container to be able to reuse that name..
             Thread.sleep(500)
         }
-    }
-
-    /**
-     * Stops the PostgreSQL `testing_container`; does nothing if it's not running.
-     */
-    fun stopPostgresql() {
-        stopTestingContainer()
     }
 
     /**

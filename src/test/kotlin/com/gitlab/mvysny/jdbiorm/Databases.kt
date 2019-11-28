@@ -6,6 +6,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Handle
+import org.testcontainers.containers.PostgreSQLContainer
 import java.util.*
 
 enum class MaritalStatus {
@@ -54,15 +55,23 @@ fun hikari(block: HikariConfig.() -> Unit) {
     JdbiOrm.setDataSource(HikariDataSource(HikariConfig().apply(block)))
 }
 
-private fun DynaNodeGroup.usingDockerizedPosgresql(databasePort: Int) {
+private fun DynaNodeGroup.usingDockerizedPosgresql() {
     check(Docker.isPresent) { "Docker not available" }
-    beforeGroup { Docker.startPostgresql(port = databasePort) }
+    lateinit var container: PostgreSQLContainer<Nothing>
+    beforeGroup {
+        Docker.stopTestingContainer()
+        container = PostgreSQLContainer<Nothing>("postgres:10.3").apply {
+            withPassword("mysecretpassword")
+            withUsername("postgres")
+        }
+        container.start()
+    }
     beforeGroup {
         hikari {
             minimumIdle = 0
             maximumPoolSize = 30
             // stringtype=unspecified : see https://github.com/mvysny/vok-orm/issues/12 for more details.
-            jdbcUrl = "jdbc:postgresql://localhost:$databasePort/postgres?stringtype=unspecified"
+            jdbcUrl = container.jdbcUrl.removeSuffix("loggerLevel=OFF") + "stringtype=unspecified"
             username = "postgres"
             password = "mysecretpassword"
         }
@@ -88,7 +97,7 @@ private fun DynaNodeGroup.usingDockerizedPosgresql(databasePort: Int) {
     }
 
     afterGroup { JdbiOrm.destroy() }
-    afterGroup { Docker.stopPostgresql() }
+    afterGroup { container.stop() }
 
     fun clearDb() {
         Person.deleteAll()
@@ -249,7 +258,7 @@ fun DynaNodeGroup.withAllDatabases(block: DynaNodeGroup.()->Unit) {
     if (Docker.isPresent) {
         println("Docker is available, running tests")
         group("PostgreSQL 10.3") {
-            usingDockerizedPosgresql(12345)
+            usingDockerizedPosgresql()
             block()
         }
 
