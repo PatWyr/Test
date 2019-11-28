@@ -6,6 +6,8 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Handle
+import org.testcontainers.containers.MariaDBContainer
+import org.testcontainers.containers.MySQLContainer
 import org.testcontainers.containers.PostgreSQLContainer
 import java.util.*
 
@@ -59,11 +61,7 @@ private fun DynaNodeGroup.usingDockerizedPosgresql() {
     check(Docker.isPresent) { "Docker not available" }
     lateinit var container: PostgreSQLContainer<Nothing>
     beforeGroup {
-        Docker.stopTestingContainer()
-        container = PostgreSQLContainer<Nothing>("postgres:10.3").apply {
-            withPassword("mysecretpassword")
-            withUsername("postgres")
-        }
+        container = PostgreSQLContainer<Nothing>("postgres:10.3")
         container.start()
     }
     beforeGroup {
@@ -72,8 +70,8 @@ private fun DynaNodeGroup.usingDockerizedPosgresql() {
             maximumPoolSize = 30
             // stringtype=unspecified : see https://github.com/mvysny/vok-orm/issues/12 for more details.
             jdbcUrl = container.jdbcUrl.removeSuffix("loggerLevel=OFF") + "stringtype=unspecified"
-            username = "postgres"
-            password = "mysecretpassword"
+            username = "test"
+            password = "test"
         }
         db {
             ddl("""create table if not exists Test (
@@ -111,16 +109,20 @@ private fun DynaNodeGroup.usingDockerizedPosgresql() {
     afterEach { clearDb() }
 }
 
-fun DynaNodeGroup.usingDockerizedMysql(databasePort: Int) {
+fun DynaNodeGroup.usingDockerizedMysql() {
     check(Docker.isPresent) { "Docker not available" }
-    beforeGroup { Docker.startMysql(port = databasePort) }
+    lateinit var container: MySQLContainer<Nothing>
+    beforeGroup {
+        container = MySQLContainer<Nothing>("mysql:5.7.21")
+        container.start()
+    }
     beforeGroup {
         hikari {
             minimumIdle = 0
             maximumPoolSize = 30
-            jdbcUrl = "jdbc:mysql://localhost:$databasePort/db"
-            username = "testuser"
-            password = "mysqlpassword"
+            jdbcUrl = container.jdbcUrl
+            username = "test"
+            password = "test"
         }
         db {
             ddl("""create table if not exists Test (
@@ -143,7 +145,7 @@ fun DynaNodeGroup.usingDockerizedMysql(databasePort: Int) {
     }
 
     afterGroup { JdbiOrm.destroy() }
-    afterGroup { Docker.stopMysql() }
+    afterGroup { container.stop() }
 
     fun clearDb() {
         Person.deleteAll()
@@ -201,16 +203,20 @@ fun Handle.ddl(@Language("sql") sql: String) {
     createUpdate(sql).execute()
 }
 
-private fun DynaNodeGroup.usingDockerizedMariaDB(databasePort: Int) {
+private fun DynaNodeGroup.usingDockerizedMariaDB() {
     check(Docker.isPresent) { "Docker not available" }
-    beforeGroup { Docker.startMariaDB(port = databasePort) }
+    lateinit var container: MariaDBContainer<Nothing>
+    beforeGroup {
+        container = MariaDBContainer("mariadb:10.1.31")
+        container.start()
+    }
     beforeGroup {
         hikari {
             minimumIdle = 0
             maximumPoolSize = 30
-            jdbcUrl = "jdbc:mariadb://localhost:$databasePort/db"
-            username = "testuser"
-            password = "mysqlpassword"
+            jdbcUrl = container.jdbcUrl
+            username = "test"
+            password = "test"
         }
         db {
             ddl(
@@ -235,7 +241,7 @@ private fun DynaNodeGroup.usingDockerizedMariaDB(databasePort: Int) {
     }
 
     afterGroup { JdbiOrm.destroy() }
-    afterGroup { Docker.stopMariaDB() }
+    afterGroup { container.stop() }
 
     fun clearDb() {
         Person.deleteAll()
@@ -263,12 +269,12 @@ fun DynaNodeGroup.withAllDatabases(block: DynaNodeGroup.()->Unit) {
         }
 
         group("MySQL 5.7.21") {
-            usingDockerizedMysql(12346)
+            usingDockerizedMysql()
             block()
         }
 
         group("MariaDB 10.1.31") {
-            usingDockerizedMariaDB(12347)
+            usingDockerizedMariaDB()
             block()
         }
     } else {

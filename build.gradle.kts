@@ -60,6 +60,8 @@ dependencies {
 
     testCompile("org.testcontainers:testcontainers:1.12.3")
     testCompile("org.testcontainers:postgresql:1.12.3")
+    testCompile("org.testcontainers:mysql:1.12.3")
+    testCompile("org.testcontainers:mariadb:1.12.3")
 
     // Java has no nullable types
     compile("com.intellij:annotations:12.0")
