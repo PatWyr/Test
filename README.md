@@ -15,7 +15,8 @@ global `jdbi().useHandle(handle -> { ... });` function.
 See [JDBI](http://jdbi.org) for more information.
 
 No dependency injection framework is required - the library works in all
-sorts of environments. The library requires Java 8 or higher to work. No Maven compiler
+sorts of environments, including a pure JVM project with just a `main()` method.
+The library requires Java 8 or higher to work. No Maven compiler
 plugins needed - only Java 8 language features are used.
 
 > This library is tailored for Java usage. For Kotlin bindings please visit
@@ -149,11 +150,11 @@ To configure jdbi-orm, all you need is to set a `DataSource` to it:
 JdbiOrm.setDataSource(dataSource);
 ```
 
-You can use a DataSource from your Spring app or JavaEE app, or you can simply
+The simplest way is to
 use [Hikari-CP](https://brettwooldridge.github.io/HikariCP/) to create a
 `HikariDataSource` out of a `HikariConfig`. Just specify the JDBC URL
 to the `HikariConfig` and you're good to go.
-It comes pre-initialized with sensible default settings, but it contains lots of other options as well.
+HikariCP comes pre-initialized with sensible default settings, but it contains lots of other options as well.
 
 > Hikari-CP is a JDBC connection pool which manages a pool of JDBC connections since they are expensive to create. Typically all projects
 use some sort of JDBC connection pooling.
@@ -191,13 +192,16 @@ You can call this function from anywhere; you don't need to use dependency injec
 That is precisely how the `save()` function saves the bean - it simply calls the `jdbi()` function and executes
 an appropriate INSERT/UPDATE statement.
 
-The function will automatically roll back the transaction on any exception thrown out from the block (both checked and unchecked).
+The function will automatically roll back the transaction on any exception thrown
+out from the block (both checked and unchecked exceptions roll back the transaction).
 
-After you're done, call `JdbiOrm.destroy()` to close the pool. You should only do so
-if you have created the `DataSource`: Spring or JavaEE containers typically manage
-data source instances for you and in such setup you must not call `JdbiOrm.destroy()`.
+After you no longer need database access, call `JdbiOrm.destroy()` to close the pool.
+Most commonly you simply initialize JdbiOrm via `JdbiOrm.setDataSource()` when your JVM
+boots up, and call `JdbiOrm.destroy()` when your server is shutting down (e.g. in VM
+shutdown hook), to have easy database access during the entire lifetime of your server.
 
-> You can call methods of this library from anywhere. You don't need to be running inside of the JavaEE or Spring container or
+> Once JdbiOrm is initialized via `JdbiOrm.setDataSource()`, you can call jdbi() or Dao() methods at any time, from any thread.
+You don't need to be running inside of the JavaEE or Spring container or
 any container at all - you can actually use this library from a plain JavaSE main method.
 
 Full example of a `main()` method that does all of the above:
@@ -873,8 +877,14 @@ flyway.migrate()
 
 # Using with Spring or JavaEE
 
-Very easy: simply create a singleton bean, inject a `DataSource` to it and
-when the bean is constructed, just pass the datasource to `JdbiOrm.setDataSource()`.
+Very easy: all you need to do is just pass the `DataSource` instance to `JdbiOrm.setDataSource()`
+when your server boots up. The easiest way to achieve that is to create a singleton bean which
+is instantiated upon server start, then inject a `DataSource` to the bean and
+call `JdbiOrm.setDataSource()` in the bean's `@PostConstruct`-annotated method.
+
+Since Spring or JavaEE containers manage
+data source instances for you, in such setup you must not call `JdbiOrm.destroy()`.
+The `JdbiOrm.destroy()` is supposed to be called only if you have created the `DataSource` yourself.
 
 # `jdbi-orm` design principles
 
