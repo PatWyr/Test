@@ -17,7 +17,8 @@ See [JDBI](http://jdbi.org) for more information.
 No dependency injection framework is required - the library works in all
 sorts of environments, including a pure JVM project with just a `main()` method.
 The library requires Java 8 or higher to work. No Maven compiler
-plugins needed - only Java 8 language features are used.
+plugin needed - only Java 8 language features are used. That's why no IDE plugin
+is needed, since we're only using Java 8 language features.
 
 > This library is tailored for Java usage. For Kotlin bindings please visit
 [vok-orm](https://github.com/mvysny/vok-orm).
