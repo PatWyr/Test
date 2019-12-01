@@ -611,7 +611,7 @@ class User implements Entity<Long> {
 
     public List<Department> findDepartments() {
         // example for *-* relation would need to join through a mapping table department_user.
-        // or even better: move this code to the function DepartmentUser.dao.findAllForUser(Long userId)
+        // or even better: move this code to the function Department.dao.findAllForUser(Long userId)
         return jdbi().withHandle(handle -> handle
             .createQuery("SELECT d.* FROM department d, department_user du WHERE du.user_id=:uid AND d.id=du.dept_id")
             .bind("uid", getId())
@@ -626,7 +626,7 @@ class User implements Entity<Long> {
 }
 ```
 
-A `*-*` relation usually comes with a mapping table: see below for a documentation on
+A `*-*` relation usually comes with a mapping table: see the "Composite Primary Keys" chapter below for a documentation on
 how to represent such a mapping table as an entity with a composite primary key.
 
 Tip: in order to delete rows from the mapping table when e.g. an user is deleted,
