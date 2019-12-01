@@ -61,8 +61,8 @@ public final class EntityMeta<E> {
     }
 
     /**
-     * Lists all properties in this entity. Only lists persisted properties
-     * (e.g. not annotated with {@link Ignore}).
+     * Lists all properties in this entity. Only lists persisted properties:
+     * non-transient non-static fields not annotated with {@link Ignore}.
      */
     @NotNull
     public Set<PropertyMeta> getProperties() {
