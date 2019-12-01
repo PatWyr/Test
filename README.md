@@ -177,7 +177,7 @@ hikariConfig.setMinimumIdle(0);
 JdbiOrm.setDataSource(new HikariDataSource(hikariConfig));
 ```
 
-After the connection pool is initialized, you can simply call
+Now you can simply call
 the `jdbi().withHandle()` function to run the
 block in a database transaction. JDBI will acquire new connection from the
 connection pool; then it will start a transaction and it will provide you with means to execute SQL commands:
@@ -197,7 +197,7 @@ The function will automatically roll back the transaction on any exception throw
 out from the block (both checked and unchecked exceptions roll back the transaction).
 
 After you no longer need database access, call `JdbiOrm.destroy()` to close the pool.
-Most commonly you simply initialize JdbiOrm via `JdbiOrm.setDataSource()` when your JVM
+The best and easiest way is to simply initialize JdbiOrm via `JdbiOrm.setDataSource()` when your JVM
 boots up, and call `JdbiOrm.destroy()` when your server is shutting down (e.g. in VM
 shutdown hook), to have easy database access during the entire lifetime of your server.
 
