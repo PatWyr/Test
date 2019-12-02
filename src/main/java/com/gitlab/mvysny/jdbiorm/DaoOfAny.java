@@ -10,6 +10,7 @@ import org.jdbi.v3.core.statement.Update;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -33,7 +34,7 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  * the database column name.
  * @param <T> the type of the class provided by this Dao
  */
-public class DaoOfAny<T> {
+public class DaoOfAny<T> implements Serializable {
     @NotNull
     public final Class<T> entityClass;  // public because of vok-orm
     @NotNull
@@ -371,7 +372,7 @@ public class DaoOfAny<T> {
      * Helper functions which should not be auto-completed in {@link DaoOfAny} are placed here.
      * @param <T>
      */
-    public static final class Helper<T> {
+    public static final class Helper<T> implements Serializable {
         @NotNull
         public final Class<T> entityClass;
 

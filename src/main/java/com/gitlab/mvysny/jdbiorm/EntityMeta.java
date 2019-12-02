@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -31,7 +32,7 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  * Thread-safe.
  * @author mavi
  */
-public final class EntityMeta<E> {
+public final class EntityMeta<E> implements Serializable {
     /**
      * usually a class implementing {@link Entity} but may be any class. Not null.
      */
@@ -82,7 +83,7 @@ public final class EntityMeta<E> {
      * Unmodifiable, thread-safe.
      */
     @Nullable
-    private List<PropertyMeta> idPropertyCache;
+    private transient volatile List<PropertyMeta> idPropertyCache;
 
     /**
      * The {@code id} property as declared in the entity.
@@ -90,16 +91,18 @@ public final class EntityMeta<E> {
      */
     @NotNull
     public List<PropertyMeta> getIdProperty() {
-        if (idPropertyCache == null) {
+        List<PropertyMeta> cache = idPropertyCache;
+        if (cache == null) {
             final List<PropertyMeta> props = getProperties().stream()
                     .filter(it -> it.getNamePath().get(0).equals("id"))
                     .collect(Collectors.toList());
             if (props.isEmpty()) {
                 throw new IllegalStateException("Unexpected: entity " + entityClass + " has no id field?");
             }
-            idPropertyCache = Collections.unmodifiableList(new CopyOnWriteArrayList<>(props));
+            cache = Collections.unmodifiableList(new CopyOnWriteArrayList<>(props));
+            idPropertyCache = cache;
         }
-        return idPropertyCache;
+        return cache;
     }
 
     /**
