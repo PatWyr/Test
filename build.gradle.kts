@@ -21,7 +21,7 @@ plugins {
 defaultTasks("clean", "build")
 
 group = "com.gitlab.mvysny.jdbiorm"
-version = "0.5"
+version = "0.6-SNAPSHOT"
 
 repositories {
     mavenCentral()
