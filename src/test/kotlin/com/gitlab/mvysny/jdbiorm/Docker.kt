@@ -4,12 +4,9 @@ import org.zeroturnaround.exec.ProcessExecutor
 import org.zeroturnaround.exec.ProcessInitException
 import org.zeroturnaround.exec.ProcessResult
 
-/**
- * Provides means to start/stop various databases in Docker.
- */
 object Docker {
     /**
-     * Checks whether the "docker" command-line tool is available.
+     * Remove when https://github.com/testcontainers/testcontainers-java/issues/2110 is fixed.
      */
     val isPresent: Boolean by lazy {
         try {

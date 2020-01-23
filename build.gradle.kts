@@ -4,6 +4,8 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
+val slf4jVersion = "1.7.30"
+
 val local = Properties()
 val localProperties: java.io.File = rootProject.file("local.properties")
 if (localProperties.exists()) {
@@ -35,11 +37,11 @@ dependencies {
     testCompile(kotlin("stdlib-jdk8"))
 
     // logging
-    compile("org.slf4j:slf4j-api:1.7.28")
+    compile("org.slf4j:slf4j-api:$slf4jVersion")
 
     // db
     compile("org.jdbi:jdbi3-core:3.10.1")
-    testCompile("com.zaxxer:HikariCP:3.4.1")
+    testCompile("com.zaxxer:HikariCP:3.4.2")
 
     // validation support
     compile("javax.validation:validation-api:2.0.1.Final")  // to have JSR303 validations in the entities
@@ -50,7 +52,7 @@ dependencies {
     // tests
     testCompile("com.github.mvysny.dynatest:dynatest-engine:0.15")
     testCompile("com.google.code.gson:gson:2.8.5")
-    testCompile("org.slf4j:slf4j-simple:1.7.28")
+    testCompile("org.slf4j:slf4j-simple:$slf4jVersion")
     testCompile("com.h2database:h2:1.4.200")
 
     testCompile("org.postgresql:postgresql:42.2.5")
