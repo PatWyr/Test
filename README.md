@@ -820,6 +820,10 @@ This library does not support integration with [Data Loaders](https://gitlab.com
 nor Vaadin 8/14 Grid directly. However, the Kotlin bindings do, please read more at
 [vok-orm](https://github.com/mvysny/vok-orm).
 
+There's an example project in Java which uses vok-orm and vaadin-on-kotlin to show jdbi-orm Java entities
+in a Grid: [vaadin8-sqldataprovider-example](https://github.com/mvysny/vaadin8-sqldataprovider-example). Despite its name,
+the project demoes both SQLDataProvider and EntityDataProvider.
+
 ## Aliases
 
 Often database columns follow different naming convention than bean fields, e.g. database `CUSTOMER_NAME` should be mapped to the
