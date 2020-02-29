@@ -15,6 +15,9 @@ import java.io.Serializable;
  * The user of this library is not supposed to use this interface directly; instead
  * use an interface tailored towards the programming language of your choice. For example,
  * when using Java, use {@link Entity}. When using Kotlin, use the KEntity in the vok-orm library.
+ * <p></p>
+ * You can use {@code new EntityMeta(entityClass).getId(entity)} to retrieve ID from
+ * an `AbstractEntity`.
  * @param <ID> the type of the ID as returned by getId().
  * @author mavi
  */

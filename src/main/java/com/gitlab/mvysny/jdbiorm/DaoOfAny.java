@@ -38,9 +38,9 @@ public class DaoOfAny<T> implements Serializable {
     @NotNull
     public final Class<T> entityClass;  // public because of vok-orm
     @NotNull
-    protected final EntityMeta<T> meta;   // not public, since anybody can create instances of this class easily
+    protected final EntityMeta<T> meta;   // not public, to not to pollute the API
     @NotNull
-    protected final Helper<T> helper;  // not public, since anybody can create instances of this class easily
+    protected final Helper<T> helper;  // not public, to not to pollute the API
 
     public DaoOfAny(@NotNull Class<T> entityClass) {
         this.entityClass = Objects.requireNonNull(entityClass, "entityClass");
