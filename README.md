@@ -10,7 +10,7 @@ behind the scenes - everything happens explicitly. No compiler
 plugin is needed - `jdbi-orm` uses Java 8 language features to add a standard
 set of finders to your entities. You can add any number of business logic methods as
 you like to your entities; the database transaction is easy to launch simply by calling the
-global `jdbi().useHandle(handle -> { ... });` function.
+global `jdbi().inTransaction(handle -> { ... });` function.
 
 See [JDBI](http://jdbi.org) for more information.
 
