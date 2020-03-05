@@ -40,7 +40,7 @@ dependencies {
     compile("org.slf4j:slf4j-api:$slf4jVersion")
 
     // db
-    compile("org.jdbi:jdbi3-core:3.10.1")
+    compile("org.jdbi:jdbi3-core:3.12.2")
     testCompile("com.zaxxer:HikariCP:3.4.2")
 
     // validation support

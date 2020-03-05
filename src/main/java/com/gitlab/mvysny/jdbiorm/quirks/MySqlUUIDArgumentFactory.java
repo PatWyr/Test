@@ -1,7 +1,7 @@
 package com.gitlab.mvysny.jdbiorm.quirks;
 
+import org.jdbi.v3.core.argument.AbstractArgumentFactory;
 import org.jdbi.v3.core.argument.Argument;
-import org.jdbi.v3.core.argument.ArgumentFactory;
 import org.jdbi.v3.core.config.ConfigRegistry;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.jetbrains.annotations.NotNull;
@@ -9,11 +9,10 @@ import org.jetbrains.annotations.NotNull;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -21,14 +20,16 @@ import java.util.UUID;
  * {@code binary(16)}).
  * @author mavi
  */
-public class MySqlArgumentFactory implements ArgumentFactory {
+public class MySqlUUIDArgumentFactory extends AbstractArgumentFactory<UUID> {
+    // don't implement ArgumentFactory directly, it stopped working with JDBI 3.12.2
+
+    protected MySqlUUIDArgumentFactory() {
+        super(Types.BINARY);
+    }
 
     @Override
-    public Optional<Argument> build(Type type, Object value, ConfigRegistry config) {
-        if (value instanceof UUID) {
-            return Optional.of(new MySqlUUIDArgument((UUID) value));
-        }
-        return Optional.empty();
+    protected Argument build(UUID value, ConfigRegistry config) {
+        return new MySqlUUIDArgument(value);
     }
 
     private static class MySqlUUIDArgument implements Argument {
@@ -42,6 +43,11 @@ public class MySqlArgumentFactory implements ArgumentFactory {
         @Override
         public void apply(int position, PreparedStatement statement, StatementContext ctx) throws SQLException {
             statement.setBytes(position, uuidToByteArray(uuid));
+        }
+
+        @Override
+        public String toString() {
+            return "MySqlUUIDArgument{" + uuid + '}';
         }
     }
 

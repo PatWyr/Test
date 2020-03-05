@@ -22,7 +22,7 @@ public class MySqlQuirks implements Quirks {
 
     @Override
     public void configure(@NotNull Handle handle) {
-        handle.getConfig(Arguments.class).register(new MySqlArgumentFactory());
+        handle.getConfig(Arguments.class).register(new MySqlUUIDArgumentFactory());
         handle.getConfig(ColumnMappers.class).register(UUID.class, new MySqlColumnMapper());
     }
 }
