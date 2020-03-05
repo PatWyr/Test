@@ -34,39 +34,40 @@ tasks.withType<KotlinCompile> {
 }
 
 dependencies {
-    testCompile(kotlin("stdlib-jdk8"))
+    // remember this is a Java project :) Kotlin only for tests
+    testImplementation(kotlin("stdlib-jdk8"))
 
     // logging
-    compile("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
 
     // db
-    compile("org.jdbi:jdbi3-core:3.12.2")
-    testCompile("com.zaxxer:HikariCP:3.4.2")
+    api("org.jdbi:jdbi3-core:3.12.2")
+    testImplementation("com.zaxxer:HikariCP:3.4.2")
 
     // validation support
-    compile("javax.validation:validation-api:2.0.1.Final")  // to have JSR303 validations in the entities
-    testCompile("org.hibernate.validator:hibernate-validator:6.0.17.Final")
+    api("javax.validation:validation-api:2.0.1.Final")  // to have JSR303 validations in the entities
+    testImplementation("org.hibernate.validator:hibernate-validator:6.0.17.Final")
     // EL is required: http://hibernate.org/validator/documentation/getting-started/
-    testCompile("org.glassfish:javax.el:3.0.1-b08")
+    testImplementation("org.glassfish:javax.el:3.0.1-b08")
 
     // tests
-    testCompile("com.github.mvysny.dynatest:dynatest-engine:0.16")
-    testCompile("com.google.code.gson:gson:2.8.5")
-    testCompile("org.slf4j:slf4j-simple:$slf4jVersion")
-    testCompile("com.h2database:h2:1.4.200")
+    testImplementation("com.github.mvysny.dynatest:dynatest-engine:0.16")
+    testImplementation("com.google.code.gson:gson:2.8.5")
+    testImplementation("org.slf4j:slf4j-simple:$slf4jVersion")
+    testImplementation("com.h2database:h2:1.4.200")
 
-    testCompile("org.postgresql:postgresql:42.2.5")
-    testCompile("org.zeroturnaround:zt-exec:1.10")
-    testCompile("mysql:mysql-connector-java:5.1.48")
-    testCompile("org.mariadb.jdbc:mariadb-java-client:2.4.0")
+    testImplementation("org.postgresql:postgresql:42.2.5")
+    testImplementation("org.zeroturnaround:zt-exec:1.10")
+    testImplementation("mysql:mysql-connector-java:5.1.48")
+    testImplementation("org.mariadb.jdbc:mariadb-java-client:2.4.0")
 
-    testCompile("org.testcontainers:testcontainers:1.12.3")
-    testCompile("org.testcontainers:postgresql:1.12.3")
-    testCompile("org.testcontainers:mysql:1.12.3")
-    testCompile("org.testcontainers:mariadb:1.12.3")
+    testImplementation("org.testcontainers:testcontainers:1.12.3")
+    testImplementation("org.testcontainers:postgresql:1.12.3")
+    testImplementation("org.testcontainers:mysql:1.12.3")
+    testImplementation("org.testcontainers:mariadb:1.12.3")
 
     // Java has no nullable types
-    compile("com.intellij:annotations:12.0")
+    api("com.intellij:annotations:12.0")
 }
 
 val sourceJar = task("sourceJar", Jar::class) {
