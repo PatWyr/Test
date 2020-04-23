@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
 val slf4jVersion = "1.7.30"
+val testcontainersVersion = "1.14.0"
 
 val local = Properties()
 val localProperties: java.io.File = rootProject.file("local.properties")
@@ -46,7 +47,7 @@ dependencies {
 
     // validation support
     api("javax.validation:validation-api:2.0.1.Final")  // to have JSR303 validations in the entities
-    testImplementation("org.hibernate.validator:hibernate-validator:6.0.17.Final")
+    testImplementation("org.hibernate.validator:hibernate-validator:6.1.2.Final")
     // EL is required: http://hibernate.org/validator/documentation/getting-started/
     testImplementation("org.glassfish:javax.el:3.0.1-b08")
 
@@ -57,14 +58,13 @@ dependencies {
     testImplementation("com.h2database:h2:1.4.200")
 
     testImplementation("org.postgresql:postgresql:42.2.5")
-    testImplementation("org.zeroturnaround:zt-exec:1.10")
     testImplementation("mysql:mysql-connector-java:5.1.48")
     testImplementation("org.mariadb.jdbc:mariadb-java-client:2.4.0")
 
-    testImplementation("org.testcontainers:testcontainers:1.12.3")
-    testImplementation("org.testcontainers:postgresql:1.12.3")
-    testImplementation("org.testcontainers:mysql:1.12.3")
-    testImplementation("org.testcontainers:mariadb:1.12.3")
+    testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
+    testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
+    testImplementation("org.testcontainers:mysql:$testcontainersVersion")
+    testImplementation("org.testcontainers:mariadb:$testcontainersVersion")
 
     // Java has no nullable types
     api("com.intellij:annotations:12.0")

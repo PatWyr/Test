@@ -6,6 +6,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Handle
+import org.testcontainers.DockerClientFactory
 import org.testcontainers.containers.MariaDBContainer
 import org.testcontainers.containers.MySQLContainer
 import org.testcontainers.containers.PostgreSQLContainer
@@ -58,7 +59,7 @@ fun hikari(block: HikariConfig.() -> Unit) {
 }
 
 private fun DynaNodeGroup.usingDockerizedPosgresql() {
-    check(Docker.isPresent) { "Docker not available" }
+    check(DockerClientFactory.instance().isDockerAvailable()) { "Docker not available" }
     lateinit var container: PostgreSQLContainer<Nothing>
     beforeGroup {
         container = PostgreSQLContainer<Nothing>("postgres:10.3")
@@ -110,7 +111,7 @@ private fun DynaNodeGroup.usingDockerizedPosgresql() {
 }
 
 fun DynaNodeGroup.usingDockerizedMysql() {
-    check(Docker.isPresent) { "Docker not available" }
+    check(DockerClientFactory.instance().isDockerAvailable()) { "Docker not available" }
     lateinit var container: MySQLContainer<Nothing>
     beforeGroup {
         container = MySQLContainer<Nothing>("mysql:5.7.21")
@@ -204,7 +205,7 @@ fun Handle.ddl(@Language("sql") sql: String) {
 }
 
 private fun DynaNodeGroup.usingDockerizedMariaDB() {
-    check(Docker.isPresent) { "Docker not available" }
+    check(DockerClientFactory.instance().isDockerAvailable()) { "Docker not available" }
     lateinit var container: MariaDBContainer<Nothing>
     beforeGroup {
         container = MariaDBContainer("mariadb:10.1.31")
@@ -261,7 +262,7 @@ fun DynaNodeGroup.withAllDatabases(block: DynaNodeGroup.()->Unit) {
         block()
     }
 
-    if (Docker.isPresent) {
+    if (DockerClientFactory.instance().isDockerAvailable()) {
         println("Docker is available, running tests")
         group("PostgreSQL 10.3") {
             usingDockerizedPosgresql()
