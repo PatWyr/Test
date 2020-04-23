@@ -10,7 +10,7 @@ fun DockerClientFactory.isDockerAvailable(): Boolean {
     return try {
         m.invoke(this)
         true
-    } catch (ex: IllegalStateException) {
+    } catch (ex: Exception) {
         false
     }
 }
