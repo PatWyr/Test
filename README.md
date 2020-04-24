@@ -20,6 +20,11 @@ The library requires Java 8 or higher to work. No Maven compiler
 plugin needed - only Java 8 language features are used. That's why no IDE plugin
 is needed, since we're only using Java 8 language features.
 
+```
+"Simplicity is prerequisite for reliability."
+    - Edsger Dijkstra
+```
+
 > This library is tailored for Java usage. For Kotlin bindings please visit
 [vok-orm](https://github.com/mvysny/vok-orm).
 
