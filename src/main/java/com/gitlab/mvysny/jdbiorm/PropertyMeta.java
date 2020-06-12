@@ -39,6 +39,7 @@ public final class PropertyMeta {
     /**
      * Computed from {@link #fieldPath}. Unmodifiable.
      */
+    @NotNull
     private final List<String> namePath;
 
     /**
