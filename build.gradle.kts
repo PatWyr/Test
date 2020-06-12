@@ -42,12 +42,12 @@ dependencies {
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
 
     // db
-    api("org.jdbi:jdbi3-core:3.12.2")
-    testImplementation("com.zaxxer:HikariCP:3.4.2")
+    api("org.jdbi:jdbi3-core:3.13.0")
+    testImplementation("com.zaxxer:HikariCP:3.4.5")
 
     // validation support
     api("javax.validation:validation-api:2.0.1.Final")  // to have JSR303 validations in the entities
-    testImplementation("org.hibernate.validator:hibernate-validator:6.1.2.Final")
+    testImplementation("org.hibernate.validator:hibernate-validator:6.1.4.Final")
     // EL is required: http://hibernate.org/validator/documentation/getting-started/
     testImplementation("org.glassfish:javax.el:3.0.1-b08")
 
