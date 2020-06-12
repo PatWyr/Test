@@ -997,7 +997,7 @@ The `JdbiOrm.destroy()` is supposed to be called only if you have created the `D
 `jdbi-orm` is a very simple object-relational mapping library, built around the following ideas:
 
 * Simplicity is the most valued property; working with plain SQL commands is preferred over having a type-safe
-  query language. If you want a type-safe database mapping library, try [Exposed](https://github.com/JetBrains/Exposed).
+  query language. If you want a type-safe database mapping library, try [JOOQ](https://www.jooq.org/).
 * The database is the source of truth. JVM objects are nothing more than DTOs,
   merely capture snapshots of the JDBC `ResultSet` rows. The entities are populated by the
   means of reflection: for every column in
