@@ -262,7 +262,7 @@ fun DynaNodeGroup.withAllDatabases(block: DynaNodeGroup.()->Unit) {
         block()
     }
 
-    if (DockerClientFactory.instance().isDockerAvailable()) {
+    if (DockerClientFactory.instance().isDockerAvailable) {
         println("Docker is available, running PostgreSQL/MySQL/MariaDB tests")
         group("PostgreSQL 10.3") {
             usingDockerizedPosgresql()
