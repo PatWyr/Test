@@ -17,8 +17,8 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  * Data access object, provides instances of given {@link Entity}.
  * To use, just add a static field to your entity as follows:
  * <pre>
- * public class Person implements Entity<Long> {
- *   public static final Dao&lt;Person, Long> dao = new Dao<>(Person.class);
+ * public class Person implements Entity&lt;Long&gt; {
+ *   public static final Dao&lt;Person, Long&gt; dao = new Dao&lt;&gt;(Person.class);
  * }
  * </pre>
  * You can now use `Person.dao.findAll()`, `Person.dao.get(25)` and other nice methods :)

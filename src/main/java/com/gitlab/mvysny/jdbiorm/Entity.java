@@ -143,7 +143,7 @@ public interface Entity<ID> extends AbstractEntity<ID> {
      * fail (since nothing has been updated since the row is not in the database yet).
      * To force create the database row, call {@link #create()}.
      * <p></p>
-     * <strong>INFO</strong>>: Entities with IDs created by the application can be made to work properly, by overriding {@link #create()}
+     * <strong>INFO</strong>: Entities with IDs created by the application can be made to work properly, by overriding {@link #create()}
      * and {@link #create(boolean)} method accordingly. See {@link Entity} doc for more details.
      *
      * @throws IllegalStateException if the database didn't provide a new ID (upon new row creation),

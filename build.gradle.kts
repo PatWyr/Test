@@ -1,6 +1,5 @@
 import com.jfrog.bintray.gradle.BintrayExtension
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
@@ -17,7 +16,6 @@ plugins {
     kotlin("jvm") version "1.4.0"
     id("com.jfrog.bintray") version "1.8.3"
     `maven-publish`
-    id("org.jetbrains.dokka") version "0.9.17"
     java
 }
 
@@ -32,6 +30,11 @@ repositories {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 dependencies {
@@ -77,12 +80,8 @@ val sourceJar = task("sourceJar", Jar::class) {
 }
 
 val javadocJar = task("javadocJar", Jar::class) {
-    val javadoc = tasks["dokka"] as DokkaTask
-    javadoc.outputFormat = "javadoc"
-    javadoc.outputDirectory = "$buildDir/javadoc"
-    dependsOn(javadoc)
     archiveClassifier.set("javadoc")
-    from(javadoc.outputDirectory)
+    from(tasks.javadoc)
 }
 
 publishing {

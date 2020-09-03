@@ -24,7 +24,7 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  * Just let your class have a static field, for example:
  * <pre>
  * public class Log {
- *   public static final DaoOfAny&lt;Log> dao = new DaoOfAny&lt>(Log.class);
+ *   public static final DaoOfAny&lt;Log&gt; dao = new DaoOfAny&lt&gt;(Log.class);
  * }
  * </pre>
  * You can now use `Log.dao.findAll()`, `Log.dao.count()` and other nice methods.
