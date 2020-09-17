@@ -5,6 +5,7 @@ import com.gitlab.mvysny.jdbiorm.quirks.DatabaseVariant;
 import com.gitlab.mvysny.jdbiorm.quirks.Quirks;
 import org.jdbi.v3.core.Jdbi;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,18 +35,24 @@ public final class JdbiOrm {
      * The validator, used to validate entity when {@link Entity#save(boolean)} is invoked.
      * Defaults to JSR 303 validator; if JSR303 is not available then falls back to {@link NoopValidator}.
      */
+    @Nullable
     private static volatile Validator validator;
+    @Nullable
     private static volatile DataSource dataSource;
-    // beware - we can't simply create new instances of Jdbi, otherwise the transaction nesting will not work
-    // since Jdbi ThreadLocals are not static but bound to the Jdbi instance!
+    // beware - we must use a singleton instance of Jdbi. If we don't, the transaction nesting will not work
+    // since Jdbi ThreadLocals are not static but bound to the Jdbi instance.
+    @Nullable
     private static volatile Jdbi jdbi;
     /**
      * If set to non-null, this takes precedence over {@link DatabaseVariant} detection mechanism.
      */
+    @Nullable
     public static volatile Quirks quirks = null;
     /**
      * If set to non-null, this takes precedence over {@link DatabaseVariant} detection mechanism.
+     * Filled in by {@link #setDataSource(DataSource)}.
      */
+    @Nullable
     public static volatile DatabaseVariant databaseVariant = null;
 
     private static final Logger log = LoggerFactory.getLogger(JdbiOrm.class);
@@ -91,7 +98,9 @@ public final class JdbiOrm {
     /**
      * Sets the data source which will be used by {@link #jdbi()} from now on. We highly recommend
      * to use a connection pooler such as HikariCP.
-     * @return the data source, not null.
+     * <p></p>
+     * Tests the data source and fills in {@link #databaseVariant}.
+     * @param dataSource the data source, not null.
      */
     public static void setDataSource(@NotNull DataSource dataSource) {
         if (JdbiOrm.dataSource != dataSource) {
@@ -100,6 +109,12 @@ public final class JdbiOrm {
             JdbiOrm.dataSource = dataSource;
             jdbi = Jdbi.create(dataSource);
             jdbi.installPlugin(new DatabaseQuirksDetectorJdbiPlugin());
+
+            // verify the data source and detect the variant
+            jdbi().inTransaction(handle -> {
+                JdbiOrm.databaseVariant = DatabaseVariant.from(handle);
+                return null;
+            });
         }
     }
 
