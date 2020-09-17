@@ -4,20 +4,11 @@ import org.jdbi.v3.core.Handle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
 /**
  * Adds Microsoft SQL quirks support.
  * @author mavi
  */
 public class MssqlQuirks implements Quirks {
-    @Override
-    public boolean shouldActivate(@NotNull Connection connection) throws SQLException {
-        final String databaseProductName = connection.getMetaData().getDatabaseProductName();
-        return databaseProductName.contains("Microsoft SQL Server");
-    }
-
     @Override
     public void configure(@NotNull Handle handle) {
     }

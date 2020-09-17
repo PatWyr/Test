@@ -2,6 +2,7 @@ package com.gitlab.mvysny.jdbiorm
 
 import com.github.mvysny.dynatest.DynaNodeGroup
 import com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi
+import com.gitlab.mvysny.jdbiorm.quirks.DatabaseVariant
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.intellij.lang.annotations.Language
@@ -12,6 +13,7 @@ import org.testcontainers.containers.MariaDBContainer
 import org.testcontainers.containers.MySQLContainer
 import org.testcontainers.containers.PostgreSQLContainer
 import java.util.*
+import kotlin.test.expect
 
 enum class MaritalStatus {
     Single,
@@ -101,6 +103,10 @@ private fun DynaNodeGroup.usingDockerizedPosgresql() {
 
     beforeEach { clearDb() }
     afterEach { clearDb() }
+
+    test("expect PostgreSQL variant") {
+        expect(DatabaseVariant.PostgreSQL) { db { DatabaseVariant.from(this) } }
+    }
 }
 
 fun DynaNodeGroup.usingDockerizedMysql() {
@@ -143,6 +149,10 @@ fun DynaNodeGroup.usingDockerizedMysql() {
 
     beforeEach { clearDb() }
     afterEach { clearDb() }
+
+    test("expect MySQL variant") {
+        expect(DatabaseVariant.MySQLMariaDB) { db { DatabaseVariant.from(this) } }
+    }
 }
 
 private fun clearDb() {
@@ -192,6 +202,10 @@ fun DynaNodeGroup.usingH2Database() {
     afterEach {
         db { ddl("DROP ALL OBJECTS") }
     }
+
+    test("expect H2 variant") {
+        expect(DatabaseVariant.H2) { db { DatabaseVariant.from(this) } }
+    }
 }
 
 fun Handle.ddl(@Language("sql") sql: String) {
@@ -240,6 +254,10 @@ private fun DynaNodeGroup.usingDockerizedMariaDB() {
 
     beforeEach { clearDb() }
     afterEach { clearDb() }
+
+    test("expect MySQL variant") {
+        expect(DatabaseVariant.MySQLMariaDB) { db { DatabaseVariant.from(this) } }
+    }
 }
 
 private fun DynaNodeGroup.usingDockerizedMSSQL() {
@@ -284,6 +302,10 @@ private fun DynaNodeGroup.usingDockerizedMSSQL() {
 
     beforeEach { clearDb() }
     afterEach { clearDb() }
+
+    test("expect MSSQL variant") {
+        expect(DatabaseVariant.MSSQL) { db { DatabaseVariant.from(this) } }
+    }
 }
 
 fun DynaNodeGroup.withAllDatabases(block: DynaNodeGroup.()->Unit) {
