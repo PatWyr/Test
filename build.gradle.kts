@@ -63,11 +63,13 @@ dependencies {
     testImplementation("org.postgresql:postgresql:42.2.5")
     testImplementation("mysql:mysql-connector-java:5.1.48")
     testImplementation("org.mariadb.jdbc:mariadb-java-client:2.4.0")
+    testImplementation("com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre8")
 
     testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
     testImplementation("org.testcontainers:mysql:$testcontainersVersion")
     testImplementation("org.testcontainers:mariadb:$testcontainersVersion")
+    testImplementation("org.testcontainers:mssqlserver:$testcontainersVersion")
 
     // Java has no nullable types
     api("com.intellij:annotations:12.0")

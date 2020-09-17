@@ -9,6 +9,7 @@ import com.github.mvysny.dynatest.expectThrows
 import com.google.gson.Gson
 import java.lang.IllegalStateException
 import java.lang.Long
+import java.sql.Timestamp
 import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoField
@@ -281,4 +282,9 @@ private fun DynaNodeGroup.logRecordTestBattery() {
 }
 
 val Instant.withZeroNanos: Instant get() = with(ChronoField.NANO_OF_SECOND, get(ChronoField.MILLI_OF_SECOND).toLong() * 1000000)
+val Date.withZeroNanos: Date get() {
+    val result = Timestamp((this as Timestamp).time)
+    result.nanos = 0
+    return result
+}
 val <T> Array<T>.plusNull: List<T?> get() = toList<T?>() + listOf(null)

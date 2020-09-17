@@ -35,6 +35,7 @@ public class DatabaseQuirksDetectorJdbiPlugin extends JdbiPlugin.Singleton {
     @Override
     public Handle customizeHandle(Handle handle) throws SQLException {
         final Quirks quirks = findQuirksFor(handle.getConnection());
+        handle.getConfig(Quirks.Holder.class).quirks = quirks;
         quirks.configure(handle);
         return handle;
     }
@@ -42,5 +43,6 @@ public class DatabaseQuirksDetectorJdbiPlugin extends JdbiPlugin.Singleton {
     /**
      * A mutable list of all quirks. Add your own quirk detectors as necessary.
      */
-    public static final List<Quirks> ALL_QUIRKS = new CopyOnWriteArrayList<>(Arrays.asList(new MySqlQuirks()));
+    public static final List<Quirks> ALL_QUIRKS = new CopyOnWriteArrayList<>(Arrays.asList(
+            new MySqlQuirks(), new MssqlQuirks()));
 }

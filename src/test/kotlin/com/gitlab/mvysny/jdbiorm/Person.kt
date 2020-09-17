@@ -56,7 +56,7 @@ data class Person(
         val dao = PersonDao()
     }
 
-    fun withZeroNanos() = copy(modified = modified?.withZeroNanos)
+    fun withZeroNanos() = copy(created = created?.withZeroNanos, modified = modified?.withZeroNanos)
 }
 
 open class PersonDao : Dao<Person, Long>(Person::class.java) {

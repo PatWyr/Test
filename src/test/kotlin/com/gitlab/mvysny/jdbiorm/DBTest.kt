@@ -27,14 +27,14 @@ class DBTest : DynaTest({
             expect(listOf()) { db { Person.findAll() } }
         }
         test("commitInNestedDbBlocks") {
-            val person = db {
+            val person: Person = db {
                 db {
                     db {
-                        Person(name = "foo", age = 25).apply { save(); modified = modified!!.withZeroNanos }
+                        Person(name = "foo", age = 25).apply { save() }
                     }
                 }
             }
-            expect(listOf(person)) { db { Person.findAll() } }
+            expect(listOf(person.withZeroNanos())) { db { Person.findAll() } }
         }
         test("exceptionRollsBackInNestedDbBlocks") {
             expectThrows(IOException::class) {

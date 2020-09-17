@@ -1,5 +1,7 @@
 package com.gitlab.mvysny.jdbiorm;
 
+import com.gitlab.mvysny.jdbiorm.quirks.Quirks;
+import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.mapper.reflect.FieldMapper;
 import org.jdbi.v3.core.result.ResultIterable;
@@ -11,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -83,22 +86,40 @@ public class DaoOfAny<T> implements Serializable {
      */
     @NotNull
     public List<T> findAll(@Nullable final Long offset, @Nullable final Long limit) {
-        final StringBuilder sql = new StringBuilder("select <FIELDS> from <TABLE>");
-        if (offset != null && limit != null) {
-            if (offset < 0) {
-                throw new IllegalArgumentException("Parameter offset: invalid value " + offset + ": must be 0 or greater");
-            }
-            if (limit < 0) {
-                throw new IllegalArgumentException("Parameter limit: invalid value " + limit + ": must be 0 or greater");
-            }
-            sql.append(" LIMIT " + Math.min(limit, Integer.MAX_VALUE) + " OFFSET " + Math.min(offset, Integer.MAX_VALUE));
+        if (limit != null && limit == 0L) {
+            return new ArrayList<>();
         }
-        return jdbi().withHandle(handle -> handle.createQuery(sql.toString())
-                .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
-                .define("TABLE", meta.getDatabaseTableName())
-                .map(getRowMapper())
-                .list()
+        final StringBuilder sql = new StringBuilder("select <FIELDS> from <TABLE>");
+        checkOffsetLimit(offset, limit);
+        return jdbi().withHandle(handle -> {
+                    appendOffsetLimit(sql, handle, offset, limit);
+                    return handle.createQuery(sql.toString())
+                            .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
+                            .define("TABLE", meta.getDatabaseTableName())
+                            .map(getRowMapper())
+                            .list();
+                }
         );
+    }
+
+    private static void checkOffsetLimit(@Nullable Long offset, @Nullable Long limit) {
+        if (offset != null && offset < 0) {
+            throw new IllegalArgumentException("Parameter offset: invalid value " + offset + ": must be 0 or greater");
+        }
+        if (limit != null && limit < 0) {
+            throw new IllegalArgumentException("Parameter limit: invalid value " + limit + ": must be 0 or greater");
+        }
+    }
+
+    protected void appendOffsetLimit(@NotNull StringBuilder sb, @NotNull Handle handle, @Nullable final Long offset, @Nullable final Long limit) {
+        if (offset == null && limit == null) {
+            return;
+        }
+        final Quirks quirks = Quirks.from(handle);
+        if (quirks.offsetLimitRequiresOrderBy() != null) {
+            sb.append(" ").append(quirks.offsetLimitRequiresOrderBy());
+        }
+        sb.append(" ").append(quirks.offsetLimit(offset, limit));
     }
 
     /**
@@ -114,17 +135,13 @@ public class DaoOfAny<T> implements Serializable {
     public List<T> findAllBy(@NotNull String where, @Nullable final Long offset, @Nullable final Long limit, @NotNull Consumer<Query> queryConsumer) {
         Objects.requireNonNull(where, "where");
         Objects.requireNonNull(queryConsumer, "queryConsumer");
-        final StringBuilder sql = new StringBuilder("select <FIELDS> from <TABLE> where <WHERE>");
-        if (offset != null && limit != null) {
-            if (offset < 0) {
-                throw new IllegalArgumentException("Parameter offset: invalid value " + offset + ": must be 0 or greater");
-            }
-            if (limit < 0) {
-                throw new IllegalArgumentException("Parameter limit: invalid value " + limit + ": must be 0 or greater");
-            }
-            sql.append(" LIMIT " + Math.min(limit, Integer.MAX_VALUE) + " OFFSET " + Math.min(offset, Integer.MAX_VALUE));
+        if (limit != null && limit == 0L) {
+            return new ArrayList<>();
         }
+        final StringBuilder sql = new StringBuilder("select <FIELDS> from <TABLE> where <WHERE>");
+        checkOffsetLimit(offset, limit);
         return jdbi().withHandle(handle -> {
+                    appendOffsetLimit(sql, handle, offset, limit);
                     final Query query = handle.createQuery(sql.toString())
                             .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
                             .define("TABLE", meta.getDatabaseTableName())
@@ -169,7 +186,13 @@ public class DaoOfAny<T> implements Serializable {
         Objects.requireNonNull(where, "where");
         Objects.requireNonNull(queryConsumer, "queryConsumer");
         return jdbi().withHandle(handle -> {
-            final Query query = handle.createQuery("select <FIELDS> from <TABLE> where <WHERE> LIMIT 2")
+            String sql = "select <FIELDS> from <TABLE> where <WHERE>";
+            final Quirks quirks = Quirks.from(handle);
+            if (quirks.offsetLimitRequiresOrderBy() != null) {
+                sql += " " + quirks.offsetLimitRequiresOrderBy();
+            }
+            sql += quirks.offsetLimit(null, 2L);
+            final Query query = handle.createQuery(sql)
                     .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
                     .define("TABLE", meta.getDatabaseTableName())
                     .define("WHERE", where);
@@ -196,7 +219,13 @@ public class DaoOfAny<T> implements Serializable {
     @Nullable
     public T findOne() {
         return jdbi().withHandle(handle -> {
-            final ResultIterable<T> iterable = handle.createQuery("select <FIELDS> from <TABLE> LIMIT 2")
+            String sql = "select <FIELDS> from <TABLE>";
+            final Quirks quirks = Quirks.from(handle);
+            if (quirks.offsetLimitRequiresOrderBy() != null) {
+                sql += " " + quirks.offsetLimitRequiresOrderBy();
+            }
+            sql += quirks.offsetLimit(null, 2L);
+            final ResultIterable<T> iterable = handle.createQuery(sql)
                     .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
                     .define("TABLE", meta.getDatabaseTableName())
                     .map(getRowMapper());
@@ -221,7 +250,13 @@ public class DaoOfAny<T> implements Serializable {
     @Nullable
     public T getOne() {
         return jdbi().withHandle(handle -> {
-            final ResultIterable<T> iterable = handle.createQuery("select <FIELDS> from <TABLE> LIMIT 2")
+            String sql = "select <FIELDS> from <TABLE>";
+            final Quirks quirks = Quirks.from(handle);
+            if (quirks.offsetLimitRequiresOrderBy() != null) {
+                sql += " " + quirks.offsetLimitRequiresOrderBy();
+            }
+            sql += quirks.offsetLimit(null, 2L);
+            final ResultIterable<T> iterable = handle.createQuery(sql)
                     .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
                     .define("TABLE", meta.getDatabaseTableName())
                     .map(getRowMapper());
@@ -279,7 +314,13 @@ public class DaoOfAny<T> implements Serializable {
         Objects.requireNonNull(where, "where");
         Objects.requireNonNull(queryConsumer, "queryConsumer");
         return jdbi().withHandle(handle -> {
-                    final Query query = handle.createQuery("select <FIELDS> from <TABLE> where <WHERE> LIMIT 2")
+            String sql = "select <FIELDS> from <TABLE> where <WHERE>";
+            final Quirks quirks = Quirks.from(handle);
+            if (quirks.offsetLimitRequiresOrderBy() != null) {
+                sql += " " + quirks.offsetLimitRequiresOrderBy();
+            }
+            sql += quirks.offsetLimit(null, 2L);
+            final Query query = handle.createQuery(sql)
                             .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
                             .define("TABLE", meta.getDatabaseTableName())
                             .define("WHERE", where);

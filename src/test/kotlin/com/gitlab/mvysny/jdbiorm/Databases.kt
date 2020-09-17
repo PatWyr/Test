@@ -7,6 +7,7 @@ import com.zaxxer.hikari.HikariDataSource
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Handle
 import org.testcontainers.DockerClientFactory
+import org.testcontainers.containers.MSSQLServerContainer
 import org.testcontainers.containers.MariaDBContainer
 import org.testcontainers.containers.MySQLContainer
 import org.testcontainers.containers.PostgreSQLContainer
@@ -98,14 +99,6 @@ private fun DynaNodeGroup.usingDockerizedPosgresql() {
     afterGroup { JdbiOrm.destroy() }
     afterGroup { container.stop() }
 
-    fun clearDb() {
-        Person.deleteAll()
-        EntityWithAliasedId.dao.deleteAll()
-        NaturalPerson.deleteAll()
-        LogRecord.deleteAll()
-        JoinTable.dao.deleteAll()
-        MappingTable.dao.deleteAll()
-    }
     beforeEach { clearDb() }
     afterEach { clearDb() }
 }
@@ -148,17 +141,18 @@ fun DynaNodeGroup.usingDockerizedMysql() {
     afterGroup { JdbiOrm.destroy() }
     afterGroup { container.stop() }
 
-    fun clearDb() {
-        Person.deleteAll()
-        EntityWithAliasedId.dao.deleteAll()
-        NaturalPerson.deleteAll()
-        LogRecord.deleteAll()
-        TypeMappingEntity.deleteAll()
-        JoinTable.dao.deleteAll()
-        MappingTable.dao.deleteAll()
-    }
     beforeEach { clearDb() }
     afterEach { clearDb() }
+}
+
+private fun clearDb() {
+    Person.deleteAll()
+    EntityWithAliasedId.dao.deleteAll()
+    NaturalPerson.deleteAll()
+    LogRecord.deleteAll()
+    TypeMappingEntity.deleteAll()
+    JoinTable.dao.deleteAll()
+    MappingTable.dao.deleteAll()
 }
 
 fun <T> db(block: Handle.() -> T): T = jdbi().inTransaction<T, Exception>(block)
@@ -244,14 +238,50 @@ private fun DynaNodeGroup.usingDockerizedMariaDB() {
     afterGroup { JdbiOrm.destroy() }
     afterGroup { container.stop() }
 
-    fun clearDb() {
-        Person.deleteAll()
-        EntityWithAliasedId.dao.deleteAll()
-        NaturalPerson.deleteAll()
-        LogRecord.deleteAll()
-        JoinTable.dao.deleteAll()
-        MappingTable.dao.deleteAll()
+    beforeEach { clearDb() }
+    afterEach { clearDb() }
+}
+
+private fun DynaNodeGroup.usingDockerizedMSSQL() {
+    check(DockerClientFactory.instance().isDockerAvailable()) { "Docker not available" }
+    lateinit var container: MSSQLServerContainer<Nothing>
+    beforeGroup {
+        container = MSSQLServerContainer("mcr.microsoft.com/mssql/server:2017-latest-ubuntu")
+        container.start()
     }
+    beforeGroup {
+        hikari {
+            minimumIdle = 0
+            maximumPoolSize = 30
+            jdbcUrl = container.jdbcUrl
+            username = container.username
+            password = container.password
+        }
+        db {
+            ddl(
+                    """create table Test (
+                id bigint primary key IDENTITY(1,1) not null,
+                name varchar(400) not null,
+                age integer not null,
+                dateOfBirth datetime NULL,
+                created datetime NULL,
+                modified datetime NULL,
+                alive bit,
+                maritalStatus varchar(200)
+                 )"""
+            )
+            ddl("""create table EntityWithAliasedId(myid bigint primary key IDENTITY(1,1) not null, name varchar(400) not null)""")
+            ddl("""create table NaturalPerson(id varchar(10) primary key, name varchar(400) not null, bytes binary(16) not null)""")
+            ddl("""create table LogRecord(id uniqueidentifier primary key, text varchar(400) not null)""")
+            ddl("""create table TypeMappingEntity(id bigint primary key IDENTITY(1,1) not null, enumTest varchar(10))""")
+            ddl("""create table JOIN_TABLE(customerId bigint, orderId bigint)""")
+            ddl("""create table mapping_table(person_id bigint not null, department_id bigint not null, some_data varchar(400) not null, PRIMARY KEY(person_id, department_id))""")
+        }
+    }
+
+    afterGroup { JdbiOrm.destroy() }
+    afterGroup { container.stop() }
+
     beforeEach { clearDb() }
     afterEach { clearDb() }
 }
@@ -278,7 +308,12 @@ fun DynaNodeGroup.withAllDatabases(block: DynaNodeGroup.()->Unit) {
             usingDockerizedMariaDB()
             block()
         }
+
+        group("MSSQL 2017 Express") {
+            usingDockerizedMSSQL()
+            block()
+        }
     } else {
-        println("Docker is not available, not running PostgreSQL/MySQL/MariaDB tests")
+        println("Docker is not available, not running PostgreSQL/MySQL/MariaDB/MSSQL tests")
     }
 }
