@@ -8,8 +8,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * Adds MySQL and MariaDB quirks support.
- * @author Martin Vysny <mavi@vaadin.com>
+ * Adds Microsoft SQL quirks support.
+ * @author mavi
  */
 public class MssqlQuirks implements Quirks {
     @Override

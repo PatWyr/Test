@@ -51,7 +51,7 @@ private fun DynaNodeGroup.joinTableTestSuite() {
             test("paged") {
                 db { (0..100).forEach { JoinTable(it, it).save() } }
                 expect((20..30).toList()) {
-                    JoinTable.dao.findAllBy("customerId >= :cid", 20L, 11L) { it.bind("cid", 0) }
+                    JoinTable.dao.findAllBy("customerId >= :cid", "customerId ASC",20L, 11L) { it.bind("cid", 0) }
                             .map { it.customerId }
                 }
             }

@@ -35,7 +35,8 @@ public interface Quirks {
      * Returns the SQL string such as <code>LIMIT 10 OFFSET 20</code>.
      * @param offset fetch rows from this offset
      * @param limit fetch at most this amount of rows
-     * @return the string <code>LIMIT 10 OFFSET 20</code> for
+     * @return the string <code>LIMIT 10 OFFSET 20</code> which generally works
+     * in all databases.
      */
     default String offsetLimit(@Nullable Long offset, @Nullable Long limit) {
         String result = "";

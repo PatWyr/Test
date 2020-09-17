@@ -86,13 +86,29 @@ public class DaoOfAny<T> implements Serializable {
      */
     @NotNull
     public List<T> findAll(@Nullable final Long offset, @Nullable final Long limit) {
+        return findAll(null, offset, limit);
+    }
+
+    /**
+     * Finds all rows in given table. Fails if there is no table in the database with the
+     * name of {@link EntityMeta#getDatabaseTableName()}. If both offset and limit
+     * are specified, then the LIMIT and OFFSET sql paging is used.
+     * @param orderBy if not null, this is passed in as the ORDER BY clause, e.g. {@code surname ASC, name ASC}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
+     * @param offset start from this row. If not null, must be 0 or greater.
+     * @param limit return this count of row at most. If not null, must be 0 or greater.
+     */
+    @NotNull
+    public List<T> findAll(@Nullable String orderBy, @Nullable final Long offset, @Nullable final Long limit) {
         if (limit != null && limit == 0L) {
             return new ArrayList<>();
         }
         final StringBuilder sql = new StringBuilder("select <FIELDS> from <TABLE>");
         checkOffsetLimit(offset, limit);
         return jdbi().withHandle(handle -> {
-                    appendOffsetLimit(sql, handle, offset, limit);
+                    appendOffsetLimit(sql, handle, offset, limit, orderBy != null);
+                    if (orderBy != null) {
+                        sql.append(" order by ").append(orderBy);
+                    }
                     return handle.createQuery(sql.toString())
                             .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
                             .define("TABLE", meta.getDatabaseTableName())
@@ -111,15 +127,15 @@ public class DaoOfAny<T> implements Serializable {
         }
     }
 
-    protected void appendOffsetLimit(@NotNull StringBuilder sb, @NotNull Handle handle, @Nullable final Long offset, @Nullable final Long limit) {
+    protected void appendOffsetLimit(@NotNull StringBuilder sql, @NotNull Handle handle, @Nullable final Long offset, @Nullable final Long limit, boolean sqlHasOrderBy) {
         if (offset == null && limit == null) {
             return;
         }
         final Quirks quirks = Quirks.from(handle);
-        if (quirks.offsetLimitRequiresOrderBy() != null) {
-            sb.append(" ").append(quirks.offsetLimitRequiresOrderBy());
+        if (quirks.offsetLimitRequiresOrderBy() != null && !sqlHasOrderBy) {
+            sql.append(" ").append(quirks.offsetLimitRequiresOrderBy());
         }
-        sb.append(" ").append(quirks.offsetLimit(offset, limit));
+        sql.append(" ").append(quirks.offsetLimit(offset, limit));
     }
 
     /**
@@ -133,15 +149,35 @@ public class DaoOfAny<T> implements Serializable {
      */
     @NotNull
     public List<T> findAllBy(@NotNull String where, @Nullable final Long offset, @Nullable final Long limit, @NotNull Consumer<Query> queryConsumer) {
+        return findAllBy(where, null, offset, limit, queryConsumer);
+    }
+
+    /**
+     * Finds all matching rows in given table. Fails if there is no table in the database with the
+     * name of {@link EntityMeta#getDatabaseTableName()}. If both offset and limit
+     * are specified, then the LIMIT and OFFSET sql paging is used.
+     * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
+     * @param orderBy if not null, this is passed in as the ORDER BY clause, e.g. {@code surname ASC, name ASC}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
+     * @param offset start from this row. If not null, must be 0 or greater.
+     * @param limit return this count of row at most. If not null, must be 0 or greater.
+     * @param queryConsumer allows you to set parameter values etc, for example {@code q -> q.bind("customerid", customerId")}.
+     */
+    @NotNull
+    public List<T> findAllBy(@NotNull String where, @Nullable String orderBy,
+                             @Nullable final Long offset, @Nullable final Long limit,
+                             @NotNull Consumer<Query> queryConsumer) {
         Objects.requireNonNull(where, "where");
         Objects.requireNonNull(queryConsumer, "queryConsumer");
         if (limit != null && limit == 0L) {
             return new ArrayList<>();
         }
         final StringBuilder sql = new StringBuilder("select <FIELDS> from <TABLE> where <WHERE>");
+        if (orderBy != null) {
+            sql.append(" order by ").append(orderBy);
+        }
         checkOffsetLimit(offset, limit);
         return jdbi().withHandle(handle -> {
-                    appendOffsetLimit(sql, handle, offset, limit);
+                    appendOffsetLimit(sql, handle, offset, limit, orderBy != null);
                     final Query query = handle.createQuery(sql.toString())
                             .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
                             .define("TABLE", meta.getDatabaseTableName())
@@ -162,7 +198,19 @@ public class DaoOfAny<T> implements Serializable {
      */
     @NotNull
     public List<T> findAllBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
-        return findAllBy(where, null, null, queryConsumer);
+        return findAllBy(where, null, queryConsumer);
+    }
+
+    /**
+     * Finds all matching rows in given table. Fails if there is no table in the database with the
+     * name of {@link EntityMeta#getDatabaseTableName()}.
+     * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
+     * @param orderBy if not null, this is passed in as the ORDER BY clause, e.g. {@code surname ASC, name ASC}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
+     * @param queryConsumer allows you to set parameter values etc, for example {@code q -> q.bind("customerid", customerId")}.
+     */
+    @NotNull
+    public List<T> findAllBy(@NotNull String where, @Nullable String orderBy, @NotNull Consumer<Query> queryConsumer) {
+        return findAllBy(where, orderBy, null, null, queryConsumer);
     }
 
     /**
@@ -410,8 +458,11 @@ public class DaoOfAny<T> implements Serializable {
     }
 
     /**
-     * Helper functions which should not be auto-completed in {@link DaoOfAny} are placed here.
-     * @param <T>
+     * Helper functions for {@link DaoOfAny}.
+     * <p></p>
+     * All functions which would only pollute IDE auto-completion are placed here.
+     * These functions are generally not intended to be invoked by the user of this library.
+     * @param <T> the entity type
      */
     public static final class Helper<T> implements Serializable {
         @NotNull
