@@ -287,4 +287,11 @@ val Date.withZeroNanos: Date get() {
     result.nanos = 0
     return result
 }
+// MSSQL nulls out millis for some reason
+val Date.withZeroMillis: Date get() {
+    val result = Timestamp((this as Timestamp).time / 1000 * 1000)
+    result.nanos = 0
+
+    return result
+}
 val <T> Array<T>.plusNull: List<T?> get() = toList<T?>() + listOf(null)
