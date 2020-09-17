@@ -16,7 +16,7 @@ public class DatabaseQuirksDetectorJdbiPlugin extends JdbiPlugin.Singleton {
 
     @Override
     public Handle customizeHandle(Handle handle) throws SQLException {
-        final DatabaseVariant variant = DatabaseVariant.detect(handle.getConnection());
+        final DatabaseVariant variant = JdbiOrm.databaseVariant != null ? JdbiOrm.databaseVariant : DatabaseVariant.detect(handle.getConnection());
         final Quirks quirks = JdbiOrm.quirks != null ? JdbiOrm.quirks : variant.getQuirks();
         final Quirks.Holder holder = handle.getConfig(Quirks.Holder.class);
         holder.quirks = quirks;

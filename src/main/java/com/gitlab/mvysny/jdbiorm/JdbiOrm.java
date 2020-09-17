@@ -1,6 +1,7 @@
 package com.gitlab.mvysny.jdbiorm;
 
 import com.gitlab.mvysny.jdbiorm.quirks.DatabaseQuirksDetectorJdbiPlugin;
+import com.gitlab.mvysny.jdbiorm.quirks.DatabaseVariant;
 import com.gitlab.mvysny.jdbiorm.quirks.Quirks;
 import org.jdbi.v3.core.Jdbi;
 import org.jetbrains.annotations.NotNull;
@@ -28,15 +29,24 @@ import java.util.Objects;
  */
 public final class JdbiOrm {
     private JdbiOrm() {}
+
+    /**
+     * The validator, used to validate entity when {@link Entity#save(boolean)} is invoked.
+     * Defaults to JSR 303 validator; if JSR303 is not available then falls back to {@link NoopValidator}.
+     */
     private static volatile Validator validator;
     private static volatile DataSource dataSource;
     // beware - we can't simply create new instances of Jdbi, otherwise the transaction nesting will not work
     // since Jdbi ThreadLocals are not static but bound to the Jdbi instance!
     private static volatile Jdbi jdbi;
     /**
-     * If set to non-null, this takes precedence over {@link DatabaseQuirksDetectorJdbiPlugin} detection mechanism.
+     * If set to non-null, this takes precedence over {@link DatabaseVariant} detection mechanism.
      */
     public static volatile Quirks quirks = null;
+    /**
+     * If set to non-null, this takes precedence over {@link DatabaseVariant} detection mechanism.
+     */
+    public static volatile DatabaseVariant databaseVariant = null;
 
     private static final Logger log = LoggerFactory.getLogger(JdbiOrm.class);
     static {
@@ -49,20 +59,40 @@ public final class JdbiOrm {
         }
     }
 
+    /**
+     * Returns the current validator, used to validate entity when {@link Entity#save(boolean)} is invoked.
+     * Defaults to JSR 303 validator; if JSR303 is not available then falls back to {@link NoopValidator}.
+     * @return the current validator, not null.
+     */
     @NotNull
     public static Validator getValidator() {
         return validator;
     }
 
+    /**
+     * Sets a new custom validator, used to validate entity when {@link Entity#save(boolean)} is invoked.
+     * Defaults to JSR 303 validator; if JSR303 is not available then falls back to {@link NoopValidator}.
+     * @param validator the new validator to set, not null.
+     */
     public static void setValidator(@NotNull Validator validator) {
         JdbiOrm.validator = Objects.requireNonNull(validator, "validator");
     }
 
+    /**
+     * Returns the data source currently used by {@link #jdbi()}. We highly recommend
+     * to use a connection pooler such as HikariCP.
+     * @return the data source, not null.
+     */
     @NotNull
     public static DataSource getDataSource() {
         return Objects.requireNonNull(dataSource, "The data source has not been set. Please call JdbiOrm.setDataSource() first.");
     }
 
+    /**
+     * Sets the data source which will be used by {@link #jdbi()} from now on. We highly recommend
+     * to use a connection pooler such as HikariCP.
+     * @return the data source, not null.
+     */
     public static void setDataSource(@NotNull DataSource dataSource) {
         if (JdbiOrm.dataSource != dataSource) {
             Objects.requireNonNull(dataSource, "dataSource");
