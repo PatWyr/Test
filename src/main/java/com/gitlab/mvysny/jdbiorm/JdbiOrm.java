@@ -41,7 +41,6 @@ public final class JdbiOrm {
     private static volatile DataSource dataSource;
     // beware - we must use a singleton instance of Jdbi. If we don't, the transaction nesting will not work
     // since Jdbi ThreadLocals are not static but bound to the Jdbi instance.
-    @Nullable
     private static volatile Jdbi jdbi;
     /**
      * If set to non-null, this takes precedence over {@link DatabaseVariant} detection mechanism.

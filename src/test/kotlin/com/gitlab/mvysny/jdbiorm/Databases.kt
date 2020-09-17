@@ -58,6 +58,7 @@ data class TypeMappingEntity(private var id: Long? = null,
 }
 
 fun hikari(block: HikariConfig.() -> Unit) {
+    JdbiOrm.databaseVariant = null
     JdbiOrm.setDataSource(HikariDataSource(HikariConfig().apply(block)))
 }
 
@@ -65,7 +66,6 @@ private fun DynaNodeGroup.usingDockerizedPosgresql() {
     check(DockerClientFactory.instance().isDockerAvailable()) { "Docker not available" }
     lateinit var container: PostgreSQLContainer<Nothing>
     beforeGroup {
-        JdbiOrm.databaseVariant = null
         container = PostgreSQLContainer<Nothing>("postgres:10.3")
         container.start()
     }
@@ -114,7 +114,6 @@ fun DynaNodeGroup.usingDockerizedMysql() {
     check(DockerClientFactory.instance().isDockerAvailable()) { "Docker not available" }
     lateinit var container: MySQLContainer<Nothing>
     beforeGroup {
-        JdbiOrm.databaseVariant = null
         container = MySQLContainer<Nothing>("mysql:5.7.21")
         container.start()
     }
@@ -171,7 +170,6 @@ fun <T> db(block: Handle.() -> T): T = jdbi().inTransaction<T, Exception>(block)
 
 fun DynaNodeGroup.usingH2Database() {
     beforeGroup {
-        JdbiOrm.databaseVariant = null
         hikari {
             jdbcUrl = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
             username = "sa"
@@ -219,7 +217,6 @@ private fun DynaNodeGroup.usingDockerizedMariaDB() {
     check(DockerClientFactory.instance().isDockerAvailable()) { "Docker not available" }
     lateinit var container: MariaDBContainer<Nothing>
     beforeGroup {
-        JdbiOrm.databaseVariant = null
         container = MariaDBContainer("mariadb:10.1.31")
         container.start()
     }
@@ -268,7 +265,6 @@ private fun DynaNodeGroup.usingDockerizedMSSQL() {
     check(DockerClientFactory.instance().isDockerAvailable()) { "Docker not available" }
     lateinit var container: MSSQLServerContainer<Nothing>
     beforeGroup {
-        JdbiOrm.databaseVariant = null
         container = MSSQLServerContainer("mcr.microsoft.com/mssql/server:2017-latest-ubuntu")
         container.start()
     }

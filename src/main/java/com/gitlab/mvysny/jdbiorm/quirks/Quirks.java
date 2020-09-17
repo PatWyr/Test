@@ -31,6 +31,7 @@ public interface Quirks {
      * in all databases.
      */
     default String offsetLimit(@Nullable Long offset, @Nullable Long limit) {
+        // MariaDB requires LIMIT first, then OFFSET: https://mariadb.com/kb/en/library/limit/
         String result = "";
         if (limit != null) {
             result += " LIMIT " + limit;
