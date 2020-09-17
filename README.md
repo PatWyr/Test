@@ -28,6 +28,11 @@ is needed, since we're only using Java 8 language features.
 > This library is tailored for Java usage. For Kotlin bindings please visit
 [vok-orm](https://github.com/mvysny/vok-orm).
 
+## Supported Databases
+
+jdbi-orm currently supports MySQL, MariaDB, PostgreSQL, H2 and Microsoft SQL.
+Other databases are untested - they might or might not work.
+
 ## Usage
 
 Just add the following lines to your Gradle script, to include this library in your project:
