@@ -282,16 +282,10 @@ private fun DynaNodeGroup.logRecordTestBattery() {
 }
 
 val Instant.withZeroNanos: Instant get() = with(ChronoField.NANO_OF_SECOND, get(ChronoField.MILLI_OF_SECOND).toLong() * 1000000)
-val Date.withZeroNanos: Date get() {
-    val result = Timestamp((this as Timestamp).time)
-    result.nanos = 0
-    return result
-}
-// MSSQL nulls out millis for some reason
+// MSSQL nulls out millis for some reason when running on CI
 val Date.withZeroMillis: Date get() {
     val result = Timestamp((this as Timestamp).time / 1000 * 1000)
     result.nanos = 0
-
     return result
 }
 val <T> Array<T>.plusNull: List<T?> get() = toList<T?>() + listOf(null)
