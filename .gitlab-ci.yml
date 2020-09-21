@@ -1,5 +1,4 @@
 variables:
-  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   # Instruct Testcontainers to use the daemon of DinD.
   DOCKER_HOST: "tcp://docker:2375"
   # Improve performance with overlayfs.
@@ -19,9 +18,13 @@ cache:
 build:jdk8:
   image: openjdk:8-jdk
   script:
-    - ./gradlew build
+    - ./gradlew build --info --stacktrace --no-daemon
 build:jdk11:
   image: openjdk:11-jdk
   script:
-    - ./gradlew build
+    - ./gradlew build --info --stacktrace --no-daemon
+build:jdk15:
+  image: openjdk:15-jdk
+  script:
+    - ./gradlew build --info --stacktrace --no-daemon
 
