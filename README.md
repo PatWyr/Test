@@ -868,6 +868,37 @@ public final class CustomerAddress {
 
 The `@ColumnName` annotation is honored both by `Dao`s and by all data loaders.
 
+## group by/aggregates/pivot table
+
+Since the group-by query may produce data with different data types than the bean itself contains (e.g.
+averaging integer age may produce a float/double result), it's best to create a new class to hold the
+outcome of the query:
+
+```java
+public final class ReviewAvgScore implements Serializable {
+    @ColumnName("beverageName")
+    private String name;
+    private float avgScore;
+    // getters and setters
+
+    public static List<ReviewAvgScore> findAll() {
+        return jdbi().withHandle(handle -> handle
+                .createQuery("select beverageName, avg(score) as avgScore from Review group by beverageName order by beverageName")
+                .map(FieldMapper.of(ReviewAvgScore.class))
+                .list());
+    }
+}
+```
+
+Note that we're not using the `Dao` here since the class is not backed by a table.
+
+Note that this approach is not fit for a configurable pivot table which may need to
+support dynamic criteria list. For that I'd recommend to:
+
+1. create the SQL depending on the grouping/aggregate criteria list;
+2. Use a custom JDBI Mapper, to map the JDBC rows into some kind of dynamic row,
+   e.g. backed by a `HashMap`.
+
 ## A main() method Example
 
 Using the vok-orm library from a JavaSE main method;
