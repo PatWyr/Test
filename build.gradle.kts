@@ -13,7 +13,7 @@ if (localProperties.exists()) {
 }
 
 plugins {
-    kotlin("jvm") version "1.4.10"
+    kotlin("jvm") version "1.4.21"
     id("com.jfrog.bintray") version "1.8.3"
     `maven-publish`
     java
@@ -50,7 +50,7 @@ dependencies {
 
     // validation support
     api("javax.validation:validation-api:2.0.1.Final")  // to have JSR303 validations in the entities
-    testImplementation("org.hibernate.validator:hibernate-validator:6.1.4.Final")
+    testImplementation("org.hibernate.validator:hibernate-validator:6.1.6.Final")
     // EL is required: http://hibernate.org/validator/documentation/getting-started/
     testImplementation("org.glassfish:javax.el:3.0.1-b08")
 
