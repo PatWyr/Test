@@ -45,7 +45,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
 
     // db
-    api("org.jdbi:jdbi3-core:3.13.0")
+    api("org.jdbi:jdbi3-core:3.18.0")
     testImplementation("com.zaxxer:HikariCP:3.4.5")
 
     // validation support
