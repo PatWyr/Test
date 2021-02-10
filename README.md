@@ -38,7 +38,7 @@ Other databases are untested - they might or might not work.
 Just add the following lines to your Gradle script, to include this library in your project:
 ```groovy
 repositories {
-    jcenter()  // or mavenCentral()
+    mavenCentral()
 }
 dependencies {
     compile("com.gitlab.mvysny.jdbiorm:jdbi-orm:x.y")
