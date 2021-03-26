@@ -38,7 +38,7 @@ dependencies {
 
     // db
     api("org.jdbi:jdbi3-core:3.18.0")
-    testImplementation("com.zaxxer:HikariCP:3.4.5")
+    testImplementation("com.zaxxer:HikariCP:4.0.3")
 
     // validation support
     api("javax.validation:validation-api:2.0.1.Final")  // to have JSR303 validations in the entities
