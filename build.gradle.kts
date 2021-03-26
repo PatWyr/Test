@@ -64,7 +64,7 @@ dependencies {
     testImplementation("org.testcontainers:mssqlserver:$testcontainersVersion")
 
     // Java has no nullable types
-    api("com.intellij:annotations:12.0")
+    api("org.jetbrains:annotations:20.1.0")
 }
 
 java {
