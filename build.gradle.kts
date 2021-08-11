@@ -1,11 +1,11 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val slf4jVersion = "1.7.30"
-val testcontainersVersion = "1.15.1"
+val slf4jVersion = "1.7.32"
+val testcontainersVersion = "1.16.0"
 
 plugins {
-    kotlin("jvm") version "1.5.0"
+    kotlin("jvm") version "1.5.21"
     `maven-publish`
     java
     signing
@@ -42,13 +42,13 @@ dependencies {
 
     // validation support
     api("javax.validation:validation-api:2.0.1.Final")  // to have JSR303 validations in the entities
-    testImplementation("org.hibernate.validator:hibernate-validator:6.1.6.Final")
+    testImplementation("org.hibernate.validator:hibernate-validator:6.2.0.Final")
     // EL is required: http://hibernate.org/validator/documentation/getting-started/
     testImplementation("org.glassfish:javax.el:3.0.1-b08")
 
     // tests
     testImplementation("com.github.mvysny.dynatest:dynatest-engine:0.20")
-    testImplementation("com.google.code.gson:gson:2.8.5")
+    testImplementation("com.google.code.gson:gson:2.8.7")
     testImplementation("org.slf4j:slf4j-simple:$slf4jVersion")
     testImplementation("com.h2database:h2:1.4.200")
 
@@ -64,7 +64,7 @@ dependencies {
     testImplementation("org.testcontainers:mssqlserver:$testcontainersVersion")
 
     // Java has no nullable types
-    api("org.jetbrains:annotations:20.1.0")
+    api("org.jetbrains:annotations:21.0.1")
 }
 
 java {
