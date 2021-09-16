@@ -107,7 +107,7 @@ private fun DynaNodeGroup.personTestBattery() {
         expectList() { Person.findAll() }
     }
     test("JsonSerializationIgnoresMeta") {
-        expect("""{"name":"Zaphod","age":42}""") { Gson().toJson(Person(name = "Zaphod", age = 42)) }
+        expect("""{"name":"Zaphod","age":42}""") { gson.toJson(Person(name = "Zaphod", age = 42)) }
     }
     test("Meta") {
         val meta = Person.meta
@@ -156,7 +156,7 @@ private fun DynaNodeGroup.aliasedIdTestBattery() {
         expect(listOf()) { EntityWithAliasedId.dao.findAll() }
     }
     test("JsonSerializationIgnoresMeta") {
-        expect("""{"name":"Zaphod"}""") { Gson().toJson(EntityWithAliasedId(null, "Zaphod")) }
+        expect("""{"name":"Zaphod"}""") { gson.toJson(EntityWithAliasedId(null, "Zaphod")) }
     }
     test("Meta") {
         val meta = EntityMeta(EntityWithAliasedId::class.java)

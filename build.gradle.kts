@@ -49,6 +49,8 @@ dependencies {
     // tests
     testImplementation("com.github.mvysny.dynatest:dynatest-engine:0.20")
     testImplementation("com.google.code.gson:gson:2.8.7")
+    // workaround for https://github.com/google/gson/issues/1059
+    testImplementation("com.fatboyindustrial.gson-javatime-serialisers:gson-javatime-serialisers:1.1.1")
     testImplementation("org.slf4j:slf4j-simple:$slf4jVersion")
     testImplementation("com.h2database:h2:1.4.200")
 
