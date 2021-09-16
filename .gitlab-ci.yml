@@ -23,8 +23,8 @@ build:jdk11:
   image: openjdk:11-jdk
   script:
     - ./gradlew build --info --stacktrace --no-daemon
-build:jdk15:
-  image: openjdk:15-jdk
+build:jdk17:
+  image: openjdk:17-jdk
   script:
     - ./gradlew build --info --stacktrace --no-daemon
 
