@@ -47,7 +47,7 @@ dependencies {
     testImplementation("org.glassfish:javax.el:3.0.1-b08")
 
     // tests
-    testImplementation("com.github.mvysny.dynatest:dynatest-engine:0.20")
+    testImplementation("com.github.mvysny.dynatest:dynatest:0.22")
     testImplementation("com.google.code.gson:gson:2.8.7")
     // workaround for https://github.com/google/gson/issues/1059
     testImplementation("com.fatboyindustrial.gson-javatime-serialisers:gson-javatime-serialisers:1.1.1")
