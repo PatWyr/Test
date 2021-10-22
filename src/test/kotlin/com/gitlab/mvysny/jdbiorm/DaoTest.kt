@@ -79,7 +79,7 @@ private fun DynaNodeGroup.personTestSuite() {
         expect(p.withZeroNanos()) { Person.getById(p.id!!).withZeroNanos() }
     }
     test("GetById fails if there is no such entity") {
-        expectThrows(IllegalStateException::class, message = "There is no Person for id 25") {
+        expectThrows<IllegalStateException>("There is no Person for id 25") {
             Person.getById(25L)
         }
     }
@@ -93,21 +93,21 @@ private fun DynaNodeGroup.personTestSuite() {
         }
 
         test("fails if there is no such entity") {
-            expectThrows(IllegalStateException::class, message = "no row matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
+            expectThrows<IllegalStateException>("no row matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
                 Person.getOneBy("name = :name") { it.bind("name", "Albedo") }
             }
         }
 
         test("fails if there are two matching entities") {
             repeat(2) { Person(name = "Albedo", age = 130).save() }
-            expectThrows(IllegalStateException::class, message = "too many rows matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
+            expectThrows<IllegalStateException>("too many rows matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
                 Person.getOneBy("name = :name") { it.bind("name", "Albedo") }
             }
         }
 
         test("fails if there are ten matching entities") {
             repeat(10) { Person(name = "Albedo", age = 130).save() }
-            expectThrows(IllegalStateException::class, message = "too many rows matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
+            expectThrows<IllegalStateException>("too many rows matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
                 Person.getOneBy("name = :name") { it.bind("name", "Albedo") }
             }
         }

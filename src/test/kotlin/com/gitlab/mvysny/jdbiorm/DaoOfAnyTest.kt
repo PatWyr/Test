@@ -67,21 +67,21 @@ private fun DynaNodeGroup.joinTableTestSuite() {
         }
 
         test("fails if there is no such entity") {
-            expectThrows(IllegalStateException::class, message = "no row matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:10}, finder:[]}") {
+            expectThrows<IllegalStateException>("no row matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:10}, finder:[]}") {
                 JoinTable.dao.getOneBy("customerId = :cid") { it.bind("cid", 10) }
             }
         }
 
         test("fails if there are two matching entities") {
             repeat(2) { JoinTable(100, 100).save() }
-            expectThrows(IllegalStateException::class, message = "too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:100}, finder:[]}") {
+            expectThrows<IllegalStateException>("too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:100}, finder:[]}") {
                 JoinTable.dao.getOneBy("customerId = :cid") { it.bind("cid", 100) }
             }
         }
 
         test("fails if there are ten matching entities") {
             repeat(10) { JoinTable(100, 100).save() }
-            expectThrows(IllegalStateException::class, message = "too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:100}, finder:[]}") {
+            expectThrows<IllegalStateException>("too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:100}, finder:[]}") {
                 JoinTable.dao.getOneBy("customerId = :cid") { it.bind("cid", 100) }
             }
         }
@@ -96,21 +96,21 @@ private fun DynaNodeGroup.joinTableTestSuite() {
         }
 
         test("fails if there is no such entity") {
-            expectThrows(IllegalStateException::class, message = "no row matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
+            expectThrows<IllegalStateException>("no row matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
                 JoinTable.dao.getOne()
             }
         }
 
         test("fails if there are two matching entities") {
             repeat(2) { JoinTable(100, 100).save() }
-            expectThrows(IllegalStateException::class, message = "too many rows matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
+            expectThrows<IllegalStateException>("too many rows matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
                 JoinTable.dao.getOne()
             }
         }
 
         test("fails if there are ten matching entities") {
             repeat(10) { JoinTable(100, 100).save() }
-            expectThrows(IllegalStateException::class, message = "too many rows matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
+            expectThrows<IllegalStateException>("too many rows matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
                 JoinTable.dao.getOne()
             }
         }
@@ -130,14 +130,14 @@ private fun DynaNodeGroup.joinTableTestSuite() {
 
         test("fails if there are two matching entities") {
             repeat(2) { JoinTable(100, 100).save() }
-            expectThrows(IllegalStateException::class, message = "too many rows matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
+            expectThrows<IllegalStateException>("too many rows matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
                 JoinTable.dao.findOne()
             }
         }
 
         test("fails if there are ten matching entities") {
             repeat(10) { JoinTable(100, 100).save() }
-            expectThrows(IllegalStateException::class, message = "too many rows matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
+            expectThrows<IllegalStateException>("too many rows matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
                 JoinTable.dao.findOne()
             }
         }
