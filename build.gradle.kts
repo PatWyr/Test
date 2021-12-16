@@ -5,7 +5,7 @@ val slf4jVersion = "1.7.32"
 val testcontainersVersion = "1.16.0"
 
 plugins {
-    kotlin("jvm") version "1.6.0"
+    kotlin("jvm") version "1.6.10"
     `maven-publish`
     java
     signing
@@ -48,7 +48,7 @@ dependencies {
 
     // tests
     testImplementation("com.github.mvysny.dynatest:dynatest:0.22")
-    testImplementation("com.google.code.gson:gson:2.8.7")
+    testImplementation("com.google.code.gson:gson:2.8.8")
     // workaround for https://github.com/google/gson/issues/1059
     testImplementation("com.fatboyindustrial.gson-javatime-serialisers:gson-javatime-serialisers:1.1.1")
     testImplementation("org.slf4j:slf4j-simple:$slf4jVersion")
