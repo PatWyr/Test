@@ -52,7 +52,7 @@ dependencies {
     // workaround for https://github.com/google/gson/issues/1059
     testImplementation("com.fatboyindustrial.gson-javatime-serialisers:gson-javatime-serialisers:1.1.1")
     testImplementation("org.slf4j:slf4j-simple:$slf4jVersion")
-    testImplementation("com.h2database:h2:1.4.200")
+    testImplementation("com.h2database:h2:2.0.206")
 
     testImplementation("org.postgresql:postgresql:42.2.5")
     testImplementation("mysql:mysql-connector-java:5.1.48")
