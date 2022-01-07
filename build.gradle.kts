@@ -38,6 +38,7 @@ dependencies {
 
     // db
     api("org.jdbi:jdbi3-core:3.18.0")
+    // stay with HikariCP 4 sice 5.x requires JDK11: https://github.com/brettwooldridge/HikariCP
     testImplementation("com.zaxxer:HikariCP:4.0.3")
 
     // validation support
