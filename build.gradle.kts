@@ -37,7 +37,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
 
     // db
-    api("org.jdbi:jdbi3-core:3.18.0")
+    api("org.jdbi:jdbi3-core:3.25.0")
     // stay with HikariCP 4 sice 5.x requires JDK11: https://github.com/brettwooldridge/HikariCP
     testImplementation("com.zaxxer:HikariCP:4.0.3")
 
