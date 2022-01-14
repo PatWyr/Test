@@ -2,11 +2,7 @@
 
 package com.gitlab.mvysny.jdbiorm
 
-import com.github.mvysny.dynatest.DynaNodeGroup
-import com.github.mvysny.dynatest.DynaTest
-import com.github.mvysny.dynatest.expectList
-import com.github.mvysny.dynatest.expectThrows
-import com.google.gson.Gson
+import com.github.mvysny.dynatest.*
 import java.lang.IllegalStateException
 import java.lang.Long
 import java.sql.Timestamp
@@ -25,7 +21,7 @@ class MappingTest : DynaTest({
             aliasedIdTestBattery()
         }
         group("NaturalPerson") {
-            naturalPersonTestBattery()
+            naturalPersonTests()
         }
         group("LogRecord") {
             logRecordTestBattery()
@@ -49,6 +45,7 @@ class MappingTest : DynaTest({
     }
 })
 
+@DynaTestDsl
 private fun DynaNodeGroup.personTestBattery() {
     test("FindAll") {
         expectList() { Person.findAll() }
@@ -131,6 +128,7 @@ private fun DynaNodeGroup.personTestBattery() {
     }
 }
 
+@DynaTestDsl
 private fun DynaNodeGroup.aliasedIdTestBattery() {
     test("FindAll") {
         expectList() { EntityWithAliasedId.dao.findAll() }
@@ -169,6 +167,7 @@ private fun DynaNodeGroup.aliasedIdTestBattery() {
     }
 }
 
+@DynaTestDsl
 private fun DynaNodeGroup.compositePKTestBattery() {
     test("FindAll") {
         expectList() { MappingTable.dao.findAll() }
@@ -215,7 +214,8 @@ private fun DynaNodeGroup.compositePKTestBattery() {
     }
 }
 
-private fun DynaNodeGroup.naturalPersonTestBattery() {
+@DynaTestDsl
+private fun DynaNodeGroup.naturalPersonTests() {
     test("save fails") {
         val p = NaturalPerson(id = "12345678", name = "Albedo", bytes = byteArrayOf(5))
         expectThrows<IllegalStateException>("We expected to update only one row but we updated 0 - perhaps there is no row with id 12345678?") {
@@ -248,6 +248,7 @@ private fun DynaNodeGroup.naturalPersonTestBattery() {
     }
 }
 
+@DynaTestDsl
 private fun DynaNodeGroup.logRecordTestBattery() {
     test("save succeeds since create() auto-generates ID") {
         val p = LogRecord(text = "foo")

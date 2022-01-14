@@ -15,6 +15,7 @@ class DaoOfAnyTest : DynaTest({
     }
 })
 
+@DynaTestDsl
 private fun DynaNodeGroup.joinTableTestSuite() {
     group("findAll") {
         test("no rows returned on empty table") {

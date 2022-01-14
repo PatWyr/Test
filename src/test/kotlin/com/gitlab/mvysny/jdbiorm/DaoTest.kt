@@ -27,6 +27,7 @@ class DaoTest : DynaTest({
     }
 })
 
+@DynaTestDsl
 private fun DynaNodeGroup.personTestSuite() {
     group("findAll") {
         test("no rows returned on empty table") {
@@ -210,6 +211,7 @@ private fun DynaNodeGroup.personTestSuite() {
     }
 }
 
+@DynaTestDsl
 private fun DynaNodeGroup.entityWithAliasedIdTestSuite() {
     test("FindById") {
         expect(null) { EntityWithAliasedId.dao.findById(25) }
@@ -289,6 +291,7 @@ private fun DynaNodeGroup.entityWithAliasedIdTestSuite() {
     }
 }
 
+@DynaTestDsl
 private fun DynaNodeGroup.compositePKTestSuite() {
     test("FindById") {
         expect(null) { MappingTable.dao.findById(MappingTable.ID(1, 2)) }

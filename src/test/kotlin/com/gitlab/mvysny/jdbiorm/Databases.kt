@@ -1,6 +1,7 @@
 package com.gitlab.mvysny.jdbiorm
 
 import com.github.mvysny.dynatest.DynaNodeGroup
+import com.github.mvysny.dynatest.DynaTestDsl
 import com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi
 import com.gitlab.mvysny.jdbiorm.quirks.DatabaseVariant
 import com.zaxxer.hikari.HikariConfig
@@ -62,6 +63,7 @@ fun hikari(block: HikariConfig.() -> Unit) {
     JdbiOrm.setDataSource(HikariDataSource(HikariConfig().apply(block)))
 }
 
+@DynaTestDsl
 private fun DynaNodeGroup.usingDockerizedPosgresql() {
     check(DockerClientFactory.instance().isDockerAvailable()) { "Docker not available" }
     lateinit var container: PostgreSQLContainer<*>
@@ -110,6 +112,7 @@ private fun DynaNodeGroup.usingDockerizedPosgresql() {
     }
 }
 
+@DynaTestDsl
 fun DynaNodeGroup.usingDockerizedMysql() {
     check(DockerClientFactory.instance().isDockerAvailable()) { "Docker not available" }
     lateinit var container: MySQLContainer<*>
@@ -171,6 +174,7 @@ private fun clearDb() {
 
 fun <T> db(block: Handle.() -> T): T = jdbi().inTransaction<T, Exception>(block)
 
+@DynaTestDsl
 fun DynaNodeGroup.usingH2Database() {
     beforeGroup {
         hikari {
@@ -216,6 +220,7 @@ fun Handle.ddl(@Language("sql") sql: String) {
     createUpdate(sql).execute()
 }
 
+@DynaTestDsl
 private fun DynaNodeGroup.usingDockerizedMariaDB() {
     check(DockerClientFactory.instance().isDockerAvailable()) { "Docker not available" }
     lateinit var container: MariaDBContainer<*>
@@ -264,6 +269,7 @@ private fun DynaNodeGroup.usingDockerizedMariaDB() {
     }
 }
 
+@DynaTestDsl
 private fun DynaNodeGroup.usingDockerizedMSSQL() {
     check(DockerClientFactory.instance().isDockerAvailable()) { "Docker not available" }
     lateinit var container: MSSQLServerContainer<*>
@@ -312,6 +318,7 @@ private fun DynaNodeGroup.usingDockerizedMSSQL() {
     }
 }
 
+@DynaTestDsl
 fun DynaNodeGroup.withAllDatabases(block: DynaNodeGroup.()->Unit) {
     group("H2") {
         usingH2Database()
