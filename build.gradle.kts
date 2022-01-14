@@ -2,7 +2,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val slf4jVersion = "1.7.32"
-val testcontainersVersion = "1.16.0"
+val testcontainersVersion = "1.16.2"
 
 plugins {
     kotlin("jvm") version "1.6.10"
@@ -51,8 +51,8 @@ dependencies {
     testImplementation("org.glassfish:javax.el:3.0.1-b08")
 
     // tests
-    testImplementation("com.github.mvysny.dynatest:dynatest:0.22")
-    testImplementation("com.google.code.gson:gson:2.8.8")
+    testImplementation("com.github.mvysny.dynatest:dynatest:0.24")
+    testImplementation("com.google.code.gson:gson:2.8.9")
     // stay with HikariCP 4 sice 5.x requires JDK11: https://github.com/brettwooldridge/HikariCP
     testImplementation("com.zaxxer:HikariCP:4.0.3")
     // workaround for https://github.com/google/gson/issues/1059
@@ -72,7 +72,7 @@ dependencies {
     testImplementation("org.testcontainers:mssqlserver:$testcontainersVersion")
 
     // Java has no nullable types
-    api("org.jetbrains:annotations:21.0.1")
+    api("org.jetbrains:annotations:22.0.0")
 }
 
 java {
