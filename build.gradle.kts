@@ -37,9 +37,12 @@ dependencies {
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
 
     // db
-    api("org.jdbi:jdbi3-core:3.25.0")
-    // stay with HikariCP 4 sice 5.x requires JDK11: https://github.com/brettwooldridge/HikariCP
-    testImplementation("com.zaxxer:HikariCP:4.0.3")
+    api("org.jdbi:jdbi3-core:3.27.0") {
+        exclude(module = "caffeine")
+    }
+    // stay on caffeine 2.x to support Java 8. See https://github.com/jdbi/jdbi#java-8-compatibility
+    // for more details.
+    implementation("com.github.ben-manes.caffeine:caffeine:2.9.3")
 
     // validation support
     api("javax.validation:validation-api:2.0.1.Final")  // to have JSR303 validations in the entities
@@ -50,6 +53,8 @@ dependencies {
     // tests
     testImplementation("com.github.mvysny.dynatest:dynatest:0.22")
     testImplementation("com.google.code.gson:gson:2.8.8")
+    // stay with HikariCP 4 sice 5.x requires JDK11: https://github.com/brettwooldridge/HikariCP
+    testImplementation("com.zaxxer:HikariCP:4.0.3")
     // workaround for https://github.com/google/gson/issues/1059
     testImplementation("com.fatboyindustrial.gson-javatime-serialisers:gson-javatime-serialisers:1.1.1")
     testImplementation("org.slf4j:slf4j-simple:$slf4jVersion")
