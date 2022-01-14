@@ -60,10 +60,10 @@ dependencies {
     testImplementation("org.slf4j:slf4j-simple:$slf4jVersion")
     testImplementation("com.h2database:h2:2.0.206")
 
-    testImplementation("org.postgresql:postgresql:42.2.5")
-    testImplementation("mysql:mysql-connector-java:5.1.48")
-    testImplementation("org.mariadb.jdbc:mariadb-java-client:2.4.0")
-    testImplementation("com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre8")
+    testImplementation("org.postgresql:postgresql:42.3.1")
+    testImplementation("mysql:mysql-connector-java:8.0.25")
+    testImplementation("org.mariadb.jdbc:mariadb-java-client:2.7.3")
+    testImplementation("com.microsoft.sqlserver:mssql-jdbc:9.4.1.jre8")
 
     testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
