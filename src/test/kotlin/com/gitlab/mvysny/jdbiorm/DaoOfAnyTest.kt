@@ -33,9 +33,9 @@ private fun DynaNodeGroup.joinTableTestSuite() {
         }
         test("paging") {
             db { (0..100).forEach { JoinTable(it, it).save() } }
-            expect((0..9).toList()) { JoinTable.dao.findAll(0L, 10L).map { it.customerId } }
-            expect((20..49).toList()) { JoinTable.dao.findAll(20L, 30L).map { it.customerId } }
-            expect((90..100).toList()) { JoinTable.dao.findAll(90L, 300L).map { it.customerId } }
+            expect((0..9).toList()) { JoinTable.dao.findAll("customerId ASC", 0L, 10L).map { it.customerId } }
+            expect((20..49).toList()) { JoinTable.dao.findAll("customerId ASC", 20L, 30L).map { it.customerId } }
+            expect((90..100).toList()) { JoinTable.dao.findAll("customerId ASC", 90L, 300L).map { it.customerId } }
             expectList() { JoinTable.dao.findAll(2000L, 50L) }
         }
         group("findAllBy") {

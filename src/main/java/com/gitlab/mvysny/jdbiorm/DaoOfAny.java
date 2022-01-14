@@ -105,10 +105,11 @@ public class DaoOfAny<T> implements Serializable {
         final StringBuilder sql = new StringBuilder("select <FIELDS> from <TABLE>");
         checkOffsetLimit(offset, limit);
         return jdbi().withHandle(handle -> {
-                    appendOffsetLimit(sql, handle, offset, limit, orderBy != null);
                     if (orderBy != null) {
                         sql.append(" order by ").append(orderBy);
                     }
+                    // H2 requires ORDER BY after LIMIT+OFFSET clauses.
+                    appendOffsetLimit(sql, handle, offset, limit, orderBy != null);
                     return handle.createQuery(sql.toString())
                             .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
                             .define("TABLE", meta.getDatabaseTableName())
