@@ -252,7 +252,7 @@ public class DaoOfAny<T> implements Serializable {
     }
 
     /**
-     * Retrieves the single entity from this table. Useful for config table which hosts one row only.
+     * Retrieves the single entity from this table. Useful for example for config table which hosts one row only.
      * Returns null if there is no such entity; fails if there are two or more entities matching the criteria.
      * <p></p>
      * Example:
@@ -260,7 +260,7 @@ public class DaoOfAny<T> implements Serializable {
      * ConfigTable.dao.findOne()
      * </pre>
      * <p>
-     * This function returns null if there is no item matching. Use {@link #getOneBy(String, Consumer)}
+     * This function returns null if there is no item matching. Use {@link #getOne()}
      * if you wish to return `null` in case that the entity does not exist.
      *
      * @throws IllegalStateException if there are two or more rows.
@@ -283,12 +283,12 @@ public class DaoOfAny<T> implements Serializable {
     }
 
     /**
-     * Retrieves the single entity from this table. Useful for config table which hosts one row only.
-     * Returns null if there is no such entity; fails if there are two or more entities matching the criteria.
+     * Retrieves the single entity from this table. Useful for example for config table which hosts one row only.
+     * Fails if there is no entity, or if there are two or more entities matching the criteria.
      * <p></p>
      * Example:
      * <pre>
-     * ConfigTable.dao.findOne()
+     * ConfigTable.dao.getOne()
      * </pre>
      * <p>
      * This function fails if there is no item matching. Use {@link #findOne}
@@ -296,7 +296,7 @@ public class DaoOfAny<T> implements Serializable {
      *
      * @throws IllegalStateException if the table is empty, or if there are two or more rows.
      */
-    @Nullable
+    @NotNull
     public T getOne() {
         return jdbi().withHandle(handle -> {
             String sql = "select <FIELDS> from <TABLE>";
@@ -515,8 +515,7 @@ public class DaoOfAny<T> implements Serializable {
         }
 
         /**
-         * Returns the only row in the result set. Returns {@code null} if the row itself is
-         * {@code null}.
+         * Returns the one and only row in the result set. Never returns {@code null}.
          *
          * @param errorSupplier invoked in case of error; should list table name, the {@code where} clause
          *                      and parameters. Prepended by 'too many items matching '. Simply use
@@ -526,6 +525,8 @@ public class DaoOfAny<T> implements Serializable {
          */
         @NotNull
         public T getOneFromIterable(ResultIterable<T> iterable, @NotNull Function<Binding, String> errorSupplier) {
+            Objects.requireNonNull(iterable, "iterable");
+            Objects.requireNonNull(errorSupplier, "errorSupplier");
             try (ResultIterator<T> iter = iterable.iterator()) {
                 if (!iter.hasNext()) {
                     throw new IllegalStateException("no row matching " + errorSupplier.apply(iter.getContext().getBinding()));
