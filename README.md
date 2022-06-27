@@ -279,8 +279,8 @@ with several useful finder methods present in the [Dao](src/main/java/com/gitlab
 * `Category.dao.count()` will return the number of rows in the Category table.
 * `Category.dao.findAllBy("name = :name1 or name = :name2", null, null, q -> q.bind("name1", "Beer").bind("name2", "Cider"))` will find all categories with the name of "Beer" or "Cider".
   This is an example of a parametrized select, from which you only need to provide the WHERE clause.
-* `Category.dao.getOneBy("name = :name", q -> q.bind("name", "Beer"));` will fetch exactly one matching category, failing if there is no such category or there are more than one.
-* `Category.dao.findOneBy("name = :name", q -> q.bind("name", "Beer"));` will fetch one matching category, failing if there are more than one. Returns `null` if there is none.
+* `Category.dao.singleBy("name = :name", q -> q.bind("name", "Beer"));` will fetch exactly one matching category, failing if there is no such category or there are more than one.
+* `Category.dao.findSingleBy("name = :name", q -> q.bind("name", "Beer"));` will fetch one matching category, failing if there are more than one. Returns `null` if there is none.
 * `Category.dao.countBy("name = :name", q -> q.bind("name", "Beer"));` will return the number of rows in the Category table matching given query.
 
 In the spirit of type safety, the finder methods will only accept `Long` (or whatever is the type of
@@ -303,12 +303,12 @@ public class Category implements Entity<Long> {
 
         @Nullable
         public Category findByName(@NotNull String name) {
-            return findOneBy("name = :name", q -> q.bind("name", name));
+            return findSingleBy("name = :name", q -> q.bind("name", name));
         }
 
         @NotNull
         public Category getByName(@NotNull String name) {
-            return getOneBy("name = :name", q -> q.bind("name", name));
+            return singleBy("name = :name", q -> q.bind("name", name));
         }
 
         public boolean existsByName(@NotNull String name) {
@@ -944,7 +944,7 @@ public class Category implements Entity<Long> {
 
         @Nullable
         public Category findByName(@NotNull String name) {
-            return findOneBy("name=:name", q -> q.bind("name", name));
+            return findSingleBy("name=:name", q -> q.bind("name", name));
         }
     }
 

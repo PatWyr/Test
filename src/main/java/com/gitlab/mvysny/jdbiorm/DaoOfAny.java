@@ -220,10 +220,10 @@ public class DaoOfAny<T> implements Serializable {
      * <p></p>
      * Example:
      * <pre>
-     * Person.dao.findOneBy("name = :name", q -> q.bind("name", "Albedo"))
+     * Person.dao.findSingleBy("name = :name", q -> q.bind("name", "Albedo"))
      * </pre>
      * <p>
-     * This function returns null if there is no item matching. Use {@link #getOneBy(String, Consumer)}
+     * This function returns null if there is no item matching. Use {@link #singleBy(String, Consumer)}
      * if you wish to fail with an exception in case that the entity does not exist.
      *
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
@@ -231,7 +231,7 @@ public class DaoOfAny<T> implements Serializable {
      * @throws IllegalStateException if there are two or more matching entities.
      */
     @Nullable
-    public T findOneBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
+    public T findSingleBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
         Objects.requireNonNull(where, "where");
         Objects.requireNonNull(queryConsumer, "queryConsumer");
         return jdbi().withHandle(handle -> {
@@ -247,7 +247,7 @@ public class DaoOfAny<T> implements Serializable {
                     .define("WHERE", where);
             queryConsumer.accept(query);
             final ResultIterable<T> iterable = query.map(getRowMapper());
-            return helper.findOneFromIterable(iterable, binding -> helper.formatQuery(where, binding));
+            return helper.findSingleFromIterable(iterable, binding -> helper.formatQuery(where, binding));
         });
     }
 
@@ -257,16 +257,16 @@ public class DaoOfAny<T> implements Serializable {
      * <p></p>
      * Example:
      * <pre>
-     * ConfigTable.dao.findOne()
+     * ConfigTable.dao.findSingle()
      * </pre>
      * <p>
-     * This function returns null if there is no item matching. Use {@link #getOne()}
+     * This function returns null if there is no item matching. Use {@link #single()}
      * if you wish to return `null` in case that the entity does not exist.
      *
      * @throws IllegalStateException if there are two or more rows.
      */
     @Nullable
-    public T findOne() {
+    public T findSingle() {
         return jdbi().withHandle(handle -> {
             String sql = "select <FIELDS> from <TABLE>";
             final Quirks quirks = Quirks.from(handle);
@@ -278,7 +278,7 @@ public class DaoOfAny<T> implements Serializable {
                     .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
                     .define("TABLE", meta.getDatabaseTableName())
                     .map(getRowMapper());
-            return helper.findOneFromIterable(iterable, binding -> helper.formatQuery("", binding));
+            return helper.findSingleFromIterable(iterable, binding -> helper.formatQuery("", binding));
         });
     }
 
@@ -288,16 +288,16 @@ public class DaoOfAny<T> implements Serializable {
      * <p></p>
      * Example:
      * <pre>
-     * ConfigTable.dao.getOne()
+     * ConfigTable.dao.single()
      * </pre>
      * <p>
-     * This function fails if there is no item matching. Use {@link #findOne}
+     * This function fails if there is no item matching. Use {@link #findSingle}
      * if you wish to return `null` in case that the entity does not exist.
      *
      * @throws IllegalStateException if the table is empty, or if there are two or more rows.
      */
     @NotNull
-    public T getOne() {
+    public T single() {
         return jdbi().withHandle(handle -> {
             String sql = "select <FIELDS> from <TABLE>";
             final Quirks quirks = Quirks.from(handle);
@@ -309,7 +309,7 @@ public class DaoOfAny<T> implements Serializable {
                     .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
                     .define("TABLE", meta.getDatabaseTableName())
                     .map(getRowMapper());
-            return helper.getOneFromIterable(iterable, binding -> helper.formatQuery("", binding));
+            return helper.getSingleFromIterable(iterable, binding -> helper.formatQuery("", binding));
         });
     }
 
@@ -348,7 +348,7 @@ public class DaoOfAny<T> implements Serializable {
      * <p></p>
      * Example:
      * <pre>
-     * Person.dao.getOneBy("name = :name", q -> q.bind("name", "Albedo"))
+     * Person.dao.singleBy("name = :name", q -> q.bind("name", "Albedo"))
      * </pre>
      * <p>
      * This function fails if there is no such entity or there are 2 or more. Use [findSpecificBy] if you wish to return `null` in case that
@@ -359,7 +359,7 @@ public class DaoOfAny<T> implements Serializable {
      * @throws IllegalStateException if there is no entity matching given criteria, or if there are two or more matching entities.
      */
     @NotNull
-    public T getOneBy(@NotNull String where, Consumer<Query> queryConsumer) {
+    public T singleBy(@NotNull String where, Consumer<Query> queryConsumer) {
         Objects.requireNonNull(where, "where");
         Objects.requireNonNull(queryConsumer, "queryConsumer");
         return jdbi().withHandle(handle -> {
@@ -375,7 +375,7 @@ public class DaoOfAny<T> implements Serializable {
                             .define("WHERE", where);
                     queryConsumer.accept(query);
                     final ResultIterable<T> result = query.map(getRowMapper());
-                    return helper.getOneFromIterable(result, binding -> helper.formatQuery(where, binding));
+                    return helper.getSingleFromIterable(result, binding -> helper.formatQuery(where, binding));
                 }
         );
     }
@@ -496,7 +496,7 @@ public class DaoOfAny<T> implements Serializable {
          * @throws IllegalStateException if the result set contains multiple rows
          */
         @Nullable
-        public T findOneFromIterable(@NotNull ResultIterable<T> iterable, @NotNull Function<Binding, String> errorSupplier) {
+        public T findSingleFromIterable(@NotNull ResultIterable<T> iterable, @NotNull Function<Binding, String> errorSupplier) {
             Objects.requireNonNull(iterable, "iterable");
             Objects.requireNonNull(errorSupplier, "errorSupplier");
             try (ResultIterator<T> iter = iterable.iterator()) {
@@ -524,7 +524,7 @@ public class DaoOfAny<T> implements Serializable {
          * @throws IllegalStateException if the result set contains zero or multiple rows
          */
         @NotNull
-        public T getOneFromIterable(ResultIterable<T> iterable, @NotNull Function<Binding, String> errorSupplier) {
+        public T getSingleFromIterable(ResultIterable<T> iterable, @NotNull Function<Binding, String> errorSupplier) {
             Objects.requireNonNull(iterable, "iterable");
             Objects.requireNonNull(errorSupplier, "errorSupplier");
             try (ResultIterator<T> iter = iterable.iterator()) {

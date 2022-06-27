@@ -58,88 +58,88 @@ private fun DynaNodeGroup.joinTableTestSuite() {
             }
         }
     }
-    group("getOneBy() tests") {
+    group("singleBy() tests") {
         test("succeeds if there is exactly one matching entity") {
             val p = JoinTable(130, 10)
             p.save()
             expect(p) {
-                JoinTable.dao.getOneBy("customerId = :cid") { it.bind("cid", 130) }
+                JoinTable.dao.singleBy("customerId = :cid") { it.bind("cid", 130) }
             }
         }
 
         test("fails if there is no such entity") {
             expectThrows<IllegalStateException>("no row matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:10}, finder:[]}") {
-                JoinTable.dao.getOneBy("customerId = :cid") { it.bind("cid", 10) }
+                JoinTable.dao.singleBy("customerId = :cid") { it.bind("cid", 10) }
             }
         }
 
         test("fails if there are two matching entities") {
             repeat(2) { JoinTable(100, 100).save() }
             expectThrows<IllegalStateException>("too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:100}, finder:[]}") {
-                JoinTable.dao.getOneBy("customerId = :cid") { it.bind("cid", 100) }
+                JoinTable.dao.singleBy("customerId = :cid") { it.bind("cid", 100) }
             }
         }
 
         test("fails if there are ten matching entities") {
             repeat(10) { JoinTable(100, 100).save() }
             expectThrows<IllegalStateException>("too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:100}, finder:[]}") {
-                JoinTable.dao.getOneBy("customerId = :cid") { it.bind("cid", 100) }
+                JoinTable.dao.singleBy("customerId = :cid") { it.bind("cid", 100) }
             }
         }
     }
-    group("getOne() tests") {
+    group("single() tests") {
         test("succeeds if there is exactly one matching entity") {
             val p = JoinTable(130, 10)
             p.save()
             expect(p) {
-                JoinTable.dao.getOne()
+                JoinTable.dao.single()
             }
         }
 
         test("fails if there is no such entity") {
             expectThrows<IllegalStateException>("no row matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
-                JoinTable.dao.getOne()
+                JoinTable.dao.single()
             }
         }
 
         test("fails if there are two matching entities") {
             repeat(2) { JoinTable(100, 100).save() }
             expectThrows<IllegalStateException>("too many rows matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
-                JoinTable.dao.getOne()
+                JoinTable.dao.single()
             }
         }
 
         test("fails if there are ten matching entities") {
             repeat(10) { JoinTable(100, 100).save() }
             expectThrows<IllegalStateException>("too many rows matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
-                JoinTable.dao.getOne()
+                JoinTable.dao.single()
             }
         }
     }
-    group("findOne() tests") {
+    group("findSingle() tests") {
         test("succeeds if there is exactly one matching entity") {
             val p = JoinTable(130, 10)
             p.save()
             expect(p) {
-                JoinTable.dao.findOne()
+                JoinTable.dao.findSingle()
             }
         }
 
         test("returns null if there is no such entity") {
-            expect(null) { JoinTable.dao.findOne() }
+            expect(null) { JoinTable.dao.findSingle() }
         }
 
         test("fails if there are two matching entities") {
             repeat(2) { JoinTable(100, 100).save() }
             expectThrows<IllegalStateException>("too many rows matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
-                JoinTable.dao.findOne()
+                JoinTable.dao.findSingle()
             }
         }
 
         test("fails if there are ten matching entities") {
             repeat(10) { JoinTable(100, 100).save() }
             expectThrows<IllegalStateException>("too many rows matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
-                JoinTable.dao.findOne()
+                JoinTable.dao.findSingle()
             }
         }
     }
@@ -166,32 +166,32 @@ private fun DynaNodeGroup.joinTableTestSuite() {
         JoinTable.dao.deleteBy("customerId = :cid") { q -> q.bind("cid", "2") }
         expect(listOf(1, 3)) { JoinTable.dao.findAll().map { it.customerId } }
     }
-    group("findOneBy() tests") {
+    group("findSingleBy() tests") {
         test("succeeds if there is exactly one matching entity") {
             val p = JoinTable(130, 130)
             p.save()
             expect(p) {
-                JoinTable.dao.findOneBy("customerId = :cid") { it.bind("cid", 130) }
+                JoinTable.dao.findSingleBy("customerId = :cid") { it.bind("cid", 130) }
             }
         }
 
         test("returns null if there is no such entity") {
             expect(null) {
-                JoinTable.dao.findOneBy("customerId = :cid") { it.bind("cid", 130) }
+                JoinTable.dao.findSingleBy("customerId = :cid") { it.bind("cid", 130) }
             }
         }
 
         test("fails if there are two matching entities") {
             repeat(2) { JoinTable(130, 130).save() }
             expectThrows(IllegalStateException::class, "too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:130}, finder:[]}") {
-                JoinTable.dao.findOneBy("customerId = :cid") { it.bind("cid", 130) }
+                JoinTable.dao.findSingleBy("customerId = :cid") { it.bind("cid", 130) }
             }
         }
 
         test("fails if there are ten matching entities") {
             repeat(10) { JoinTable(130, 130).save() }
             expectThrows(IllegalStateException::class, "too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:130}, finder:[]}") {
-                JoinTable.dao.findOneBy("customerId = :cid") { it.bind("cid", 130) }
+                JoinTable.dao.findSingleBy("customerId = :cid") { it.bind("cid", 130) }
             }
         }
     }

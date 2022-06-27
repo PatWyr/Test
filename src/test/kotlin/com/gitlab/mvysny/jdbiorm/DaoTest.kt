@@ -89,27 +89,27 @@ private fun DynaNodeGroup.personTestSuite() {
             val p = Person(name = "Albedo", age = 130)
             p.save()
             expect(p.withZeroNanos()) {
-                Person.getOneBy("name = :name") { it.bind("name", "Albedo") } .withZeroNanos()
+                Person.singleBy("name = :name") { it.bind("name", "Albedo") } .withZeroNanos()
             }
         }
 
         test("fails if there is no such entity") {
             expectThrows<IllegalStateException>("no row matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
-                Person.getOneBy("name = :name") { it.bind("name", "Albedo") }
+                Person.singleBy("name = :name") { it.bind("name", "Albedo") }
             }
         }
 
         test("fails if there are two matching entities") {
             repeat(2) { Person(name = "Albedo", age = 130).save() }
             expectThrows<IllegalStateException>("too many rows matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
-                Person.getOneBy("name = :name") { it.bind("name", "Albedo") }
+                Person.singleBy("name = :name") { it.bind("name", "Albedo") }
             }
         }
 
         test("fails if there are ten matching entities") {
             repeat(10) { Person(name = "Albedo", age = 130).save() }
             expectThrows<IllegalStateException>("too many rows matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
-                Person.getOneBy("name = :name") { it.bind("name", "Albedo") }
+                Person.singleBy("name = :name") { it.bind("name", "Albedo") }
             }
         }
     }
@@ -148,30 +148,30 @@ private fun DynaNodeGroup.personTestSuite() {
         Person.deleteBy("name = :name") { q -> q.bind("name", "Albedo") }
         expect(listOf("Nigredo", "Rubedo")) { Person.findAll().map { it.name } }
     }
-    group("findOneBy() tests") {
+    group("findSingleBy() tests") {
         test("succeeds if there is exactly one matching entity") {
             val p = Person(name = "Albedo", age = 130)
             p.save()
             expect(p.withZeroNanos()) {
-                Person.findOneBy("name = :name") { it.bind("name", "Albedo") } ?.withZeroNanos()
+                Person.findSingleBy("name = :name") { it.bind("name", "Albedo") } ?.withZeroNanos()
             }
         }
 
         test("returns null if there is no such entity") {
-            expect(null) { Person.findOneBy("name = :name") { it.bind("name", "Albedo") } }
+            expect(null) { Person.findSingleBy("name = :name") { it.bind("name", "Albedo") } }
         }
 
         test("fails if there are two matching entities") {
             repeat(2) { Person(name = "Albedo", age = 130).save() }
             expectThrows(IllegalStateException::class, "too many rows matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
-                Person.findOneBy("name = :name") { it.bind("name", "Albedo") }
+                Person.findSingleBy("name = :name") { it.bind("name", "Albedo") }
             }
         }
 
         test("fails if there are ten matching entities") {
             repeat(10) { Person(name = "Albedo", age = 130).save() }
             expectThrows(IllegalStateException::class, "too many rows matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
-                Person.findOneBy("name = :name") { it.bind("name", "Albedo") }
+                Person.findSingleBy("name = :name") { it.bind("name", "Albedo") }
             }
         }
 
@@ -179,11 +179,11 @@ private fun DynaNodeGroup.personTestSuite() {
             val p = Person(name = "Albedo", age = 130, dateOfBirth = LocalDate.of(1980, 2, 2))
             p.save()
             expect(p.withZeroNanos()) {
-                Person.findOneBy("dateOfBirth = :dateOfBirth") { q -> q.bind("dateOfBirth", LocalDate.of(1980, 2, 2)) } ?.withZeroNanos()
+                Person.findSingleBy("dateOfBirth = :dateOfBirth") { q -> q.bind("dateOfBirth", LocalDate.of(1980, 2, 2)) } ?.withZeroNanos()
             }
             // here I don't care about whether it selects something or not, I'm only testing the database compatibility
-            Person.findOneBy("dateOfBirth = :dateOfBirth") { q -> q.bind("dateOfBirth", Instant.now()) }
-            Person.findOneBy("dateOfBirth = :dateOfBirth") { q -> q.bind("dateOfBirth", Date()) }
+            Person.findSingleBy("dateOfBirth = :dateOfBirth") { q -> q.bind("dateOfBirth", Instant.now()) }
+            Person.findSingleBy("dateOfBirth = :dateOfBirth") { q -> q.bind("dateOfBirth", Date()) }
         }
     }
     group("exists") {
@@ -228,7 +228,7 @@ private fun DynaNodeGroup.entityWithAliasedIdTestSuite() {
         test("succeeds if there is exactly one matching entity") {
             val p = EntityWithAliasedId("Albedo")
             p.save()
-            expect(p) { EntityWithAliasedId.dao.getOneBy("name=:name") { it.bind("name", "Albedo") } }
+            expect(p) { EntityWithAliasedId.dao.singleBy("name=:name") { it.bind("name", "Albedo") } }
         }
     }
     group("count") {
@@ -270,8 +270,8 @@ private fun DynaNodeGroup.entityWithAliasedIdTestSuite() {
         test("succeeds if there is exactly one matching entity") {
             val p = EntityWithAliasedId("Albedo")
             p.save()
-            expect(p) { EntityWithAliasedId.dao.findOneBy("name=:name") { it.bind("name", "Albedo") } }
-            expect(p) { EntityWithAliasedId.dao.findOneBy("myid=:id") { it.bind("id", p.id!!) } }
+            expect(p) { EntityWithAliasedId.dao.findSingleBy("name=:name") { it.bind("name", "Albedo") } }
+            expect(p) { EntityWithAliasedId.dao.findSingleBy("myid=:id") { it.bind("id", p.id!!) } }
         }
     }
     group("exists") {
@@ -308,7 +308,7 @@ private fun DynaNodeGroup.compositePKTestSuite() {
         test("succeeds if there is exactly one matching entity") {
             val p = MappingTable(1, 2,"Albedo")
             p.create()
-            expect(p) { MappingTable.dao.getOneBy("some_data=:name") { it.bind("name", "Albedo") } }
+            expect(p) { MappingTable.dao.singleBy("some_data=:name") { it.bind("name", "Albedo") } }
         }
     }
     group("count") {
@@ -359,7 +359,7 @@ private fun DynaNodeGroup.compositePKTestSuite() {
         test("succeeds if there is exactly one matching entity") {
             val p = MappingTable(1, 1, "Albedo")
             p.create()
-            expect(p) { MappingTable.dao.findOneBy("some_data=:name") { it.bind("name", "Albedo") } }
+            expect(p) { MappingTable.dao.findSingleBy("some_data=:name") { it.bind("name", "Albedo") } }
         }
     }
     group("exists") {
