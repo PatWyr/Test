@@ -363,13 +363,13 @@ public class DaoOfAny<T> implements Serializable {
         Objects.requireNonNull(where, "where");
         Objects.requireNonNull(queryConsumer, "queryConsumer");
         return jdbi().withHandle(handle -> {
-            String sql = "select <FIELDS> from <TABLE> where <WHERE>";
-            final Quirks quirks = Quirks.from(handle);
-            if (quirks.offsetLimitRequiresOrderBy() != null) {
-                sql += " " + quirks.offsetLimitRequiresOrderBy();
-            }
-            sql += quirks.offsetLimit(null, 2L);
-            final Query query = handle.createQuery(sql)
+                    String sql = "select <FIELDS> from <TABLE> where <WHERE>";
+                    final Quirks quirks = Quirks.from(handle);
+                    if (quirks.offsetLimitRequiresOrderBy() != null) {
+                        sql += " " + quirks.offsetLimitRequiresOrderBy();
+                    }
+                    sql += quirks.offsetLimit(null, 2L);
+                    final Query query = handle.createQuery(sql)
                             .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
                             .define("TABLE", meta.getDatabaseTableName())
                             .define("WHERE", where);
@@ -475,7 +475,7 @@ public class DaoOfAny<T> implements Serializable {
 
         /**
          * Provides detailed debug info which is helpful when the query fails.
-         * @param sql the SQL
+         * @param sql the SQL, may be the entire "SELECT * FROM ..." clause, or just the WHERE clause.
          * @param binding the binding
          * @return the entity name, the SQL and values of all the parameters
          */
