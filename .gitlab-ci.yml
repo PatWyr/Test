@@ -24,7 +24,7 @@ build:jdk11:
   script:
     - ./gradlew build --info --stacktrace --no-daemon
 build:jdk17:
-  image: openjdk:17-jdk
+  image: openjdk:17-alpine
   script:
     - ./gradlew build --info --stacktrace --no-daemon
 
