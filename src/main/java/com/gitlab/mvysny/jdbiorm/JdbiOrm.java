@@ -35,7 +35,7 @@ public final class JdbiOrm {
      * The validator, used to validate entity when {@link Entity#save(boolean)} is invoked.
      * Defaults to JSR 303 validator; if JSR303 is not available then falls back to {@link NoopValidator}.
      */
-    @Nullable
+    @NotNull
     private static volatile Validator validator;
     @Nullable
     private static volatile DataSource dataSource;
