@@ -81,7 +81,7 @@ public final class EntityMeta<E> implements Serializable {
      */
     @NotNull
     public Set<String> getPersistedFieldDbNames() {
-        return getProperties().stream().map(it -> it.getDbColumnName()).collect(Collectors.toSet());
+        return getProperties().stream().map(PropertyMeta::getDbColumnName).collect(Collectors.toSet());
     }
 
     /**
@@ -267,7 +267,7 @@ public final class EntityMeta<E> implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        EntityMeta that = (EntityMeta) o;
+        EntityMeta<?> that = (EntityMeta<?>) o;
         return entityClass.equals(that.entityClass);
     }
 
@@ -276,7 +276,8 @@ public final class EntityMeta<E> implements Serializable {
         return Objects.hash(entityClass);
     }
 
-    private static <A extends Annotation> A findAnnotationRecursively(Class<?> entityClass, Class<A> annotationClass) {
+    @Nullable
+    private static <A extends Annotation> A findAnnotationRecursively(@NotNull Class<?> entityClass, @NotNull Class<A> annotationClass) {
         if (entityClass == Object.class) {
             return null;
         }
@@ -332,6 +333,10 @@ public final class EntityMeta<E> implements Serializable {
         return result;
     }
 
+    /**
+     * Caches the <code>setId()</code> {@link Method} for given entity class. Used by {@link #setId(Object, Object)}.
+     */
+    @NotNull
     private static final ConcurrentMap<Class<?>, Method> getIdCache = new ConcurrentHashMap<>();
 
     /**
@@ -340,16 +345,13 @@ public final class EntityMeta<E> implements Serializable {
      * @param id the ID, may be null.
      */
     public void setId(@NotNull Object entity, @Nullable Object id) {
-        final Method setId = getIdCache.computeIfAbsent(entityClass, new Function<Class<?>, Method>() {
-            @Override
-            public Method apply(Class<?> aClass) {
-                final Method setId = Arrays.stream(aClass.getMethods()).filter(it -> it.getName().equals("setId"))
-                        .findFirst().orElse(null);
-                if (setId == null) {
-                    throw new IllegalStateException("Invalid state: setId() not found on " + entityClass);
-                }
-                return setId;
+        final Method setId = getIdCache.computeIfAbsent(entityClass, aClass -> {
+            final Method setId1 = Arrays.stream(aClass.getMethods()).filter(it -> it.getName().equals("setId"))
+                    .findFirst().orElse(null);
+            if (setId1 == null) {
+                throw new IllegalStateException("Invalid state: setId() not found on " + entityClass);
             }
+            return setId1;
         });
         try {
             setId.invoke(entity, id);
