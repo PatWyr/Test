@@ -80,9 +80,8 @@ public final class PropertyMeta {
     }
 
     /**
-     * The full name of this property, a {@link Field#getName()} of the entity bean
-     * name. However, in case of composite IDs this is a comma-separated {@link #getNamePath()} e.g. "id.component1".
-     *
+     * The full name of this property, most often the {@link Field#getName() Java field name} from some entity bean.
+     * However, in case of composite IDs this is a comma-separated {@link #getNamePath()} e.g. "id.component1".
      * @return The {@link Field#getName()}, not null.
      */
     @NotNull
