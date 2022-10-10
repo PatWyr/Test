@@ -2,6 +2,7 @@ package com.gitlab.mvysny.jdbiorm
 
 import com.github.mvysny.dynatest.*
 import java.lang.IllegalStateException
+import kotlin.reflect.KProperty
 import kotlin.test.expect
 
 class DaoOfAnyTest : DynaTest({
@@ -14,6 +15,11 @@ class DaoOfAnyTest : DynaTest({
         }
     }
 })
+
+val String.asc get() = OrderBy(this, OrderBy.ASC)
+val String.desc get() = OrderBy(this, OrderBy.DESC)
+val KProperty<*>.asc get() = name.asc
+val KProperty<*>.desc get() = name.desc
 
 @DynaTestDsl
 private fun DynaNodeGroup.joinTableTestSuite() {
@@ -37,6 +43,15 @@ private fun DynaNodeGroup.joinTableTestSuite() {
             expect((20..49).toList()) { JoinTable.dao.findAll("customerId ASC", 20L, 30L).map { it.customerId } }
             expect((90..100).toList()) { JoinTable.dao.findAll("customerId ASC", 90L, 300L).map { it.customerId } }
             expectList() { JoinTable.dao.findAll(2000L, 50L) }
+        }
+        test("sorting") {
+            db { (0..100).forEach { JoinTable(it, -it).save() } }
+            expect((0..9).toList()) { JoinTable.dao.findAll(listOf("customerId".asc), 0L, 10L).map { it.customerId } }
+            expect((100 downTo 91).toList()) { JoinTable.dao.findAll(listOf("customerId".desc), 0L, 10L).map { it.customerId } }
+            expect((0..9).toList()) { JoinTable.dao.findAll(listOf("customerId".asc, "orderId".asc), 0L, 10L).map { it.customerId } }
+            expect((100 downTo 91).toList()) { JoinTable.dao.findAll(listOf("customerId".desc, "orderId".asc), 0L, 10L).map { it.customerId } }
+            expect((0..9).toList()) { JoinTable.dao.findAll(listOf("orderId".desc, "customerId".asc), 0L, 10L).map { it.customerId } }
+            expect((100 downTo 91).toList()) { JoinTable.dao.findAll(listOf("orderId".asc, "customerId".asc), 0L, 10L).map { it.customerId } }
         }
         group("findAllBy") {
             test("non-paged") {
@@ -164,7 +179,7 @@ private fun DynaNodeGroup.joinTableTestSuite() {
     test("DeleteBy") {
         listOf(1, 2, 3).forEach { JoinTable(it, it).save() }
         JoinTable.dao.deleteBy("customerId = :cid") { q -> q.bind("cid", "2") }
-        expect(listOf(1, 3)) { JoinTable.dao.findAll().map { it.customerId } }
+        expect(listOf(1, 3)) { JoinTable.dao.findAll().map { it.customerId } .sorted() }
     }
     group("findSingleBy() tests") {
         test("succeeds if there is exactly one matching entity") {

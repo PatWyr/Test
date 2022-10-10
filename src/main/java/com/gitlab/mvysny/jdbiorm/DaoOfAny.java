@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
 
@@ -86,7 +87,7 @@ public class DaoOfAny<T> implements Serializable {
      */
     @NotNull
     public List<T> findAll(@Nullable final Long offset, @Nullable final Long limit) {
-        return findAll(null, offset, limit);
+        return findAll((String) null, offset, limit);
     }
 
     /**
@@ -117,6 +118,25 @@ public class DaoOfAny<T> implements Serializable {
                             .list();
                 }
         );
+    }
+
+    /**
+     * Finds all rows in given table. Fails if there is no table in the database with the
+     * name of {@link EntityMeta#getDatabaseTableName()}. If both offset and limit
+     * are specified, then the LIMIT and OFFSET sql paging is used.
+     * @param orderBy if not empty, this is passed in as the ORDER BY clause, e.g. {@code surname ASC, name ASC}.
+     * @param offset start from this row. If not null, must be 0 or greater.
+     * @param limit return this count of row at most. If not null, must be 0 or greater.
+     */
+    @NotNull
+    public List<T> findAll(@NotNull List<OrderBy> orderBy, @Nullable final Long offset, @Nullable final Long limit) {
+        if (limit != null && limit == 0L) {
+            return new ArrayList<>();
+        }
+        final String order = orderBy.isEmpty() ? null : orderBy.stream()
+                .map(it -> meta.getProperty(it.getName()).getDbColumnName() + " " + it.getOrder())
+                .collect(Collectors.joining(", "));
+        return findAll(order, offset, limit);
     }
 
     private static void checkOffsetLimit(@Nullable Long offset, @Nullable Long limit) {
