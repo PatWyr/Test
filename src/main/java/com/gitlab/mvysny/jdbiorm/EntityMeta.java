@@ -67,7 +67,12 @@ public final class EntityMeta<E> implements Serializable {
      */
     @NotNull
     public Set<PropertyMeta> getProperties() {
-        return Collections.unmodifiableSet(getPersistedPropertiesFor(entityClass));
+        return getPropertyMap().getProperties();
+    }
+
+    @NotNull
+    private EntityProperties getPropertyMap() {
+        return getPersistedPropertiesFor(entityClass);
     }
 
     /**
@@ -122,17 +127,91 @@ public final class EntityMeta<E> implements Serializable {
      */
     @NotNull
     public PropertyMeta getProperty(@NotNull String propertyName) {
-        Objects.requireNonNull(propertyName, "propertyName");
-        return getProperties().stream()
-                .filter(it -> it.getName().equals(propertyName))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("There is no such property "
-                        + propertyName + " in " + entityClass + ", available fields: "
-                        + getProperties().stream().map(it -> it.getName()) .collect(Collectors.joining(", "))));
+        final PropertyMeta meta = findProperty(propertyName);
+        if (meta == null) {
+            throw new IllegalArgumentException("There is no such property "
+                    + propertyName + " in " + entityClass + ", available fields: "
+                    + getProperties().stream().map(PropertyMeta::getName).collect(Collectors.joining(", ")));
+        }
+        return meta;
     }
 
-    private static final ConcurrentMap<Class<?>, Set<PropertyMeta>> persistedPropertiesCache =
-            new ConcurrentHashMap<Class<?>, Set<PropertyMeta>>();
+    /**
+     * Returns a persisted property with given {@code propertyName} for this entity. Returns null if there
+     * is no such property. See {@link #getProperties()} for a list of all properties.
+     * @param propertyName the {@link PropertyMeta#getName() field name}, not null.
+     * @throws IllegalArgumentException if there is no such property.
+     */
+    @Nullable
+    public PropertyMeta findProperty(@NotNull String propertyName) {
+        Objects.requireNonNull(propertyName, "propertyName");
+        return getPropertyMap().findByName(propertyName);
+    }
+
+    /**
+     * Lists all properties for an entity. Immutable, thread-safe.
+     */
+    private static final class EntityProperties {
+        @NotNull
+        private final Map<String, PropertyMeta> properties;
+        @NotNull
+        private final Set<PropertyMeta> set;
+
+        public EntityProperties(@NotNull Set<PropertyMeta> p) {
+            this.set = Collections.unmodifiableSet(new HashSet<>(p));
+            final HashMap<String, PropertyMeta> map = new HashMap<>(set.size());
+            for (PropertyMeta meta : set) {
+                map.put(meta.getName(), meta);
+            }
+            this.properties = Collections.unmodifiableMap(map);
+        }
+
+        /**
+         * @return Unmodifiable map of all properties.
+         */
+        @NotNull
+        public Map<String, PropertyMeta> getMap() {
+            return properties;
+        }
+
+        /**
+         * Finds meta by {@link PropertyMeta#getName()}.
+         * @param name {@link PropertyMeta#getName()}
+         * @return meta or null.
+         */
+        @Nullable
+        public PropertyMeta findByName(@NotNull String name) {
+            return getMap().get(name);
+        }
+
+        @NotNull
+        public Set<PropertyMeta> getProperties() {
+            return set;
+        }
+
+        @Override
+        public String toString() {
+            return "EntityProperties{" +
+                    "set=" + set +
+                    '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            EntityProperties that = (EntityProperties) o;
+            return set.equals(that.set);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(set);
+        }
+    }
+
+    private static final ConcurrentMap<Class<?>, EntityProperties> persistedPropertiesCache =
+            new ConcurrentHashMap<>();
 
     private static boolean isFieldPersisted(@NotNull Field field) {
         return !Modifier.isTransient(field.getModifiers())
@@ -174,12 +253,12 @@ public final class EntityMeta<E> implements Serializable {
      * Returns the set of properties in an entity.
      */
     @NotNull
-    private static Set<PropertyMeta> getPersistedPropertiesFor(@NotNull Class<?> clazz) {
+    private static EntityProperties getPersistedPropertiesFor(@NotNull Class<?> clazz) {
         // thread-safety: this may compute the same value multiple times during high contention, this is OK
         return persistedPropertiesCache.computeIfAbsent(clazz, c -> {
                     final HashSet<PropertyMeta> metas = new HashSet<>();
                     visitAllPersistedFields(clazz, Collections.emptyList(), fields -> metas.add(new PropertyMeta(fields)));
-                    return metas;
+                    return new EntityProperties(metas);
                 }
         );
     }
@@ -321,7 +400,7 @@ public final class EntityMeta<E> implements Serializable {
             }
             final Update update = handle.createUpdate("insert into <TABLE> (<FIELDS>) values (<FIELD_VALUES>)")
                     .define("TABLE", getDatabaseTableName())
-                    .define("FIELDS", properties.stream().map(it -> it.getDbColumnName()).collect(Collectors.joining(", ")))
+                    .define("FIELDS", properties.stream().map(PropertyMeta::getDbColumnName).collect(Collectors.joining(", ")))
                     .define("FIELD_VALUES", properties.stream().map(it -> ":" + it.getName()).collect(Collectors.joining(", ")));
             for (PropertyMeta property : properties) {
                 update.bind(property.getName(), property.get(entity));

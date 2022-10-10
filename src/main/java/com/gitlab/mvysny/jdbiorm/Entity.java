@@ -96,7 +96,7 @@ public interface Entity<ID> extends AbstractEntity<ID> {
         if (getId() == null) {
             throw new IllegalStateException("The id is null, the entity is not yet in the database");
         }
-        //noinspection unchecked
+        //noinspection unchecked,rawtypes
         new Dao<>(getClass()).deleteById(getId());
     }
 

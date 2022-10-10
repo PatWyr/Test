@@ -43,6 +43,12 @@ public final class PropertyMeta {
     private final List<String> namePath;
 
     /**
+     * Derived from {@link #namePath}.
+     */
+    @NotNull
+    private final String name;
+
+    /**
      * Creates the property.
      * @param fieldPath the field, not null. See {@link #fieldPath} for more info.
      */
@@ -52,6 +58,7 @@ public final class PropertyMeta {
             throw new IllegalArgumentException("Parameter fieldPath: invalid value " + fieldPath + ": must not be empty");
         }
         namePath = Collections.unmodifiableList(fieldPath.stream().map(Field::getName).collect(Collectors.toList()));
+        name = namePath.size() == 1 ? namePath.get(0) : String.join(".", namePath);
     }
 
     /**
@@ -68,17 +75,33 @@ public final class PropertyMeta {
      * @return The {@link Field#getName()}, not null.
      */
     @NotNull
-    public String getName() {
+    public String getLastName() {
         return fieldPath.getLast().getName();
     }
 
+    /**
+     * The full name of this property, a {@link Field#getName()} of the entity bean
+     * name. However, in case of composite IDs this is a comma-separated {@link #getNamePath()} e.g. "id.component1".
+     *
+     * @return The {@link Field#getName()}, not null.
+     */
+    @NotNull
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * {@link Field#getName() field names} of {@link #fieldPath}.
+     * Usually of size 1, but may be longer in case of composite IDs.
+     * @return the
+     */
     @NotNull
     public List<String> getNamePath() {
         return namePath;
     }
 
     /**
-     * The database name of given field. Defaults to {@link #getName()}, but
+     * The database name of given field. Defaults to {@link #getLastName()}, but
      * it can be changed via the {@link ColumnName} annotation.
      * <p></p>
      * This is the column name which must be used in the WHERE clauses.
@@ -87,7 +110,7 @@ public final class PropertyMeta {
     @NotNull
     public String getDbColumnName() {
         final ColumnName annotation = fieldPath.getLast().getAnnotation(ColumnName.class);
-        return annotation == null ? getName() : annotation.value();
+        return annotation == null ? getLastName() : annotation.value();
     }
 
     /**
