@@ -996,11 +996,11 @@ one creates the table, while other creates the indices.
 You don't need to use Flyway plugin. Just add the following Gradle dependency to your project:
 
 ```gradle
-compile "org.flywaydb:flyway-core:6.0.7"
+implementation("org.flywaydb:flyway-core:9.8.1")
 ```
 
 Flyway expects the migration scripts named in a certain format, to know the order in which to execute them.
-Create the `db.migration` package in your `src/main/resources` and put two files there: the `V01__CreateCategory.sql`
+Create the `db/migration` folder in your `src/main/resources` and put two files there: the `V01__CreateCategory.sql`
 file:
 ```sql92
 create TABLE CATEGORY (
@@ -1015,10 +1015,13 @@ create UNIQUE INDEX idx_category_name ON CATEGORY(name);
 
 In order to run the migrations, just run the following after a datasource is set to `JdbiOrm`:
 ```java
-Flyway flyway = new Flyway()
-flyway.setDataSource(JdbiOrm.getDataSource());
-flyway.migrate()
+final Flyway flyway = Flyway.configure()
+  .dataSource(JdbiOrm.getDataSource())
+  .load();
+flyway.migrate();
 ```
+
+See the [jdbi-orm-vaadin-crud-demo](https://github.com/mvysny/jdbi-orm-vaadin-crud-demo) for an example.
 
 # Using with Spring or JavaEE
 
