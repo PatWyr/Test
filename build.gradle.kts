@@ -37,9 +37,10 @@ dependencies {
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
 
     // db
-    api("org.jdbi:jdbi3-core:3.27.0") {
+    api("org.jdbi:jdbi3-core:3.34.0") {
         exclude(module = "caffeine")
     }
+    // Required by jdbi3
     // stay on caffeine 2.x to support Java 8. See https://github.com/jdbi/jdbi#java-8-compatibility
     // for more details.
     implementation("com.github.ben-manes.caffeine:caffeine:2.9.3")

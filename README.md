@@ -1078,11 +1078,9 @@ We strive to erase the virtual object database layer. We acknowledge the existen
 the relational database; we only provide tools to ease the use of the database from a
 statically-typed OOP language.
 
-## Running tests
+# Developing jdbi-orm
 
-Running `./gradlew` or `./gradlew test` will run all tests on all databases (given that
-Docker is available on the host system). To run the tests on H2 only
-(the test suite will run much faster), run with `./gradlew -Dh2only=true`
+See [CONTRIBUTING](CONTRIBUTING.md)
 
 # License
 
