@@ -2,6 +2,7 @@ package com.gitlab.mvysny.jdbiorm
 
 import com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi
 import org.hibernate.validator.constraints.Length
+import org.jdbi.v3.core.annotation.JdbiProperty
 import org.jdbi.v3.core.mapper.reflect.ColumnName
 import java.time.Instant
 import java.time.LocalDate
@@ -16,7 +17,7 @@ data class Person(
         @field:Length(min = 1)
         var name: String = "",
         var age: Int = -1,
-        @field:Ignore var ignored: String? = null,
+        @field:JdbiProperty(map = false) var ignored: String? = null,
         @Transient var ignored2: Any? = null,
         var dateOfBirth: LocalDate? = null,
         var created: Date? = null,

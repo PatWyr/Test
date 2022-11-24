@@ -1,7 +1,7 @@
 package com.gitlab.mvysny.jdbiorm;
 
 import com.gitlab.mvysny.jdbiorm.spi.AbstractEntity;
-import org.jdbi.v3.core.annotation.Unmappable;
+import org.jdbi.v3.core.annotation.JdbiProperty;
 import org.jdbi.v3.core.mapper.Nested;
 import org.jdbi.v3.core.result.ResultBearing;
 import org.jdbi.v3.core.statement.Update;
@@ -63,7 +63,7 @@ public final class EntityMeta<E> implements Serializable {
 
     /**
      * Lists all properties in this entity. Only lists persisted properties:
-     * non-transient non-static fields not annotated with {@link Ignore}.
+     * non-transient non-static fields not annotated with {@link JdbiProperty}(map = false).
      */
     @NotNull
     public Set<PropertyMeta> getProperties() {
@@ -213,11 +213,16 @@ public final class EntityMeta<E> implements Serializable {
     private static final ConcurrentMap<Class<?>, EntityProperties> persistedPropertiesCache =
             new ConcurrentHashMap<>();
 
+    private static boolean isJdbiPropertyMap(@NotNull Field field) {
+        final JdbiProperty a = field.getAnnotation(JdbiProperty.class);
+        return a == null || a.map();
+    }
+
     private static boolean isFieldPersisted(@NotNull Field field) {
         return !Modifier.isTransient(field.getModifiers())
                 && !field.isSynthetic()
                 && !Modifier.isStatic(field.getModifiers())
-                && !field.isAnnotationPresent(Unmappable.class)
+                && isJdbiPropertyMap(field)
                 && !field.isAnnotationPresent(Ignore.class)
                 && !field.getName().equals("Companion");  // Kotlin support
     }
