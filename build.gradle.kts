@@ -61,8 +61,8 @@ dependencies {
     testImplementation("org.slf4j:slf4j-simple:$slf4jVersion")
     testImplementation("com.h2database:h2:2.1.212")
 
-    testImplementation("org.postgresql:postgresql:42.3.1")
-    testImplementation("mysql:mysql-connector-java:8.0.25")
+    testImplementation("org.postgresql:postgresql:42.5.0")
+    testImplementation("mysql:mysql-connector-java:8.0.30")
     testImplementation("org.mariadb.jdbc:mariadb-java-client:2.7.3")
     testImplementation("com.microsoft.sqlserver:mssql-jdbc:9.4.1.jre8")
 
