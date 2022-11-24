@@ -66,8 +66,8 @@ Maven: (it's very simple since jdbi-orm is in Maven Central):
 See the [jdbi-orm-playground](https://gitlab.com/mvysny/jdbi-orm-playground) project which introduces
 a `main()` method, a single `Person` entity and an in-memory H2 database.
 Perfect for experimenting with `jdbi-orm` since you only need Java JRE to run it - no containers nor setup needed.
-See [JDBI-ORM Vaadin 14 CRUD demo](https://github.com/mvysny/jdbi-orm-vaadin14-crud-demo)
-for a CRUD demo app using `jdbi-orm`.
+See [JDBI-ORM Vaadin CRUD demo](https://github.com/mvysny/jdbi-orm-vaadin-crud-demo)
+for a CRUD demo web app using `jdbi-orm`.
 
 ## Usage Examples
 
