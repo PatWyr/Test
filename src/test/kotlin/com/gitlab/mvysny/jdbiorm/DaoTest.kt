@@ -11,21 +11,23 @@ class DaoTest : DynaTest({
     test("serializable") {
         PersonDao().cloneBySerialization()
     }
-    withAllDatabases {
-        group("Person") {
-            personTestSuite()
-        }
-
-        // quick tests which test that DAO methods generally work with entities with aliased ID columns
-        group("EntityWithAliasedId") {
-            entityWithAliasedIdTestSuite()
-        }
-
-        group("Composite PK") {
-            compositePKTestSuite()
-        }
-    }
 })
+
+@DynaTestDsl
+fun DynaNodeGroup.dbDaoTests() {
+    group("Person") {
+        personTestSuite()
+    }
+
+    // quick tests which test that DAO methods generally work with entities with aliased ID columns
+    group("EntityWithAliasedId") {
+        entityWithAliasedIdTestSuite()
+    }
+
+    group("Composite PK") {
+        compositePKTestSuite()
+    }
+}
 
 @DynaTestDsl
 private fun DynaNodeGroup.personTestSuite() {

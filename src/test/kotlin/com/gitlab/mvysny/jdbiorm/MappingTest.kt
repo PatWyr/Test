@@ -12,38 +12,38 @@ import java.time.temporal.ChronoField
 import java.util.*
 import kotlin.test.expect
 
-class MappingTest : DynaTest({
-    withAllDatabases {
-        group("Person") {
-            personTestBattery()
-        }
-        group("EntityWithAliasedId") {
-            aliasedIdTestBattery()
-        }
-        group("NaturalPerson") {
-            naturalPersonTests()
-        }
-        group("LogRecord") {
-            logRecordTestBattery()
-        }
-        group("Composite PK") {
-            compositePKTestBattery()
-        }
-        group("TypeMapping") {
-            test("java enum to native db enum") {
-                for (it in MaritalStatus.values().plusNull) {
-                    val id: kotlin.Long? = TypeMappingEntity(enumTest = it).run { save(); id }
-                    val loaded = TypeMappingEntity.findById(id!!)!!
-                    expect(it) { loaded.enumTest }
-                }
+@DynaTestDsl
+fun DynaNodeGroup.dbMappingTests() {
+    group("Person") {
+        personTestBattery()
+    }
+    group("EntityWithAliasedId") {
+        aliasedIdTestBattery()
+    }
+    group("NaturalPerson") {
+        naturalPersonTests()
+    }
+    group("LogRecord") {
+        logRecordTestBattery()
+    }
+    group("Composite PK") {
+        compositePKTestBattery()
+    }
+    group("TypeMapping") {
+        test("java enum to native db enum") {
+            for (it in MaritalStatus.values().plusNull) {
+                val id: kotlin.Long? =
+                    TypeMappingEntity(enumTest = it).run { save(); id }
+                val loaded = TypeMappingEntity.findById(id!!)!!
+                expect(it) { loaded.enumTest }
             }
         }
-        test("custom select") {
-            Person(name = "Albedo", age = 130).save()
-            expectList("Albedo") { Person.dao.findAll2().map { it.name } }
-        }
     }
-})
+    test("custom select") {
+        Person(name = "Albedo", age = 130).save()
+        expectList("Albedo") { Person.dao.findAll2().map { it.name } }
+    }
+}
 
 @DynaTestDsl
 private fun DynaNodeGroup.personTestBattery() {
@@ -275,10 +275,13 @@ private fun DynaNodeGroup.logRecordTestBattery() {
     }
     test("reload") {
         val p = LogRecord(text = "foo")
+        expect(null) { p.id }
         p.save()
+        val id = p.id!!
         p.text = "bar"
         p.reload()
         expect("foo") { p.text }
+        expect(id) { p.id }
     }
 }
 

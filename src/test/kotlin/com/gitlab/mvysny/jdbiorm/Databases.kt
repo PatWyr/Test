@@ -225,7 +225,7 @@ private fun DynaNodeGroup.usingDockerizedMariaDB() {
     check(DockerClientFactory.instance().isDockerAvailable()) { "Docker not available" }
     lateinit var container: MariaDBContainer<*>
     beforeGroup {
-        container = MariaDBContainer("mariadb:10.1.31")
+        container = MariaDBContainer("mariadb:10.10.2")
         container.start()
     }
     beforeGroup {

@@ -64,6 +64,8 @@ public final class EntityMeta<E> implements Serializable {
     /**
      * Lists all properties in this entity. Only lists persisted properties:
      * non-transient non-static fields not annotated with {@link JdbiProperty}(map = false).
+     * <p></p>
+     * Also includes the id property/properties.
      */
     @NotNull
     public Set<PropertyMeta> getProperties() {
@@ -85,7 +87,7 @@ public final class EntityMeta<E> implements Serializable {
     }
 
     /**
-     * Unmodifiable, thread-safe.
+     * Unmodifiable, thread-safe. Caches the output of {@link #getIdProperty()}.
      */
     @Nullable
     private transient volatile List<PropertyMeta> idPropertyCache;
