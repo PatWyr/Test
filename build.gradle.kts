@@ -2,7 +2,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val slf4jVersion = "2.0.0"
-val testcontainersVersion = "1.16.2"
+val testcontainersVersion = "1.17.6"
 
 plugins {
     kotlin("jvm") version "1.7.21"
@@ -63,8 +63,8 @@ dependencies {
 
     testImplementation("org.postgresql:postgresql:42.5.0")
     testImplementation("mysql:mysql-connector-java:8.0.30")
-    testImplementation("org.mariadb.jdbc:mariadb-java-client:2.7.3")
-    testImplementation("com.microsoft.sqlserver:mssql-jdbc:9.4.1.jre8")
+    testImplementation("org.mariadb.jdbc:mariadb-java-client:3.0.6")
+    testImplementation("com.microsoft.sqlserver:mssql-jdbc:11.2.1.jre8")
 
     testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
