@@ -50,11 +50,7 @@ public interface Quirks {
     /**
      * Default implementation which does nothing.
      */
-    Quirks NO_QUIRKS = new Quirks() {
-        @Override
-        public void configure(@NotNull Handle handle) {
-        }
-    };
+    Quirks NO_QUIRKS = handle -> {};
 
     /**
      * Returns quirks for a database for given handle.
@@ -63,7 +59,7 @@ public interface Quirks {
      * @return quirks, not null.
      */
     @NotNull
-    public static Quirks from(@NotNull Handle handle) {
+    static Quirks from(@NotNull Handle handle) {
         return handle.getConfig(Holder.class).quirks;
     }
 
