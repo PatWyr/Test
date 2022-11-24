@@ -251,23 +251,33 @@ public class DaoOfAny<T> implements Serializable {
      * @throws IllegalStateException if there are two or more matching entities.
      */
     @Nullable
-    public T findSingleBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
-        Objects.requireNonNull(where, "where");
+    public T findSingleBy(@Nullable String where, @NotNull Consumer<Query> queryConsumer) {
+        return findSingleBy(where, false, queryConsumer);
+    }
+
+    @Nullable
+    private T findSingleBy(@Nullable String where, boolean failOnNoResult, @NotNull Consumer<Query> queryConsumer) {
         Objects.requireNonNull(queryConsumer, "queryConsumer");
         return jdbi().withHandle(handle -> {
-            String sql = "select <FIELDS> from <TABLE> where <WHERE>";
+            String sql = "select <FIELDS> from <TABLE>";
+            if (where != null) {
+                sql += " where <WHERE>";
+            }
             final Quirks quirks = Quirks.from(handle);
             if (quirks.offsetLimitRequiresOrderBy() != null) {
                 sql += " " + quirks.offsetLimitRequiresOrderBy();
             }
             sql += quirks.offsetLimit(null, 2L);
-            final Query query = handle.createQuery(sql)
+            final String sqlFinal = sql;
+            final Query query = handle.createQuery(sqlFinal)
                     .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
-                    .define("TABLE", meta.getDatabaseTableName())
-                    .define("WHERE", where);
+                    .define("TABLE", meta.getDatabaseTableName());
+            if (where != null) {
+                query.define("WHERE", where);
+            }
             queryConsumer.accept(query);
             final ResultIterable<T> iterable = query.map(getRowMapper());
-            return helper.findSingleFromIterable(iterable, binding -> helper.formatQuery(where, binding));
+            return helper.findSingleFromIterable(iterable, failOnNoResult, binding -> helper.formatQuery(where == null ? "" : where, binding));
         });
     }
 
@@ -287,19 +297,7 @@ public class DaoOfAny<T> implements Serializable {
      */
     @Nullable
     public T findSingle() {
-        return jdbi().withHandle(handle -> {
-            String sql = "select <FIELDS> from <TABLE>";
-            final Quirks quirks = Quirks.from(handle);
-            if (quirks.offsetLimitRequiresOrderBy() != null) {
-                sql += " " + quirks.offsetLimitRequiresOrderBy();
-            }
-            sql += quirks.offsetLimit(null, 2L);
-            final ResultIterable<T> iterable = handle.createQuery(sql)
-                    .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
-                    .define("TABLE", meta.getDatabaseTableName())
-                    .map(getRowMapper());
-            return helper.findSingleFromIterable(iterable, binding -> helper.formatQuery("", binding));
-        });
+        return findSingleBy(null, q -> {});
     }
 
     /**
@@ -318,19 +316,7 @@ public class DaoOfAny<T> implements Serializable {
      */
     @NotNull
     public T single() {
-        return jdbi().withHandle(handle -> {
-            String sql = "select <FIELDS> from <TABLE>";
-            final Quirks quirks = Quirks.from(handle);
-            if (quirks.offsetLimitRequiresOrderBy() != null) {
-                sql += " " + quirks.offsetLimitRequiresOrderBy();
-            }
-            sql += quirks.offsetLimit(null, 2L);
-            final ResultIterable<T> iterable = handle.createQuery(sql)
-                    .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
-                    .define("TABLE", meta.getDatabaseTableName())
-                    .map(getRowMapper());
-            return helper.getSingleFromIterable(iterable, binding -> helper.formatQuery("", binding));
-        });
+        return singleBy(null, q -> {});
     }
 
     /**
@@ -379,25 +365,8 @@ public class DaoOfAny<T> implements Serializable {
      * @throws IllegalStateException if there is no entity matching given criteria, or if there are two or more matching entities.
      */
     @NotNull
-    public T singleBy(@NotNull String where, Consumer<Query> queryConsumer) {
-        Objects.requireNonNull(where, "where");
-        Objects.requireNonNull(queryConsumer, "queryConsumer");
-        return jdbi().withHandle(handle -> {
-                    String sql = "select <FIELDS> from <TABLE> where <WHERE>";
-                    final Quirks quirks = Quirks.from(handle);
-                    if (quirks.offsetLimitRequiresOrderBy() != null) {
-                        sql += " " + quirks.offsetLimitRequiresOrderBy();
-                    }
-                    sql += quirks.offsetLimit(null, 2L);
-                    final Query query = handle.createQuery(sql)
-                            .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
-                            .define("TABLE", meta.getDatabaseTableName())
-                            .define("WHERE", where);
-                    queryConsumer.accept(query);
-                    final ResultIterable<T> result = query.map(getRowMapper());
-                    return helper.getSingleFromIterable(result, binding -> helper.formatQuery(where, binding));
-                }
-        );
+    public T singleBy(@Nullable String where, Consumer<Query> queryConsumer) {
+        return Objects.requireNonNull(findSingleBy(where, true, queryConsumer));
     }
 
     /**
@@ -495,7 +464,7 @@ public class DaoOfAny<T> implements Serializable {
 
         /**
          * Provides detailed debug info which is helpful when the query fails.
-         * @param sql the SQL, may be the entire "SELECT * FROM ..." clause, or just the WHERE clause.
+         * @param sql the SQL, may be the entire "SELECT * FROM ..." clause, or just the WHERE clause. Anything that's valuable to the programmer for debugging.
          * @param binding the binding
          * @return the entity name, the SQL and values of all the parameters
          */
@@ -516,11 +485,14 @@ public class DaoOfAny<T> implements Serializable {
          * @throws IllegalStateException if the result set contains multiple rows
          */
         @Nullable
-        public T findSingleFromIterable(@NotNull ResultIterable<T> iterable, @NotNull Function<Binding, String> errorSupplier) {
+        public T findSingleFromIterable(@NotNull ResultIterable<T> iterable, boolean failOnNoResult, @NotNull Function<Binding, String> errorSupplier) {
             Objects.requireNonNull(iterable, "iterable");
             Objects.requireNonNull(errorSupplier, "errorSupplier");
             try (ResultIterator<T> iter = iterable.iterator()) {
                 if (!iter.hasNext()) {
+                    if (failOnNoResult) {
+                        throw new IllegalStateException("no row matching " + errorSupplier.apply(iter.getContext().getBinding()));
+                    }
                     return null;
                 }
 
@@ -544,22 +516,9 @@ public class DaoOfAny<T> implements Serializable {
          * @throws IllegalStateException if the result set contains zero or multiple rows
          */
         @NotNull
+        @Deprecated
         public T getSingleFromIterable(ResultIterable<T> iterable, @NotNull Function<Binding, String> errorSupplier) {
-            Objects.requireNonNull(iterable, "iterable");
-            Objects.requireNonNull(errorSupplier, "errorSupplier");
-            try (ResultIterator<T> iter = iterable.iterator()) {
-                if (!iter.hasNext()) {
-                    throw new IllegalStateException("no row matching " + errorSupplier.apply(iter.getContext().getBinding()));
-                }
-
-                final T r = iter.next();
-
-                if (iter.hasNext()) {
-                    throw new IllegalStateException("too many rows matching " + errorSupplier.apply(iter.getContext().getBinding()));
-                }
-
-                return r;
-            }
+            return findSingleFromIterable(iterable, true, errorSupplier);
         }
     }
 }
