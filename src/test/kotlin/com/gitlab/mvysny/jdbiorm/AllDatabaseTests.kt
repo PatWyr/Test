@@ -10,8 +10,8 @@ import kotlin.test.expect
  */
 class AllDatabaseTests : DynaTest({
     withAllDatabases {
-        group("db{}") {
-            dbFunTests()
+        group("jdbi() tests") {
+            jdbiFunTests()
         }
         group("DB Mapping Tests") {
             dbMappingTests()
@@ -26,7 +26,7 @@ class AllDatabaseTests : DynaTest({
  * Tests the `db{}` method whether it manages transactions properly.
  */
 @DynaTestDsl
-fun DynaNodeGroup.dbFunTests() {
+fun DynaNodeGroup.jdbiFunTests() {
     test("verifyEntityManagerClosed") {
         val em: Handle = db { this }
         expect(true) { em.connection.isClosed }
