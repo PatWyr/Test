@@ -117,7 +117,7 @@ fun DynaNodeGroup.usingDockerizedMysql() {
     check(DockerClientFactory.instance().isDockerAvailable()) { "Docker not available" }
     lateinit var container: MySQLContainer<*>
     beforeGroup {
-        container = MySQLContainer("mysql:5.7.21")
+        container = MySQLContainer("mysql:8.0.31")
         // disable SSL, to avoid SSL-related exceptions on github actions:
         // javax.net.ssl.SSLHandshakeException: No appropriate protocol (protocol is disabled or cipher suites are inappropriate)
         container.withUrlParam("useSSL", "false")
