@@ -9,11 +9,6 @@ class DaoOfAnyTest : DynaTest({
     test("serializable") {
         JoinTable.dao.cloneBySerialization()
     }
-    withAllDatabases {
-        group("JoinTable") {
-            joinTableTestSuite()
-        }
-    }
 })
 
 val String.asc get() = OrderBy(this, OrderBy.ASC)
@@ -22,7 +17,7 @@ val KProperty<*>.asc get() = name.asc
 val KProperty<*>.desc get() = name.desc
 
 @DynaTestDsl
-private fun DynaNodeGroup.joinTableTestSuite() {
+fun DynaNodeGroup.joinTableTestSuite() {
     group("findAll") {
         test("no rows returned on empty table") {
             expectList() { JoinTable.dao.findAll() }

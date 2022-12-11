@@ -19,6 +19,9 @@ class AllDatabaseTests : DynaTest({
         group("DAO") {
             dbDaoTests()
         }
+        group("JoinTable") {
+            joinTableTestSuite()
+        }
     }
 })
 
