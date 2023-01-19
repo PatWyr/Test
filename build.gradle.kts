@@ -27,6 +27,8 @@ tasks.withType<KotlinCompile> {
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
+    withJavadocJar()
+    withSourcesJar()
 }
 
 dependencies {
@@ -59,9 +61,9 @@ dependencies {
     // workaround for https://github.com/google/gson/issues/1059
     testImplementation("com.fatboyindustrial.gson-javatime-serialisers:gson-javatime-serialisers:1.1.1")
     testImplementation("org.slf4j:slf4j-simple:$slf4jVersion")
-    testImplementation("com.h2database:h2:2.1.212")
+    testImplementation("com.h2database:h2:2.1.214")
 
-    testImplementation("org.postgresql:postgresql:42.5.0")
+    testImplementation("org.postgresql:postgresql:42.5.1")
     testImplementation("mysql:mysql-connector-java:8.0.30")
     testImplementation("org.mariadb.jdbc:mariadb-java-client:3.0.6")
     testImplementation("com.microsoft.sqlserver:mssql-jdbc:11.2.1.jre8")
@@ -74,11 +76,6 @@ dependencies {
 
     // Java has no nullable types
     api("org.jetbrains:annotations:22.0.0")
-}
-
-java {
-    withJavadocJar()
-    withSourcesJar()
 }
 
 tasks.withType<Javadoc> {
