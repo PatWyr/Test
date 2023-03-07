@@ -61,6 +61,13 @@ Maven: (it's very simple since jdbi-orm is in Maven Central):
 </project>
 ```
 
+Compatibility Chart:
+
+| jdbi-orm version | validation API     |
+|------------------|--------------------|
+| 0.x              | javax.validation   |
+| 1.x              | jakarta.validation |
+
 ### Trying out/quickstart/main
 
 See the [jdbi-orm-playground](https://gitlab.com/mvysny/jdbi-orm-playground) project which introduces
