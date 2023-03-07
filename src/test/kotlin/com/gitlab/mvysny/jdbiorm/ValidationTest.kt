@@ -3,7 +3,7 @@ package com.gitlab.mvysny.jdbiorm
 import com.github.mvysny.dynatest.DynaTest
 import com.github.mvysny.dynatest.expectThrows
 import com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi
-import javax.validation.ValidationException
+import jakarta.validation.ValidationException
 import kotlin.test.expect
 import kotlin.test.fail
 
