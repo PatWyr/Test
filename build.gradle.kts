@@ -42,10 +42,10 @@ dependencies {
     api("org.jdbi:jdbi3-core:3.34.0")
 
     // validation support
-    api("javax.validation:validation-api:2.0.1.Final")  // to have JSR303 validations in the entities
-    testImplementation("org.hibernate.validator:hibernate-validator:6.2.0.Final")
+    api("jakarta.validation:jakarta.validation-api:3.0.2")  // to have JSR303 validations in the entities
+    testImplementation("org.hibernate.validator:hibernate-validator:8.0.0.Final")
     // EL is required: http://hibernate.org/validator/documentation/getting-started/
-    testImplementation("org.glassfish:javax.el:3.0.1-b08")
+    testImplementation("org.glassfish:jakarta.el:4.0.2")
 
     // tests
     testImplementation("com.github.mvysny.dynatest:dynatest:0.24")

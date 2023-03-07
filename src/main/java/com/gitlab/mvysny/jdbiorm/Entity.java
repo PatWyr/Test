@@ -4,7 +4,7 @@ import com.gitlab.mvysny.jdbiorm.spi.AbstractEntity;
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 import org.jetbrains.annotations.Nullable;
 
-import javax.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolationException;
 import java.util.UUID;
 
 /**
@@ -12,7 +12,7 @@ import java.util.UUID;
  * and {@link #delete()}.
  * <p>
  * Automatically will try to store/update/retrieve all non-transient fields declared by this class and all superclasses.
- * To exclude fields, either mark them {@code transient} or {@link org.jdbi.v3.core.annotation.Unmappable}.
+ * To exclude fields, either mark them {@code transient} or {@link org.jdbi.v3.core.annotation.JdbiProperty} with <code>map=false</code>.
  * <p>
  * If your table has no primary key or there is other reason you don't want to use this interface, you can still use
  * the DAO methods (see {@link DaoOfAny} for more details); you only lose the ability to {@link #save()},

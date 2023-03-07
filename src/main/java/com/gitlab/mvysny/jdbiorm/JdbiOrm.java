@@ -10,9 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import javax.validation.NoProviderFoundException;
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.validation.NoProviderFoundException;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Objects;
