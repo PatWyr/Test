@@ -50,8 +50,7 @@ dependencies {
     // tests
     testImplementation("com.github.mvysny.dynatest:dynatest:0.24")
     testImplementation("com.google.code.gson:gson:2.9.0")
-    // stay with HikariCP 4 sice 5.x requires JDK11: https://github.com/brettwooldridge/HikariCP
-    testImplementation("com.zaxxer:HikariCP:4.0.3")
+    testImplementation("com.zaxxer:HikariCP:5.0.1")
     // workaround for https://github.com/google/gson/issues/1059
     testImplementation("com.fatboyindustrial.gson-javatime-serialisers:gson-javatime-serialisers:1.1.1")
     testImplementation("org.slf4j:slf4j-simple:$slf4jVersion")
