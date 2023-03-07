@@ -39,7 +39,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
 
     // db
-    api("org.jdbi:jdbi3-core:3.34.0")
+    api("org.jdbi:jdbi3-core:3.37.1")
 
     // validation support
     api("jakarta.validation:jakarta.validation-api:3.0.2")  // to have JSR303 validations in the entities
