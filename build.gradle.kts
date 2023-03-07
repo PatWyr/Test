@@ -14,19 +14,19 @@ plugins {
 defaultTasks("clean", "build")
 
 group = "com.gitlab.mvysny.jdbiorm"
-version = "0.11-SNAPSHOT"
+version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
     withJavadocJar()
     withSourcesJar()
 }
@@ -39,13 +39,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
 
     // db
-    api("org.jdbi:jdbi3-core:3.34.0") {
-        exclude(module = "caffeine")
-    }
-    // Required by jdbi3
-    // stay on caffeine 2.x to support Java 8. See https://github.com/jdbi/jdbi#java-8-compatibility
-    // for more details.
-    implementation("com.github.ben-manes.caffeine:caffeine:2.9.3")
+    api("org.jdbi:jdbi3-core:3.34.0")
 
     // validation support
     api("javax.validation:validation-api:2.0.1.Final")  // to have JSR303 validations in the entities

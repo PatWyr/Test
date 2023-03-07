@@ -16,9 +16,9 @@ See [JDBI](http://jdbi.org) for more information.
 
 No dependency injection framework is required - the library works in all
 sorts of environments, including a pure JVM project with just a `main()` method.
-The library requires Java 8 or higher to work. No Maven compiler
-plugin needed - only Java 8 language features are used. That's why no IDE plugin
-is needed, since we're only using Java 8 language features.
+The library requires Java 11 or higher to work. No Maven compiler
+plugin needed - only Java 11 language features are used. That's why no IDE plugin
+is needed, since we're only using Java 11 language features.
 
 ```
 "Simplicity is prerequisite for reliability."
@@ -63,10 +63,10 @@ Maven: (it's very simple since jdbi-orm is in Maven Central):
 
 Compatibility Chart:
 
-| jdbi-orm version | validation API     |
-|------------------|--------------------|
-| 0.x              | javax.validation   |
-| 1.x              | jakarta.validation |
+| jdbi-orm version | validation API     | Min. Java version |
+|------------------|--------------------|-------------------|
+| 0.x              | javax.validation   | 8+                |
+| 1.x              | jakarta.validation | 11+               |
 
 ### Trying out/quickstart/main
 
