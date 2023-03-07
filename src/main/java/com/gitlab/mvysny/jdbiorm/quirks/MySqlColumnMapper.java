@@ -3,7 +3,7 @@ package com.gitlab.mvysny.jdbiorm.quirks;
 import org.jdbi.v3.core.mapper.ColumnMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import org.jetbrains.annotations.NotNull;
-import sun.reflect.generics.tree.TypeSignature;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -20,7 +20,8 @@ import java.util.UUID;
 public class MySqlColumnMapper implements ColumnMapper<UUID> {
 
     @Override
-    public UUID map(@NotNull ResultSet r, int columnNumber, StatementContext ctx) throws SQLException {
+    @Nullable
+    public UUID map(@NotNull ResultSet r, int columnNumber, @Nullable StatementContext ctx) throws SQLException {
         final int columnType = r.getMetaData().getColumnType(columnNumber);
         // MariaDB: if the column is defined as "id binary(16) primary key", the
         // column type will be -3 VARBINARY!
@@ -42,7 +43,7 @@ public class MySqlColumnMapper implements ColumnMapper<UUID> {
     }
 
     @NotNull
-    private static UUID uuidFromByteArray(@NotNull byte[] uuid) {
+    private static UUID uuidFromByteArray(byte[] uuid) {
         final DataInputStream din = new DataInputStream(new ByteArrayInputStream(uuid));
         try {
             return new UUID(din.readLong(), din.readLong());
