@@ -28,7 +28,7 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  * Just let your class have a static field, for example:
  * <pre>
  * public class Log {
- *   public static final DaoOfAny&lt;Log&gt; dao = new DaoOfAny&lt&gt;(Log.class);
+ *   public static final DaoOfAny&lt;Log&gt; dao = new DaoOfAny&lt;&gt;(Log.class);
  * }
  * </pre>
  * You can now use `Log.dao.findAll()`, `Log.dao.count()` and other nice methods.
@@ -240,7 +240,7 @@ public class DaoOfAny<T> implements Serializable {
      * <p></p>
      * Example:
      * <pre>
-     * Person.dao.findSingleBy("name = :name", q -> q.bind("name", "Albedo"))
+     * Person.dao.findSingleBy("name = :name", q -&gt; q.bind("name", "Albedo"))
      * </pre>
      * <p>
      * This function returns null if there is no item matching. Use {@link #singleBy(String, Consumer)}
@@ -334,7 +334,7 @@ public class DaoOfAny<T> implements Serializable {
      * <p></p>
      * Example:
      * <pre>
-     * Person.dao.findFirstBy("name = :name", q -> q.bind("name", "Albedo"))
+     * Person.dao.findFirstBy("name = :name", q -&gt; q.bind("name", "Albedo"))
      * </pre>
      * <p>
      * This function returns null if there is no item matching.
@@ -354,7 +354,7 @@ public class DaoOfAny<T> implements Serializable {
      * <p></p>
      * Example:
      * <pre>
-     * Person.dao.singleBy("name = :name", q -> q.bind("name", "Albedo"))
+     * Person.dao.singleBy("name = :name", q -&gt; q.bind("name", "Albedo"))
      * </pre>
      * <p>
      * This function fails if there is no such entity or there are 2 or more. Use [findSpecificBy] if you wish to return `null` in case that
