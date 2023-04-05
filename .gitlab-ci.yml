@@ -20,7 +20,11 @@ build:jdk11:
   script:
     - ./gradlew build --info --stacktrace --no-daemon
 build:jdk17:
-  image: openjdk:17-alpine
+  image: eclipse-temurin:17
+  script:
+    - ./gradlew build --info --stacktrace --no-daemon
+build:jdk20:
+  image: eclipse-temurin:20
   script:
     - ./gradlew build --info --stacktrace --no-daemon
 
