@@ -68,7 +68,7 @@ dependencies {
     testImplementation("org.testcontainers:mssqlserver:$testcontainersVersion")
 
     // Java has no nullable types
-    api("org.jetbrains:annotations:22.0.0")
+    api("org.jetbrains:annotations:24.0.1")
 }
 
 tasks.withType<Javadoc> {
