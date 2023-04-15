@@ -77,8 +77,8 @@ private fun DynaNodeGroup.usingDockerizedPosgresql() {
             maximumPoolSize = 30
             // stringtype=unspecified : see https://github.com/mvysny/vok-orm/issues/12 for more details.
             jdbcUrl = container.jdbcUrl.removeSuffix("loggerLevel=OFF") + "stringtype=unspecified"
-            username = "test"
-            password = "test"
+            username = container.username
+            password = container.password
         }
         db {
             ddl("""create table if not exists Test (
@@ -128,8 +128,8 @@ fun DynaNodeGroup.usingDockerizedMysql() {
             minimumIdle = 0
             maximumPoolSize = 30
             jdbcUrl = container.jdbcUrl
-            username = "test"
-            password = "test"
+            username = container.username
+            password = container.password
         }
         db {
             ddl("""create table if not exists Test (
@@ -233,8 +233,8 @@ private fun DynaNodeGroup.usingDockerizedMariaDB() {
             minimumIdle = 0
             maximumPoolSize = 30
             jdbcUrl = container.jdbcUrl
-            username = "test"
-            password = "test"
+            username = container.username
+            password = container.password
         }
         db {
             ddl(
