@@ -9,6 +9,7 @@ import com.zaxxer.hikari.HikariDataSource
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Handle
 import org.testcontainers.DockerClientFactory
+import org.testcontainers.containers.CockroachContainer
 import org.testcontainers.containers.MSSQLServerContainer
 import org.testcontainers.containers.MariaDBContainer
 import org.testcontainers.containers.MySQLContainer
@@ -77,6 +78,54 @@ private fun DynaNodeGroup.usingDockerizedPosgresql() {
             maximumPoolSize = 30
             // stringtype=unspecified : see https://github.com/mvysny/vok-orm/issues/12 for more details.
             jdbcUrl = container.jdbcUrl.removeSuffix("loggerLevel=OFF") + "stringtype=unspecified"
+            username = container.username
+            password = container.password
+        }
+        db {
+            ddl("""create table if not exists Test (
+                id bigserial primary key,
+                name varchar(400) not null,
+                age integer not null,
+                dateOfBirth date,
+                created timestamp,
+                modified timestamp,
+                alive boolean,
+                maritalStatus varchar(200)
+                 )""")
+            ddl("""create table if not exists EntityWithAliasedId(myid bigserial primary key, name varchar(400) not null)""")
+            ddl("""create table if not exists NaturalPerson(id varchar(10) primary key, name varchar(400) not null, bytes bytea not null)""")
+            ddl("""create table if not exists LogRecord(id UUID primary key, text varchar(400) not null)""")
+            ddl("""CREATE TYPE marital_status AS ENUM ('Single', 'Married', 'Widowed', 'Divorced')""")
+            ddl("""CREATE TABLE IF NOT EXISTS TypeMappingEntity(id bigserial primary key, enumTest marital_status)""")
+            ddl("""create table JOIN_TABLE(customerId integer, orderId integer)""")
+            ddl("""create table mapping_table(person_id bigint not null, department_id bigint not null, some_data varchar(400) not null, PRIMARY KEY(person_id, department_id))""")
+        }
+    }
+
+    afterGroup { JdbiOrm.destroy() }
+    afterGroup { container.stop() }
+
+    beforeEach { clearDb() }
+    afterEach { clearDb() }
+
+    test("expect PostgreSQL variant") {
+        expect(DatabaseVariant.PostgreSQL) { db { DatabaseVariant.from(this) } }
+    }
+}
+
+@DynaTestDsl
+private fun DynaNodeGroup.usingDockerizedCockroachDB() {
+    check(DockerClientFactory.instance().isDockerAvailable()) { "Docker not available" }
+    lateinit var container: CockroachContainer
+    beforeGroup {
+        container = CockroachContainer("cockroachdb/cockroach:v22.1.19")
+        container.start()
+    }
+    beforeGroup {
+        hikari {
+            minimumIdle = 0
+            maximumPoolSize = 30
+            jdbcUrl = container.jdbcUrl
             username = container.username
             password = container.password
         }
@@ -348,6 +397,11 @@ fun DynaNodeGroup.withAllDatabases(block: DynaNodeGroup.()->Unit) {
 
         group("MSSQL 2017 Express") {
             usingDockerizedMSSQL()
+            block()
+        }
+
+        group("CockroachDB") {
+            usingDockerizedCockroachDB()
             block()
         }
     }

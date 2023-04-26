@@ -173,7 +173,7 @@ fun DynaNodeGroup.joinTableTestSuite() {
     }
     test("DeleteBy") {
         listOf(1, 2, 3).forEach { JoinTable(it, it).save() }
-        JoinTable.dao.deleteBy("customerId = :cid") { q -> q.bind("cid", "2") }
+        JoinTable.dao.deleteBy("customerId = :cid") { q -> q.bind("cid", 2) }
         expect(listOf(1, 3)) { JoinTable.dao.findAll().map { it.customerId } .sorted() }
     }
     group("findSingleBy() tests") {

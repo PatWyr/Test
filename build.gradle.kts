@@ -66,6 +66,7 @@ dependencies {
     testImplementation("org.testcontainers:mysql:$testcontainersVersion")
     testImplementation("org.testcontainers:mariadb:$testcontainersVersion")
     testImplementation("org.testcontainers:mssqlserver:$testcontainersVersion")
+    testImplementation("org.testcontainers:cockroachdb:$testcontainersVersion")
 
     // Java has no nullable types
     api("org.jetbrains:annotations:24.0.1")
