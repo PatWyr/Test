@@ -30,7 +30,7 @@ is needed, since we're only using Java 11 language features.
 
 ## Supported Databases
 
-jdbi-orm currently supports MySQL, MariaDB, PostgreSQL, H2 and Microsoft SQL.
+jdbi-orm currently supports MySQL, MariaDB, PostgreSQL, H2, Microsoft SQL and CockroachDB.
 Other databases are untested - they might or might not work.
 
 ## Usage
