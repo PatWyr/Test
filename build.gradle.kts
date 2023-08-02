@@ -1,7 +1,7 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val slf4jVersion = "2.0.6"
+val slf4jVersion = "2.0.7"
 val testcontainersVersion = "1.18.0"
 
 plugins {
@@ -49,12 +49,12 @@ dependencies {
 
     // tests
     testImplementation("com.github.mvysny.dynatest:dynatest:0.24")
-    testImplementation("com.google.code.gson:gson:2.9.0")
+    testImplementation("com.google.code.gson:gson:2.10.1")
     testImplementation("com.zaxxer:HikariCP:5.0.1")
     // workaround for https://github.com/google/gson/issues/1059
     testImplementation("com.fatboyindustrial.gson-javatime-serialisers:gson-javatime-serialisers:1.1.1")
     testImplementation("org.slf4j:slf4j-simple:$slf4jVersion")
-    testImplementation("com.h2database:h2:2.1.214")
+    testImplementation("com.h2database:h2:2.2.220")
 
     testImplementation("org.postgresql:postgresql:42.5.1")
     testImplementation("mysql:mysql-connector-java:8.0.30")
