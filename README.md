@@ -1045,10 +1045,12 @@ The `JdbiOrm.destroy()` is supposed to be called only if you have created the `D
 
 `jdbi-orm` is a very simple object-relational mapping library, built around the following ideas:
 
-* Simplicity is the most valued property; working with plain SQL commands is preferred over having a type-safe
-  query language. If you want a type-safe database mapping library, try [JOOQ](https://www.jooq.org/).
+* Simplicity is the most valued property
+* Working with plain SQL commands is preferred over having a type-safe
+  query Java API. You need to tweak the performance of your SQLs in your SQL tool, and
+  you can't just paste Java DSL code into your SQL tool and expect it to work.
 * The database is the source of truth. JVM objects are nothing more than DTOs,
-  merely capture snapshots of the JDBC `ResultSet` rows. The entities are populated by the
+  merely capturing temporary snapshots of the JDBC `ResultSet` rows. The entities are populated by the
   means of reflection: for every column in
   the JDBC `ResultSet` an appropriate setter is invoked, to populate the data.
 * The entities are real POJOs: they do not track modifications, they do not automatically store modified
@@ -1059,19 +1061,25 @@ The `JdbiOrm.destroy()` is supposed to be called only if you have created the `D
   instead it should simply allow SELECTs to be passed as Strings, and then map the result
   to an object of programmer's choosing.
 
-As such, `jdbi-orm` has much in common with the [ActiveJDBC](https://github.com/javalite/activejdbc) project, in terms
-of design principles. The advantage of `jdbi-orm` is that it doesn't require any instrumentation to work
-(instead it uses Java language features), and it's even simpler than ActiveJDBC.
-
 Please read [Back to Base - make SQL great again](http://mavi.logdown.com/posts/5771422)
 for the complete explanation of ideas behind this framework.
 
 This framework uses [JDBI](http://jdbi.org/) to map data from the JDBC `ResultSet` to POJOs; in addition it provides a very simple
 mechanism to store/update the data back to the database.
 
+## Comparison with other database-related libraries
+
+* [ActiveJDBC](https://javalite.io/activejdbc) has much in common with jdbi-orm; the advantage of jdbi-orm
+  is that we do not require any instrumentation to work (we use only Java language features).
+* [JOOQ](https://www.jooq.org/) is great but requires initial generation of java code from your database scheme
+  (you write your entities by hand with jdbi-orm), and promotes type-safe query building instead of plain SQLs.
+  If you don't mind that, go for JOOQ - it's definitely more popular than jdbi-orm.
+* JPA: just no. We want real POJOs, not a dynamically-enhanced thing managed by the Entity Manager. Also see below.
+* Spring JdbcTemplate: not bad but it depends on Spring; jdbi-orm must be able to work on pure JVM, without Spring.
+
 ## Why not JPA
 
-JPA is *the* default framework of choice for many projects. However, there are issues in JPA which cannot be overlooked:
+JPA is *the* default framework of choice for many projects. However, there are major issues in JPA which cannot be overlooked:
 
 * [Vaadin-on-Kotlin Issue #3 Remove JPA](https://github.com/mvysny/vaadin-on-kotlin/issues/3)
 * [Back to Base - make SQL great again](http://mavi.logdown.com/posts/5771422)
@@ -1079,7 +1087,8 @@ JPA is *the* default framework of choice for many projects. However, there are i
 
 JPA promises simplicity of usage by providing an object-oriented API. However, this is achieved by
 creating a *virtual object database* layer over a relational database; that creates much complexity
-under the hood which leaks in various ways.
+under the hood which leaks in various ways. In short, JPA is a double failure: it chose the wrong abstraction,
+and implemented it poorly.
 
 We strive to erase the virtual object database layer. We acknowledge the existence of
 the relational database; we only provide tools to ease the use of the database from a
