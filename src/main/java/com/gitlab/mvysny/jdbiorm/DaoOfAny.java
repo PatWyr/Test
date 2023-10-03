@@ -65,8 +65,8 @@ public class DaoOfAny<T> implements Serializable {
 
     /**
      * Finds all rows in given table. Fails if there is no table in the database with the
-     * name of {@link EntityMeta#getDatabaseTableName()}. The list is eager
-     * and thus it's useful for small-ish tables only.
+     * name of {@link EntityMeta#getDatabaseTableName()}. The list is eager,
+     * therefore it's useful for small-ish tables only.
      */
     @NotNull
     public List<T> findAll() {
@@ -291,7 +291,7 @@ public class DaoOfAny<T> implements Serializable {
      * </pre>
      * <p>
      * This function returns null if there is no item matching. Use {@link #single()}
-     * if you wish to return `null` in case that the entity does not exist.
+     * if you wish to throw an exception in case that the entity does not exist.
      *
      * @throws IllegalStateException if there are two or more rows.
      */
