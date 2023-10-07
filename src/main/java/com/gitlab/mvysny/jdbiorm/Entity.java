@@ -73,12 +73,16 @@ public interface Entity<ID> extends AbstractEntity<ID> {
      * <p></p>
      * You can override this method to perform additional validations on the level of the entire entity.
      *
-     * @throws jakarta.validation.ValidationException when validation fails.
+     * @throws ConstraintViolationException when validation fails.
      */
     default void validate() {
         new EntityMeta<>(getClass()).defaultValidate(this);
     }
 
+    /**
+     * Checks whether this entity is valid: calls {@link #validate()} and returns false if {@link ConstraintViolationException} is thrown.
+     * @return true if this entity is valid, false if not.
+     */
     default boolean isValid() {
         try {
             validate();
