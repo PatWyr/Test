@@ -73,7 +73,7 @@ public interface Entity<ID> extends AbstractEntity<ID> {
      * <p></p>
      * You can override this method to perform additional validations on the level of the entire entity.
      *
-     * @throws javax.validation.ValidationException when validation fails.
+     * @throws jakarta.validation.ValidationException when validation fails.
      */
     default void validate() {
         new EntityMeta<>(getClass()).defaultValidate(this);
