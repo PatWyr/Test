@@ -65,7 +65,7 @@ public interface Entity<ID> extends AbstractEntity<ID> {
     void setId(@Nullable ID id);
 
     /**
-     * Validates current entity. By default performs the java validation: just add {@code javax.validation}
+     * Validates current entity. By default performs the java validation: just add {@code jakarta.validation}
      * annotations to entity properties.
      * <p></p>
      * Make sure to add the validation annotations to
