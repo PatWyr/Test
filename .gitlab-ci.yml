@@ -24,7 +24,7 @@ build:jdk17:
   script:
     - ./gradlew build --info --stacktrace --no-daemon
 build:jdk21:
-  image: amazoncorretto:21
+  image: eclipse-temurin:21
   script:
     - ./gradlew build --info --stacktrace --no-daemon
 
