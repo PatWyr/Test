@@ -2,7 +2,8 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val slf4jVersion = "2.0.7"
-val testcontainersVersion = "1.18.0"
+// https://testcontainers.com/guides/getting-started-with-testcontainers-for-java
+val testcontainersVersion = "1.19.3"
 
 plugins {
     kotlin("jvm") version "1.9.21"
@@ -52,14 +53,14 @@ dependencies {
     testImplementation("com.google.code.gson:gson:2.10.1")
     testImplementation("com.zaxxer:HikariCP:5.0.1")
     // workaround for https://github.com/google/gson/issues/1059
-    testImplementation("com.fatboyindustrial.gson-javatime-serialisers:gson-javatime-serialisers:1.1.1")
+    testImplementation("com.fatboyindustrial.gson-javatime-serialisers:gson-javatime-serialisers:1.1.2")
     testImplementation("org.slf4j:slf4j-simple:$slf4jVersion")
-    testImplementation("com.h2database:h2:2.2.220")
+    testImplementation("com.h2database:h2:2.2.224") // https://repo1.maven.org/maven2/com/h2database/h2/
 
-    testImplementation("org.postgresql:postgresql:42.5.1")
-    testImplementation("mysql:mysql-connector-java:8.0.30")
-    testImplementation("org.mariadb.jdbc:mariadb-java-client:3.0.6")
-    testImplementation("com.microsoft.sqlserver:mssql-jdbc:11.2.1.jre8")
+    testImplementation("org.postgresql:postgresql:42.7.1") // check newest at https://jdbc.postgresql.org/download/
+    testImplementation("com.mysql:mysql-connector-j:8.2.0") // https://dev.mysql.com/downloads/connector/j/
+    testImplementation("org.mariadb.jdbc:mariadb-java-client:3.3.1") // https://mariadb.com/kb/en/about-mariadb-connector-j/
+    testImplementation("com.microsoft.sqlserver:mssql-jdbc:12.2.0.jre11")
 
     testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
