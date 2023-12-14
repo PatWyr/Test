@@ -14,9 +14,9 @@ public final class TableProperty<E, V> implements Property<V> {
     @NotNull
     private final Class<E> entityClass;
     @NotNull
-    private final String propertyName;
+    private final Property.Name propertyName;
 
-    private TableProperty(@NotNull Class<E> entity, @NotNull String propertyName) {
+    private TableProperty(@NotNull Class<E> entity, @NotNull Property.Name propertyName) {
         this.entityClass = Objects.requireNonNull(entity);
         this.propertyName = Objects.requireNonNull(propertyName);
         getMeta(); // check that the property exists
@@ -34,8 +34,13 @@ public final class TableProperty<E, V> implements Property<V> {
     }
 
     @NotNull
-    public static <E, V> TableProperty<E, V> of(@NotNull Class<E> entity, @NotNull String propertyName) {
+    public static <E, V> TableProperty<E, V> of(@NotNull Class<E> entity, @NotNull Property.Name propertyName) {
         return new TableProperty<>(entity, propertyName);
+    }
+
+    @NotNull
+    public static <E, V> TableProperty<E, V> of(@NotNull Class<E> entity, @NotNull String propertyName) {
+        return new TableProperty<>(entity, new Property.Name(propertyName));
     }
 
     @Override
@@ -58,12 +63,12 @@ public final class TableProperty<E, V> implements Property<V> {
 
     @Override
     public @NotNull Name getName() {
-        return getMeta().getName();
+        return propertyName;
     }
 
     @Override
-    public @NotNull String getQualifiedName() {
-        return EntityMeta.of(entityClass).getDatabaseTableName() + "." + getMeta().getDbColumnName();
+    public @NotNull DbName getDbName() {
+        return new DbName(EntityMeta.of(entityClass).getDatabaseTableName(), getMeta().getDbColumnName());
     }
 
     @NotNull
@@ -88,8 +93,8 @@ public final class TableProperty<E, V> implements Property<V> {
         }
 
         @Override
-        public @NotNull String getQualifiedName() {
-            return tableNameAlias + "." + tableProperty.getMeta().getDbColumnName();
+        public @NotNull DbName getDbName() {
+            return new DbName(tableNameAlias, tableProperty.getDbName().getUnqualifiedName());
         }
 
         @Override
