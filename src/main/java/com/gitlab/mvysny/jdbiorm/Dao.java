@@ -54,7 +54,7 @@ public class Dao<T extends AbstractEntity<ID>, ID> extends DaoOfAny<T> {
         Objects.requireNonNull(id, "id");
         return jdbi().withHandle(handle -> {
             final Query query = handle.createQuery("select <FIELDS> from <TABLE> where <ID>")
-                    .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
+                    .define("FIELDS", meta.getPersistedFieldDbNames().stream().map(Property.DbName::getUnqualifiedName).collect(Collectors.joining(", ")))
                     .define("TABLE", meta.getDatabaseTableName());
             passIdValuesToQuery(query, id);
             return query.map(getRowMapper())
@@ -72,7 +72,7 @@ public class Dao<T extends AbstractEntity<ID>, ID> extends DaoOfAny<T> {
     public void passIdValuesToQuery(@NotNull SqlStatement<?> query, @NotNull ID id) {
         Objects.requireNonNull(id, "id");
         final List<PropertyMeta> idProperties = meta.getIdProperty();
-        query.define("ID", idProperties.stream().map(it -> it.getDbColumnName() + " = :" + it.getDbColumnName()).collect(Collectors.joining(" AND ")));
+        query.define("ID", idProperties.stream().map(it -> it.getDbName().getUnqualifiedName() + " = :" + it.getDbName().getUnqualifiedName()).collect(Collectors.joining(" AND ")));
 
         if (meta.hasCompositeKey()) {
             // in order to be able to call PropertyMeta.get() we need to pass in the Entity instance, not the ID instance.
@@ -80,11 +80,11 @@ public class Dao<T extends AbstractEntity<ID>, ID> extends DaoOfAny<T> {
             final T entity = meta.newEntityInstance();
             meta.setId(entity, id);
             for (PropertyMeta idProperty : idProperties) {
-                query.bind(idProperty.getDbColumnName(), idProperty.get(entity));
+                query.bind(idProperty.getDbName().getUnqualifiedName(), idProperty.get(entity));
             }
         } else {
             // fall back to the safer+faster simple way
-            query.bind(idProperties.get(0).getDbColumnName(), id);
+            query.bind(idProperties.get(0).getDbName().getUnqualifiedName(), id);
         }
     }
 

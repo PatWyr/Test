@@ -66,7 +66,7 @@ public final class EntityMeta<E> {
                 .findFirst().orElse(null);
 
         final HashSet<PropertyMeta> metas = new HashSet<>();
-        visitAllPersistedFields(entityClass, Collections.emptyList(), fields -> metas.add(new PropertyMeta(fields)));
+        visitAllPersistedFields(entityClass, Collections.emptyList(), fields -> metas.add(new PropertyMeta(entityClass, fields)));
         entityProperties = new EntityProperties(metas);
 
         idProperty = getProperties().stream()
@@ -124,8 +124,8 @@ public final class EntityMeta<E> {
      * @return immutable hash set of SQL column names, not null.
      */
     @NotNull
-    public Set<String> getPersistedFieldDbNames() {
-        return getProperties().stream().map(PropertyMeta::getDbColumnName).collect(Collectors.toSet());
+    public Set<Property.DbName> getPersistedFieldDbNames() {
+        return getProperties().stream().map(PropertyMeta::getDbName).collect(Collectors.toSet());
     }
 
     public boolean hasIdProperty() {
@@ -438,7 +438,7 @@ public final class EntityMeta<E> {
             }
             final Update update = handle.createUpdate("insert into <TABLE> (<FIELDS>) values (<FIELD_VALUES>)")
                     .define("TABLE", getDatabaseTableName())
-                    .define("FIELDS", properties.stream().map(PropertyMeta::getDbColumnName).collect(Collectors.joining(", ")))
+                    .define("FIELDS", properties.stream().map(p -> p.getDbName().getUnqualifiedName()).collect(Collectors.joining(", ")))
                     .define("FIELD_VALUES", properties.stream().map(it -> ":" + it.getName()).collect(Collectors.joining(", ")));
             for (PropertyMeta property : properties) {
                 update.bind(property.getName().getName(), property.get(entity));
@@ -452,7 +452,7 @@ public final class EntityMeta<E> {
             } else {
                 final PropertyMeta idProperty = idProperties.get(0);
                 final ResultBearing resultBearing = update
-                        .executeAndReturnGeneratedKeys(idProperty.getDbColumnName());
+                        .executeAndReturnGeneratedKeys(idProperty.getDbName().getUnqualifiedName());
                 final Object generatedKey = resultBearing
                         .mapTo(idProperty.getValueType())
                         .findFirst().orElse(null);
@@ -478,13 +478,13 @@ public final class EntityMeta<E> {
             // build the Statement
             final Update update = handle.createUpdate("update <TABLE> set <FIELDS> where <ID>")
                     .define("TABLE", getDatabaseTableName())
-                    .define("FIELDS", properties.stream().map(it -> it.getDbColumnName() + " = :" + it.getDbColumnName()).collect(Collectors.joining(", ")))
-                    .define("ID", idProperties.stream().map(it -> it.getDbColumnName() + " = :" + it.getDbColumnName()).collect(Collectors.joining(" AND ")));
+                    .define("FIELDS", properties.stream().map(it -> it.getDbName().getUnqualifiedName() + " = :" + it.getDbName().getUnqualifiedName()).collect(Collectors.joining(", ")))
+                    .define("ID", idProperties.stream().map(it -> it.getDbName().getUnqualifiedName() + " = :" + it.getDbName().getUnqualifiedName()).collect(Collectors.joining(" AND ")));
             for (PropertyMeta property : properties) {
-                update.bind(property.getDbColumnName(), property.get(entity));
+                update.bind(property.getDbName().getUnqualifiedName(), property.get(entity));
             }
             for (PropertyMeta idProperty : idProperties) {
-                update.bind(idProperty.getDbColumnName(), idProperty.get(entity));
+                update.bind(idProperty.getDbName().getUnqualifiedName(), idProperty.get(entity));
             }
 
             // execute the Statement

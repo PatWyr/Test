@@ -68,7 +68,7 @@ public final class TableProperty<E, V> implements Property<V> {
 
     @Override
     public @NotNull DbName getDbName() {
-        return new DbName(EntityMeta.of(entityClass).getDatabaseTableName(), getMeta().getDbColumnName());
+        return getMeta().getDbName();
     }
 
     @NotNull
@@ -112,7 +112,7 @@ public final class TableProperty<E, V> implements Property<V> {
 
         @Override
         public String toString() {
-            return tableProperty.entityClass.getSimpleName() + " " + tableNameAlias + "." + tableProperty.getMeta().getDbColumnName();
+            return tableProperty.entityClass.getSimpleName() + " " + tableNameAlias + "." + tableProperty.getName();
         }
     }
 }

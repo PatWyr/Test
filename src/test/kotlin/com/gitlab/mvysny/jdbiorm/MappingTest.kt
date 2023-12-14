@@ -110,11 +110,11 @@ private fun DynaNodeGroup.personTestBattery() {
         val meta = Person.meta
         expect("Test") { meta.databaseTableName }  // since Person is annotated with @Entity("Test")
         expect(1) { meta.idProperty.size }
-        expect("id") { meta.idProperty[0].dbColumnName }
+        expect("Test.id") { meta.idProperty[0].dbName.qualifiedName }
         expect(Person::class.java) { meta.entityClass }
         expect(java.lang.Long::class.java) { meta.idProperty[0].valueType }
-        expect(setOf("id", "name", "age", "dateOfBirth", "created", "alive", "maritalStatus", "modified")) {
-            meta.persistedFieldDbNames
+        expect(setOf("Test.id", "Test.name", "Test.age", "Test.dateOfBirth", "Test.created", "Test.alive", "Test.maritalStatus", "Test.modified")) {
+            meta.persistedFieldDbNames.map { it.qualifiedName } .toSet()
         }
     }
     test("reload") {
@@ -160,10 +160,10 @@ private fun DynaNodeGroup.aliasedIdTestBattery() {
         val meta = EntityMeta.of(EntityWithAliasedId::class.java)
         expect("EntityWithAliasedId") { meta.databaseTableName }
         expect(1) { meta.idProperty.size }
-        expect("myid") { meta.idProperty[0].dbColumnName }
+        expect("EntityWithAliasedId.myid") { meta.idProperty[0].dbName.qualifiedName }
         expect(EntityWithAliasedId::class.java) { meta.entityClass }
         expect(Long::class.java) { meta.idProperty[0].valueType }
-        expect(setOf("myid", "name")) { meta.persistedFieldDbNames }
+        expect(setOf("myid", "name")) { meta.persistedFieldDbNames.map { it.unqualifiedName } .toSet() }
     }
 }
 
@@ -196,12 +196,12 @@ private fun DynaNodeGroup.compositePKTestBattery() {
         val meta = EntityMeta.of(MappingTable::class.java)
         expect("mapping_table") { meta.databaseTableName }
         expect(2) { meta.idProperty.size }
-        expect("person_id") { meta.idProperty[0].dbColumnName }
-        expect("department_id") { meta.idProperty[1].dbColumnName }
+        expect("mapping_table.person_id") { meta.idProperty[0].dbName.qualifiedName }
+        expect("mapping_table.department_id") { meta.idProperty[1].dbName.qualifiedName }
         expect(MappingTable::class.java) { meta.entityClass }
         expect(Long::class.java) { meta.idProperty[0].valueType }
         expect(Long::class.java) { meta.idProperty[1].valueType }
-        expect(setOf("person_id", "department_id", "some_data")) { meta.persistedFieldDbNames }
+        expect(setOf("person_id", "department_id", "some_data")) { meta.persistedFieldDbNames.map { it.unqualifiedName } .toSet() }
     }
     test("reload") {
         val p = MappingTable(1, 2, "Albedo")

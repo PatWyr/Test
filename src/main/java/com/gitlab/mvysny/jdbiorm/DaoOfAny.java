@@ -71,7 +71,7 @@ public class DaoOfAny<T> {
     @NotNull
     public List<T> findAll() {
         return jdbi().withHandle(handle -> handle.createQuery("select <FIELDS> from <TABLE>")
-                .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
+                .define("FIELDS", meta.getPersistedFieldDbNames().stream().map(Property.DbName::getUnqualifiedName).collect(Collectors.joining(", ")))
                 .define("TABLE", meta.getDatabaseTableName())
                 .map(getRowMapper())
                 .list()
@@ -112,7 +112,7 @@ public class DaoOfAny<T> {
                     // H2 requires ORDER BY after LIMIT+OFFSET clauses.
                     appendOffsetLimit(sql, handle, offset, limit, orderBy != null);
                     return handle.createQuery(sql.toString())
-                            .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
+                            .define("FIELDS", meta.getPersistedFieldDbNames().stream().map(Property.DbName::getUnqualifiedName).collect(Collectors.joining(", ")))
                             .define("TABLE", meta.getDatabaseTableName())
                             .map(getRowMapper())
                             .list();
@@ -134,7 +134,7 @@ public class DaoOfAny<T> {
             return new ArrayList<>();
         }
         final String order = orderBy.isEmpty() ? null : orderBy.stream()
-                .map(it -> meta.getProperty(it.getName()).getDbColumnName() + " " + it.getOrder())
+                .map(it -> meta.getProperty(it.getName()).getDbName().getQualifiedName() + " " + it.getOrder())
                 .collect(Collectors.joining(", "));
         return findAll(order, offset, limit);
     }
@@ -200,7 +200,7 @@ public class DaoOfAny<T> {
         return jdbi().withHandle(handle -> {
                     appendOffsetLimit(sql, handle, offset, limit, orderBy != null);
                     final Query query = handle.createQuery(sql.toString())
-                            .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
+                            .define("FIELDS", meta.getPersistedFieldDbNames().stream().map(Property.DbName::getUnqualifiedName).collect(Collectors.joining(", ")))
                             .define("TABLE", meta.getDatabaseTableName())
                             .define("WHERE", where);
                     queryConsumer.accept(query);
@@ -270,7 +270,7 @@ public class DaoOfAny<T> {
             sql += quirks.offsetLimit(null, 2L);
             final String sqlFinal = sql;
             final Query query = handle.createQuery(sqlFinal)
-                    .define("FIELDS", String.join(", ", meta.getPersistedFieldDbNames()))
+                    .define("FIELDS", meta.getPersistedFieldDbNames().stream().map(Property.DbName::getUnqualifiedName).collect(Collectors.joining(", ")))
                     .define("TABLE", meta.getDatabaseTableName());
             if (where != null) {
                 query.define("WHERE", where);

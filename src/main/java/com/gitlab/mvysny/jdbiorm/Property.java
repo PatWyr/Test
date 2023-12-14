@@ -135,6 +135,11 @@ public interface Property<V> extends Serializable {
         public String getUnqualifiedName() {
             return columnName;
         }
+
+        @Override
+        public String toString() {
+            return getQualifiedName();
+        }
     }
 
     /**

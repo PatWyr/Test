@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
  */
 public final class PropertyMeta {
 
+    @NotNull
+    private final Class<?> entityClass;
     /**
      * The Java reflection field, used to read the value of this property.
      * Usually this will be 1-sized list of a single Field reading a field straight
@@ -52,7 +54,8 @@ public final class PropertyMeta {
      * Creates the property.
      * @param fieldPath the field, not null. See {@link #fieldPath} for more info.
      */
-    public PropertyMeta(@NotNull List<Field> fieldPath) {
+    public PropertyMeta(@NotNull Class<?> entityClass, @NotNull List<Field> fieldPath) {
+        this.entityClass = Objects.requireNonNull(entityClass);
         this.fieldPath = new LinkedList<>(Objects.requireNonNull(fieldPath, "fieldPath"));
         if (this.fieldPath.isEmpty()) {
             throw new IllegalArgumentException("Parameter fieldPath: invalid value " + fieldPath + ": must not be empty");
@@ -65,8 +68,8 @@ public final class PropertyMeta {
      * Wraps given Java reflection field as an entity property.
      * @param field the field, not null.
      */
-    public PropertyMeta(@NotNull Field field) {
-        this(Collections.singletonList(Objects.requireNonNull(field, "field")));
+    public PropertyMeta(@NotNull Class<?> entityClass, @NotNull Field field) {
+        this(entityClass, Collections.singletonList(Objects.requireNonNull(field, "field")));
     }
 
     /**
@@ -107,9 +110,22 @@ public final class PropertyMeta {
      * @return the database column name, not null.
      */
     @NotNull
-    public String getDbColumnName() {
+    private String getDbColumnName() {
         final ColumnName annotation = fieldPath.getLast().getAnnotation(ColumnName.class);
         return annotation == null ? getLastName() : annotation.value();
+    }
+
+    /**
+     * The database name of the column corresponding to this property.
+     * Defaults to {@link #getLastName()}, but
+     * it can be changed via the {@link ColumnName} annotation.
+     * <p></p>
+     * This is the column name which must be used in the WHERE clauses.
+     * @return the database column name, not null.
+     */
+    @NotNull
+    public Property.DbName getDbName() {
+        return new Property.DbName(EntityMeta.of(entityClass).getDatabaseTableName(), getDbColumnName());
     }
 
     /**
