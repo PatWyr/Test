@@ -2,6 +2,7 @@ package com.gitlab.mvysny.jdbiorm;
 
 import com.gitlab.mvysny.jdbiorm.condition.Condition;
 import com.gitlab.mvysny.jdbiorm.condition.Eq;
+import com.gitlab.mvysny.jdbiorm.condition.Op;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,6 +28,8 @@ public interface Property<V> extends Serializable {
     /**
      * The full name of a property. Most often the {@link Field#getName() Java field name} from an entity bean.
      * However, in case of composite IDs this is a comma-separated {@link #getNamePath()} e.g. "id.component1".
+     * <p></p>
+     * Immutable, thread-safe.
      */
     final class Name implements Serializable {
         @NotNull
@@ -81,9 +84,10 @@ public interface Property<V> extends Serializable {
      * The name is any of these:
      * <ul>
      * <li>The formal name of the field, if it is a <i>physical table/view
-     * field</i>, including the table name, e.g. PERSON.id</li>
+     * field</i>, including the table name, e.g. <code>PERSON.id</code></li>
      * <li>The alias of an <i>aliased field</i></li>
      * </ul>
+     * Immutable, thread-safe.
      */
     final class DbName implements Serializable {
         /**
@@ -122,6 +126,14 @@ public interface Property<V> extends Serializable {
             return Objects.hash(tableName, columnName);
         }
 
+        /**
+         * Returns the qualified name of the database column.
+         * The qualified name is a combination of the table name and the column name,
+         * separated by a dot (.) character.
+         * <p></p>
+         * Example: PERSON.id
+         * @return the qualified name of the column
+         */
         @NotNull
         public String getQualifiedName() {
             return tableName + "." + columnName;
@@ -129,7 +141,7 @@ public interface Property<V> extends Serializable {
 
         /**
          * This is just the name of the column, exactly as present in the database.
-         * @return the name of the column
+         * @return the name of the column, without the name of the table.
          */
         @NotNull
         public String getUnqualifiedName() {
@@ -178,6 +190,86 @@ public interface Property<V> extends Serializable {
     @NotNull
     default Condition eq(@NotNull Property<V> value) {
         return new Eq(this, value);
+    }
+
+    /**
+     * The <code>LT</code> operator.
+     */
+    @NotNull
+    default Condition lt(@Nullable V value) {
+        return lt(new Value<>(value));
+    }
+
+    /**
+     * The <code>LT</code> operator.
+     */
+    @NotNull
+    default Condition lt(@NotNull Property<V> value) {
+        return new Op(this, value, Op.Operator.LT);
+    }
+
+    /**
+     * The <code>LE</code> operator.
+     */
+    @NotNull
+    default Condition le(@Nullable V value) {
+        return le(new Value<>(value));
+    }
+
+    /**
+     * The <code>LE</code> operator.
+     */
+    @NotNull
+    default Condition le(@NotNull Property<V> value) {
+        return new Op(this, value, Op.Operator.LE);
+    }
+
+    /**
+     * The <code>GT</code> operator.
+     */
+    @NotNull
+    default Condition gt(@Nullable V value) {
+        return gt(new Value<>(value));
+    }
+
+    /**
+     * The <code>GT</code> operator.
+     */
+    @NotNull
+    default Condition gt(@NotNull Property<V> value) {
+        return new Op(this, value, Op.Operator.GT);
+    }
+
+    /**
+     * The <code>GE</code> operator.
+     */
+    @NotNull
+    default Condition ge(@Nullable V value) {
+        return ge(new Value<>(value));
+    }
+
+    /**
+     * The <code>GE</code> operator.
+     */
+    @NotNull
+    default Condition ge(@NotNull Property<V> value) {
+        return new Op(this, value, Op.Operator.GE);
+    }
+
+    /**
+     * The <code>NE</code> operator.
+     */
+    @NotNull
+    default Condition ne(@Nullable V value) {
+        return ne(new Value<>(value));
+    }
+
+    /**
+     * The <code>NE</code> operator.
+     */
+    @NotNull
+    default Condition ne(@NotNull Property<V> value) {
+        return new Op(this, value, Op.Operator.NE);
     }
 
     /**

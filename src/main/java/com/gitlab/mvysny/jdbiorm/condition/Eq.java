@@ -36,4 +36,14 @@ public final class Eq implements Condition {
     public String toString() {
         return arg1 + " = " + arg2;
     }
+
+    @NotNull
+    public Property<?> getArg1() {
+        return arg1;
+    }
+
+    @NotNull
+    public Property<?> getArg2() {
+        return arg2;
+    }
 }

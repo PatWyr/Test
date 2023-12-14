@@ -32,4 +32,9 @@ final class Not implements Condition {
     public String toString() {
         return "NOT(" + condition + ')';
     }
+
+    @NotNull
+    public Condition getCondition() {
+        return condition;
+    }
 }

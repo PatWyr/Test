@@ -35,4 +35,14 @@ final class And implements Condition {
     public String toString() {
         return "(" + condition1 + ") AND (" + condition2 + ")";
     }
+
+    @NotNull
+    public Condition getCondition1() {
+        return condition1;
+    }
+
+    @NotNull
+    public Condition getCondition2() {
+        return condition2;
+    }
 }
