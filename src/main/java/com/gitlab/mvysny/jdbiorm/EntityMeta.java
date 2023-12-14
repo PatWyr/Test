@@ -90,6 +90,7 @@ public final class EntityMeta<E> {
 
     @NotNull
     public static <E> EntityMeta<E> of(@NotNull Class<E> entityClass) {
+        Objects.requireNonNull(entityClass);
         //noinspection unchecked
         return (EntityMeta<E>) cache.computeIfAbsent(entityClass, EntityMeta::new);
     }

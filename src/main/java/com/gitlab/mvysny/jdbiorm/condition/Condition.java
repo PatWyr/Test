@@ -7,7 +7,6 @@ import java.io.Serializable;
 
 /**
  * A SQL condition. Immutable.
- * <p></p>
  * <h3>Implementation</h3>
  * {@link Object#equals(Object)}/{@link Object#hashCode()} must be implemented properly, so that the conditions can be
  * placed in a set. As a bare minimum, the filter type, the property name and the value which we compare against must be

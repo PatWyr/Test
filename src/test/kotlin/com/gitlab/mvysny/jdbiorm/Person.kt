@@ -55,6 +55,9 @@ data class Person(
         val IGNORE_THIS_FIELD: Int = 0
         @JvmStatic
         val dao = PersonDao()
+
+        @JdbiProperty(map = false)
+        val ID = TableProperty.of<Person, Long>(Person::class.java, "id")
     }
 
     fun withZeroNanos(): Person = copy(created = created?.withZeroMillis, modified = modified?.withZeroNanos)

@@ -30,6 +30,6 @@ final class Not implements Condition {
 
     @Override
     public String toString() {
-        return "Not(" + condition + ')';
+        return "NOT(" + condition + ')';
     }
 }
