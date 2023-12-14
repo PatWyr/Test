@@ -57,6 +57,7 @@ data class Person(
         val dao = PersonDao()
 
         @JdbiProperty(map = false)
+        @JvmStatic
         val ID = TableProperty.of<Person, Long>(Person::class.java, "id")
     }
 
