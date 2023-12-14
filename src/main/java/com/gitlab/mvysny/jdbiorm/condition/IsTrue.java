@@ -10,7 +10,7 @@ import java.util.Objects;
  * <code>true</code>.
  * <p>
  * SQL:
- * <code>lcase(this) in ("1", "y", "yes", "true", "on", "enabled")</code>
+ * <code>lower(this) in ("1", "y", "yes", "true", "on", "enabled")</code>
  */
 public final class IsTrue implements Condition {
     @NotNull

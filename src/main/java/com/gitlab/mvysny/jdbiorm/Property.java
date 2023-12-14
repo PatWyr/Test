@@ -440,7 +440,7 @@ public interface Property<V> extends Serializable {
      * <code>true</code>.
      * <p>
      * SQL:
-     * <code>lcase(this) in ("1", "y", "yes", "true", "on", "enabled")</code>
+     * <code>lower(this) in ("1", "y", "yes", "true", "on", "enabled")</code>
      */
     @NotNull
     default Condition isTrue() {
@@ -452,11 +452,65 @@ public interface Property<V> extends Serializable {
      * <code>false</code>.
      * <p>
      * SQL:
-     * <code>lcase(this) in ("0", "n", "no", "false", "off", "disabled")</code>
+     * <code>lower(this) in ("0", "n", "no", "false", "off", "disabled")</code>
      */
     @NotNull
     default Condition isFalse() {
         return new IsFalse(this);
+    }
+
+    @NotNull
+    default Property<V> lower() {
+        return new Lower(this);
+    }
+
+    /**
+     * <code>lower(this) = lower(value)</code>.
+     */
+    @NotNull
+    default Condition equalIgnoreCase(@Nullable String value) {
+        return equalIgnoreCase(new Value<>(value));
+    }
+
+    /**
+     * <code>lower(this) = lower(value)</code>.
+     */
+    @NotNull
+    default Condition equalIgnoreCase(@NotNull Property<String> value) {
+        return new Eq(lower(), value.lower());
+    }
+
+    /**
+     * <code>lower(this) != lower(value)</code>.
+     */
+    @NotNull
+    default Condition notEqualIgnoreCase(String value) {
+        return equalIgnoreCase(value).not();
+    }
+
+    /**
+     * <code>lower(this) != lower(value)</code>.
+     */
+    @NotNull
+    default Condition notEqualIgnoreCase(@NotNull Property<String> value) {
+        return equalIgnoreCase(value).not();
+    }
+    /**
+     * The <code>LIKE</code> operator.
+     *
+     * @param pattern e.g. "%foo%"
+     */
+    @NotNull
+    default Condition like(@Nullable String pattern) {
+        return like(new Value<>(pattern));
+    }
+
+    /**
+     * The <code>LIKE</code> operator.
+     */
+    @NotNull
+    default Condition like(@NotNull Property<String> pattern) {
+        return new Like(this, pattern);
     }
 
     /**
