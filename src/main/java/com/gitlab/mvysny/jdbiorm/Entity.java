@@ -76,7 +76,7 @@ public interface Entity<ID> extends AbstractEntity<ID> {
      * @throws ConstraintViolationException when validation fails.
      */
     default void validate() {
-        new EntityMeta<>(getClass()).defaultValidate(this);
+        EntityMeta.of(getClass()).defaultValidate(this);
     }
 
     /**
@@ -116,7 +116,7 @@ public interface Entity<ID> extends AbstractEntity<ID> {
         if (validate) {
             validate();
         }
-        new EntityMeta<>(getClass()).defaultCreate(this);
+        EntityMeta.of(getClass()).defaultCreate(this);
     }
 
     /**
@@ -160,7 +160,7 @@ public interface Entity<ID> extends AbstractEntity<ID> {
         if (getId() == null) {
             create(false);  // no need to validate again
         } else {
-            new EntityMeta<>(getClass()).defaultSave(this);
+            EntityMeta.of(getClass()).defaultSave(this);
         }
     }
 
@@ -199,6 +199,6 @@ public interface Entity<ID> extends AbstractEntity<ID> {
         if (getId() == null) {
             throw new IllegalStateException("Invalid state: id is null");
         }
-        new EntityMeta<>(getClass()).defaultReload(this);
+        EntityMeta.of(getClass()).defaultReload(this);
     }
 }

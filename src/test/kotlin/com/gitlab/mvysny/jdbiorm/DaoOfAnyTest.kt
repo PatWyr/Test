@@ -5,12 +5,6 @@ import java.lang.IllegalStateException
 import kotlin.reflect.KProperty
 import kotlin.test.expect
 
-class DaoOfAnyTest : DynaTest({
-    test("serializable") {
-        JoinTable.dao.cloneBySerialization()
-    }
-})
-
 val String.asc get() = OrderBy(this, OrderBy.ASC)
 val String.desc get() = OrderBy(this, OrderBy.DESC)
 val KProperty<*>.asc get() = name.asc

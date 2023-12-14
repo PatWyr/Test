@@ -38,17 +38,17 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  * the database column name.
  * @param <T> the type of the class provided by this Dao
  */
-public class DaoOfAny<T> implements Serializable {
+public class DaoOfAny<T> {
     @NotNull
     public final Class<T> entityClass;  // public because of vok-orm
     @NotNull
-    protected final EntityMeta<T> meta;   // not public, to not to pollute the API
+    protected final EntityMeta<T> meta;   // not public, to not pollute the API
     @NotNull
-    protected final Helper<T> helper;  // not public, to not to pollute the API
+    protected final Helper<T> helper;  // not public, to not pollute the API
 
     public DaoOfAny(@NotNull Class<T> entityClass) {
         this.entityClass = Objects.requireNonNull(entityClass, "entityClass");
-        meta = new EntityMeta<>(entityClass);
+        meta = EntityMeta.of(entityClass);
         helper = new Helper<>(entityClass);
     }
 
@@ -454,7 +454,7 @@ public class DaoOfAny<T> implements Serializable {
      * These functions are generally not intended to be invoked by the user of this library.
      * @param <T> the entity type
      */
-    public static final class Helper<T> implements Serializable {
+    public static final class Helper<T> {
         @NotNull
         public final Class<T> entityClass;
 

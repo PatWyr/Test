@@ -10,7 +10,6 @@ import org.jetbrains.annotations.Nullable;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -19,30 +18,80 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
 
 /**
- * Provides meta-data for given entity.
+ * Provides meta-data for given entity. All introspection operations execute in O(1).
+ * Call {@link #of(Class)} to obtain a cached instance.
  * <p></p>
  * Thread-safe.
  * @author mavi
  */
-public final class EntityMeta<E> implements Serializable {
+public final class EntityMeta<E> {
     /**
-     * usually a class implementing {@link Entity} but may be any class. Not null.
+     * Usually a class implementing {@link Entity} but may be any class. Not null.
      */
     @NotNull
     public final Class<E> entityClass;
 
     /**
+     * Caches the <code>setId()</code> {@link Method} for given entity class. Used by {@link #setId(Object, Object)}.
+     */
+    @Nullable
+    private final Method setIdMethod;
+    @Nullable
+    private final Method getIdMethod;
+
+    @NotNull
+    private final EntityProperties entityProperties;
+
+    /**
+     * Unmodifiable, thread-safe. Caches the output of {@link #getIdProperty()}.
+     */
+    @NotNull
+    private final List<PropertyMeta> idProperty;
+
+    /**
      * @param entityClass usually a class implementing {@link Entity} but may be any class. Not null.
      */
-    public EntityMeta(@NotNull Class<E> entityClass) {
+    private EntityMeta(@NotNull Class<E> entityClass) {
         this.entityClass = Objects.requireNonNull(entityClass, "entityClass");
+
+        setIdMethod = Arrays.stream(entityClass.getMethods()).filter(it -> it.getName().equals("setId"))
+                .findFirst().orElse(null);
+        getIdMethod = Arrays.stream(entityClass.getMethods()).filter(it -> it.getName().equals("getId"))
+                .findFirst().orElse(null);
+
+        final HashSet<PropertyMeta> metas = new HashSet<>();
+        visitAllPersistedFields(entityClass, Collections.emptyList(), fields -> metas.add(new PropertyMeta(fields)));
+        entityProperties = new EntityProperties(metas);
+
+        idProperty = getProperties().stream()
+                .filter(it -> it.getNamePath().get(0).equals("id")).collect(Collectors.toUnmodifiableList());
+
+        final Table annotation = findAnnotationRecursively(entityClass, Table.class);
+        final String name = annotation == null ? null : annotation.value();
+        databaseTableName = name == null || name.trim().isEmpty() ? entityClass.getSimpleName() : name;
+
+    }
+
+    /**
+     * Cached value of {@link #getDatabaseTableName()}.
+     */
+    @NotNull
+    private final String databaseTableName;
+
+    @NotNull
+    private static final ConcurrentMap<Class<?>, EntityMeta<?>> cache =
+            new ConcurrentHashMap<>();
+
+    @NotNull
+    public static <E> EntityMeta<E> of(@NotNull Class<E> entityClass) {
+        //noinspection unchecked
+        return (EntityMeta<E>) cache.computeIfAbsent(entityClass, EntityMeta::new);
     }
 
     /**
@@ -55,9 +104,7 @@ public final class EntityMeta<E> implements Serializable {
      */
     @NotNull
     public String getDatabaseTableName() {
-        final Table annotation = findAnnotationRecursively(entityClass, Table.class);
-        final String name = annotation == null ? null : annotation.value();
-        return name == null || name.trim().isEmpty() ? entityClass.getSimpleName() : name;
+        return databaseTableName;
     }
 
     /**
@@ -68,12 +115,7 @@ public final class EntityMeta<E> implements Serializable {
      */
     @NotNull
     public Set<PropertyMeta> getProperties() {
-        return getPropertyMap().getProperties();
-    }
-
-    @NotNull
-    private EntityProperties getPropertyMap() {
-        return getPersistedPropertiesFor(entityClass);
+        return entityProperties.getProperties();
     }
 
     /**
@@ -85,11 +127,9 @@ public final class EntityMeta<E> implements Serializable {
         return getProperties().stream().map(PropertyMeta::getDbColumnName).collect(Collectors.toSet());
     }
 
-    /**
-     * Unmodifiable, thread-safe. Caches the output of {@link #getIdProperty()}.
-     */
-    @Nullable
-    private transient volatile List<PropertyMeta> idPropertyCache;
+    public boolean hasIdProperty() {
+        return !idProperty.isEmpty();
+    }
 
     /**
      * The {@code id} property as declared in the entity.
@@ -97,27 +137,19 @@ public final class EntityMeta<E> implements Serializable {
      */
     @NotNull
     public List<PropertyMeta> getIdProperty() {
-        List<PropertyMeta> cache = idPropertyCache;
-        if (cache == null) {
-            final List<PropertyMeta> props = getProperties().stream()
-                    .filter(it -> it.getNamePath().get(0).equals("id"))
-                    .collect(Collectors.toList());
-            if (props.isEmpty()) {
-                throw new IllegalStateException("Unexpected: entity " + entityClass + " has no id field?");
-            }
-            cache = Collections.unmodifiableList(new CopyOnWriteArrayList<>(props));
-            idPropertyCache = cache;
+        if (!hasIdProperty()) {
+            throw new IllegalStateException("Unexpected: entity " + entityClass + " has no id field");
         }
-        return cache;
+        return idProperty;
     }
 
     /**
      * Returns true if this entity has a composite key (the `id` field is annotated with {@link org.jdbi.v3.core.mapper.Nested}
      * and the referencing class has multiple fields).
-     * @return true if this entity uses a composite key.
+     * @return true if this entity uses a composite key, false if this entity has no ID or just a simple ID.
      */
     public boolean hasCompositeKey() {
-        return getIdProperty().size() > 1;
+        return idProperty.size() > 1;
     }
 
     /**
@@ -146,7 +178,7 @@ public final class EntityMeta<E> implements Serializable {
     @Nullable
     public PropertyMeta findProperty(@NotNull String propertyName) {
         Objects.requireNonNull(propertyName, "propertyName");
-        return getPropertyMap().findByName(propertyName);
+        return entityProperties.findByName(propertyName);
     }
 
     /**
@@ -211,9 +243,6 @@ public final class EntityMeta<E> implements Serializable {
         }
     }
 
-    private static final ConcurrentMap<Class<?>, EntityProperties> persistedPropertiesCache =
-            new ConcurrentHashMap<>();
-
     private static boolean isJdbiPropertyMap(@NotNull Field field) {
         final JdbiProperty a = field.getAnnotation(JdbiProperty.class);
         return a == null || a.map();
@@ -253,20 +282,6 @@ public final class EntityMeta<E> implements Serializable {
                 discoveredFieldPathConsumer.accept(newPath);
             }
         }
-    }
-
-    /**
-     * Returns the set of properties in an entity.
-     */
-    @NotNull
-    private static EntityProperties getPersistedPropertiesFor(@NotNull Class<?> clazz) {
-        // thread-safety: this may compute the same value multiple times during high contention, this is OK
-        return persistedPropertiesCache.computeIfAbsent(clazz, c -> {
-                    final HashSet<PropertyMeta> metas = new HashSet<>();
-                    visitAllPersistedFields(clazz, Collections.emptyList(), fields -> metas.add(new PropertyMeta(fields)));
-                    return new EntityProperties(metas);
-                }
-        );
     }
 
     @Override
@@ -319,8 +334,9 @@ public final class EntityMeta<E> implements Serializable {
     @NotNull
     public E newEntityInstance() {
         try {
-            return entityClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            return entityClass.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException |
+                 InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
     }
@@ -340,27 +356,16 @@ public final class EntityMeta<E> implements Serializable {
     }
 
     /**
-     * Caches the <code>setId()</code> {@link Method} for given entity class. Used by {@link #setId(Object, Object)}.
-     */
-    @NotNull
-    private static final ConcurrentMap<Class<?>, Method> getIdCache = new ConcurrentHashMap<>();
-
-    /**
      * Calls {@code AbstractEntity#setId} on given entity.
      * @param entity the entity of type E, not null.
      * @param id the ID, may be null.
      */
     public void setId(@NotNull Object entity, @Nullable Object id) {
-        final Method setId = getIdCache.computeIfAbsent(entityClass, aClass -> {
-            final Method setId1 = Arrays.stream(aClass.getMethods()).filter(it -> it.getName().equals("setId"))
-                    .findFirst().orElse(null);
-            if (setId1 == null) {
+        try {
+            if (setIdMethod == null) {
                 throw new IllegalStateException("Invalid state: setId() not found on " + entityClass);
             }
-            return setId1;
-        });
-        try {
-            setId.invoke(entity, id);
+            setIdMethod.invoke(entity, id);
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
@@ -374,9 +379,11 @@ public final class EntityMeta<E> implements Serializable {
     @Nullable
     public Object getId(@NotNull Object entity) {
         try {
-            final Method getId = entityClass.getMethod("getId");
-            return getId.invoke(entity);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            if (getIdMethod == null) {
+                throw new IllegalStateException("Invalid state: getId() not found on " + entityClass);
+            }
+            return getIdMethod.invoke(entity);
+        } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }

@@ -157,7 +157,7 @@ private fun DynaNodeGroup.aliasedIdTestBattery() {
         expect("""{"name":"Zaphod"}""") { gson.toJson(EntityWithAliasedId(null, "Zaphod")) }
     }
     test("Meta") {
-        val meta = EntityMeta(EntityWithAliasedId::class.java)
+        val meta = EntityMeta.of(EntityWithAliasedId::class.java)
         expect("EntityWithAliasedId") { meta.databaseTableName }
         expect(1) { meta.idProperty.size }
         expect("myid") { meta.idProperty[0].dbColumnName }
@@ -193,7 +193,7 @@ private fun DynaNodeGroup.compositePKTestBattery() {
         expect(listOf()) { MappingTable.dao.findAll() }
     }
     test("Meta") {
-        val meta = EntityMeta(MappingTable::class.java)
+        val meta = EntityMeta.of(MappingTable::class.java)
         expect("mapping_table") { meta.databaseTableName }
         expect(2) { meta.idProperty.size }
         expect("person_id") { meta.idProperty[0].dbColumnName }

@@ -7,12 +7,6 @@ import java.time.LocalDate
 import java.util.*
 import kotlin.test.expect
 
-class DaoTest : DynaTest({
-    test("serializable") {
-        PersonDao().cloneBySerialization()
-    }
-})
-
 @DynaTestDsl
 fun DynaNodeGroup.dbDaoTests() {
     group("Person") {
