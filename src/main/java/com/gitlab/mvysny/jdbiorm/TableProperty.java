@@ -1,5 +1,6 @@
 package com.gitlab.mvysny.jdbiorm;
 
+import org.jdbi.v3.core.mapper.reflect.ColumnName;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,5 +55,16 @@ public final class TableProperty<E, V> implements Property<V> {
     @Override
     public String toString() {
         return entityClass.getSimpleName() + "." + propertyName;
+    }
+
+    /**
+     * The database name of this field. See {@link PropertyMeta#getDbColumnName()}.
+     * <p></p>
+     * This is the column name which must be used in the WHERE clauses.
+     * @return the database column name, not null.
+     */
+    @NotNull
+    public String getDbColumnName() {
+        return getMeta().getDbColumnName();
     }
 }
