@@ -22,6 +22,20 @@ import java.util.Objects;
 public interface Property<V> extends Serializable {
 
     /**
+     * The database name of this field. This is the column name which must be used in the WHERE clauses.
+     * <p></p>
+     * The name is any of these:
+     * <ul>
+     * <li>The formal name of the field, if it is a <i>physical table/view
+     * field</i>, including the table name, e.g. PERSON.id</li>
+     * <li>The alias of an <i>aliased field</i></li>
+     * </ul>
+     * @return the database column name, not null.
+     */
+    @NotNull
+    String getQualifiedName();
+
+    /**
      * The <code>EQ</code> operator.
      */
     @NotNull
@@ -66,6 +80,11 @@ public interface Property<V> extends Serializable {
         @Override
         public int hashCode() {
             return Objects.hash(value);
+        }
+
+        @Override
+        public @NotNull String getQualifiedName() {
+            throw new UnsupportedOperationException("Value has no qualified name");
         }
     }
 }

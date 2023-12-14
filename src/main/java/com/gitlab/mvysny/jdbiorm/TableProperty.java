@@ -56,14 +56,48 @@ public final class TableProperty<E, V> implements Property<V> {
         return entityClass.getSimpleName() + "." + propertyName;
     }
 
-    /**
-     * The database name of this field. See {@link PropertyMeta#getDbColumnName()}.
-     * <p></p>
-     * This is the column name which must be used in the WHERE clauses.
-     * @return the database column name, not null.
-     */
+    @Override
+    public @NotNull String getQualifiedName() {
+        return EntityMeta.of(entityClass).getDatabaseTableName() + "." + getMeta().getDbColumnName();
+    }
+
     @NotNull
-    public String getDbColumnName() {
-        return getMeta().getDbColumnName();
+    public Property<V> tableAlias(@NotNull String tableNameAlias) {
+        return new AliasedTableProperty<>(this, tableNameAlias);
+    }
+
+    private static final class AliasedTableProperty<V> implements Property<V> {
+        @NotNull
+        private final TableProperty tableProperty;
+        @NotNull
+        private final String tableNameAlias;
+
+        private AliasedTableProperty(@NotNull TableProperty tableProperty, @NotNull String tableNameAlias) {
+            this.tableProperty = tableProperty;
+            this.tableNameAlias = tableNameAlias;
+        }
+
+        @Override
+        public @NotNull String getQualifiedName() {
+            return tableNameAlias + "." + tableProperty.getMeta().getDbColumnName();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            AliasedTableProperty<?> that = (AliasedTableProperty<?>) o;
+            return Objects.equals(tableProperty, that.tableProperty) && Objects.equals(tableNameAlias, that.tableNameAlias);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(tableProperty, tableNameAlias);
+        }
+
+        @Override
+        public String toString() {
+            return tableProperty.entityClass.getSimpleName() + " " + tableNameAlias + "." + tableProperty.getMeta().getDbColumnName();
+        }
     }
 }
