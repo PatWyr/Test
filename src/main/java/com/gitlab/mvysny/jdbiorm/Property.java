@@ -1,16 +1,16 @@
 package com.gitlab.mvysny.jdbiorm;
 
-import com.gitlab.mvysny.jdbiorm.condition.Condition;
-import com.gitlab.mvysny.jdbiorm.condition.Eq;
-import com.gitlab.mvysny.jdbiorm.condition.Op;
+import com.gitlab.mvysny.jdbiorm.condition.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * An entity property. Akin to JOOQ Field.
@@ -188,7 +188,7 @@ public interface Property<V> extends Serializable {
      * The <code>EQ</code> operator.
      */
     @NotNull
-    default Condition eq(@NotNull Property<V> value) {
+    default Condition eq(@NotNull Property<? extends V> value) {
         return new Eq(this, value);
     }
 
@@ -204,7 +204,7 @@ public interface Property<V> extends Serializable {
      * The <code>LT</code> operator.
      */
     @NotNull
-    default Condition lt(@NotNull Property<V> value) {
+    default Condition lt(@NotNull Property<? extends V> value) {
         return new Op(this, value, Op.Operator.LT);
     }
 
@@ -220,7 +220,7 @@ public interface Property<V> extends Serializable {
      * The <code>LE</code> operator.
      */
     @NotNull
-    default Condition le(@NotNull Property<V> value) {
+    default Condition le(@NotNull Property<? extends V> value) {
         return new Op(this, value, Op.Operator.LE);
     }
 
@@ -236,7 +236,7 @@ public interface Property<V> extends Serializable {
      * The <code>GT</code> operator.
      */
     @NotNull
-    default Condition gt(@NotNull Property<V> value) {
+    default Condition gt(@NotNull Property<? extends V> value) {
         return new Op(this, value, Op.Operator.GT);
     }
 
@@ -252,7 +252,7 @@ public interface Property<V> extends Serializable {
      * The <code>GE</code> operator.
      */
     @NotNull
-    default Condition ge(@NotNull Property<V> value) {
+    default Condition ge(@NotNull Property<? extends V> value) {
         return new Op(this, value, Op.Operator.GE);
     }
 
@@ -268,8 +268,195 @@ public interface Property<V> extends Serializable {
      * The <code>NE</code> operator.
      */
     @NotNull
-    default Condition ne(@NotNull Property<V> value) {
+    default Condition ne(@NotNull Property<? extends V> value) {
         return new Op(this, value, Op.Operator.NE);
+    }
+
+    /**
+     * Create a condition to check this field against several values.
+     * <p>
+     * SQL: <code>this in (values…)</code>
+     * <p>
+     * Note that generating dynamic SQL with arbitrary-length <code>IN</code>
+     * predicates can cause cursor cache contention in some databases that use
+     * unique SQL strings as a statement identifier (e.g. Oracle). In order to prevent such problems, you could
+     * use TODO to produce less distinct SQL
+     * strings (see also
+     * <a href="https://github.com/jOOQ/jOOQ/issues/5600">[#5600]</a>), or you
+     * could avoid <code>IN</code> lists, and replace them with:
+     * <ul>
+     * <li><code>IN</code> predicates on temporary tables</li>
+     * <li><code>IN</code> predicates on unnested array bind variables</li>
+     * </ul>
+     */
+    @NotNull
+    default Condition in(@NotNull Collection<? extends V> values) {
+        return new In(this, values.stream().map(Value::new).collect(Collectors.toSet()));
+    }
+
+    /**
+     * Create a condition to check this field against several values.
+     * <p>
+     * SQL: <code>this in (values…)</code>
+     * <p>
+     * Note that generating dynamic SQL with arbitrary-length <code>IN</code>
+     * predicates can cause cursor cache contention in some databases that use
+     * unique SQL strings as a statement identifier (e.g. Oracle). In order to prevent such problems, you could
+     * use TODO to produce less distinct SQL
+     * strings (see also
+     * <a href="https://github.com/jOOQ/jOOQ/issues/5600">[#5600]</a>), or you
+     * could avoid <code>IN</code> lists, and replace them with:
+     * <ul>
+     * <li><code>IN</code> predicates on temporary tables</li>
+     * <li><code>IN</code> predicates on unnested array bind variables</li>
+     * </ul>
+     */
+    @NotNull
+    default Condition in(@NotNull V... values) {
+        return in(Arrays.asList(values));
+    }
+
+    /**
+     * Create a condition to check this field against several values.
+     * <p>
+     * SQL: <code>this in (values…)</code>
+     * <p>
+     * Note that generating dynamic SQL with arbitrary-length <code>IN</code>
+     * predicates can cause cursor cache contention in some databases that use
+     * unique SQL strings as a statement identifier (e.g. Oracle). In order to prevent such problems, you could
+     * use TODO to produce less distinct SQL
+     * strings (see also
+     * <a href="https://github.com/jOOQ/jOOQ/issues/5600">[#5600]</a>), or you
+     * could avoid <code>IN</code> lists, and replace them with:
+     * <ul>
+     * <li><code>IN</code> predicates on temporary tables</li>
+     * <li><code>IN</code> predicates on unnested array bind variables</li>
+     * </ul>
+     */
+    @NotNull
+    default Condition in(@NotNull Property<? extends V>... values) {
+        return new In(this, Arrays.asList(values));
+    }
+    /**
+     * Create a condition to check this field against several values.
+     * <p>
+     * SQL: <code>this in (values…)</code>
+     * <p>
+     * Note that generating dynamic SQL with arbitrary-length <code>IN</code>
+     * predicates can cause cursor cache contention in some databases that use
+     * unique SQL strings as a statement identifier (e.g. Oracle). In order to prevent such problems, you could
+     * use TODO to produce less distinct SQL
+     * strings (see also
+     * <a href="https://github.com/jOOQ/jOOQ/issues/5600">[#5600]</a>), or you
+     * could avoid <code>IN</code> lists, and replace them with:
+     * <ul>
+     * <li><code>IN</code> predicates on temporary tables</li>
+     * <li><code>IN</code> predicates on unnested array bind variables</li>
+     * </ul>
+     */
+    @NotNull
+    default Condition notIn(@NotNull Collection<? extends V> values) {
+        return in(values).not();
+    }
+
+    /**
+     * Create a condition to check this field against several values.
+     * <p>
+     * SQL: <code>this in (values…)</code>
+     * <p>
+     * Note that generating dynamic SQL with arbitrary-length <code>IN</code>
+     * predicates can cause cursor cache contention in some databases that use
+     * unique SQL strings as a statement identifier (e.g. Oracle). In order to prevent such problems, you could
+     * use TODO to produce less distinct SQL
+     * strings (see also
+     * <a href="https://github.com/jOOQ/jOOQ/issues/5600">[#5600]</a>), or you
+     * could avoid <code>IN</code> lists, and replace them with:
+     * <ul>
+     * <li><code>IN</code> predicates on temporary tables</li>
+     * <li><code>IN</code> predicates on unnested array bind variables</li>
+     * </ul>
+     */
+    @NotNull
+    default Condition notIn(@NotNull V... values) {
+        return in(values).not();
+    }
+
+    /**
+     * Create a condition to check this field against several values.
+     * <p>
+     * SQL: <code>this in (values…)</code>
+     * <p>
+     * Note that generating dynamic SQL with arbitrary-length <code>IN</code>
+     * predicates can cause cursor cache contention in some databases that use
+     * unique SQL strings as a statement identifier (e.g. Oracle). In order to prevent such problems, you could
+     * use TODO to produce less distinct SQL
+     * strings (see also
+     * <a href="https://github.com/jOOQ/jOOQ/issues/5600">[#5600]</a>), or you
+     * could avoid <code>IN</code> lists, and replace them with:
+     * <ul>
+     * <li><code>IN</code> predicates on temporary tables</li>
+     * <li><code>IN</code> predicates on unnested array bind variables</li>
+     * </ul>
+     */
+    @NotNull
+    default Condition notIn(@NotNull Property<? extends V>... values) {
+        return in(values).not();
+    }
+
+    @NotNull
+    default Condition between(@Nullable V minValue, @Nullable V maxValue) {
+        if (minValue == null) {
+            return le(maxValue);
+        } else if (maxValue == null) {
+            return ge(minValue);
+        } else {
+            return ge(minValue).and(le(maxValue));
+        }
+    }
+
+    @NotNull
+    default Condition between(@Nullable Property<? extends V> minValue, @Nullable Property<? extends V> maxValue) {
+        if (minValue == null) {
+            return le(maxValue);
+        } else if (maxValue == null) {
+            return ge(minValue);
+        } else {
+            return ge(minValue).and(le(maxValue));
+        }
+    }
+
+    @NotNull
+    default Condition notBetween(@Nullable V minValue, @Nullable V maxValue) {
+        return between(minValue, maxValue).not();
+    }
+
+    @NotNull
+    default Condition notBetween(@Nullable Property<? extends V> minValue, @Nullable Property<? extends V> maxValue) {
+        return between(minValue, maxValue).not();
+    }
+
+    /**
+     * Create a condition to check this field against known string literals for
+     * <code>true</code>.
+     * <p>
+     * SQL:
+     * <code>lcase(this) in ("1", "y", "yes", "true", "on", "enabled")</code>
+     */
+    @NotNull
+    default Condition isTrue() {
+        return new IsTrue(this);
+    }
+
+    /**
+     * Create a condition to check this field against known string literals for
+     * <code>false</code>.
+     * <p>
+     * SQL:
+     * <code>lcase(this) in ("0", "n", "no", "false", "off", "disabled")</code>
+     */
+    @NotNull
+    default Condition isFalse() {
+        return new IsFalse(this);
     }
 
     /**
