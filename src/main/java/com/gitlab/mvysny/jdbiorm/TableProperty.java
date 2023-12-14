@@ -1,6 +1,5 @@
 package com.gitlab.mvysny.jdbiorm;
 
-import org.jdbi.v3.core.mapper.reflect.ColumnName;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
