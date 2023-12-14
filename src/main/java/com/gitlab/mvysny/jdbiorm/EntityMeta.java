@@ -161,11 +161,22 @@ public final class EntityMeta<E> {
      */
     @NotNull
     public PropertyMeta getProperty(@NotNull String propertyName) {
+        return getProperty(new Property.Name(propertyName));
+    }
+
+    /**
+     * Returns a persisted property with given {@code propertyName} for this entity. Fails if there
+     * is no such property. See {@link #getProperties()} for a list of all properties.
+     * @param propertyName the Java field name, not null.
+     * @throws IllegalArgumentException if there is no such property.
+     */
+    @NotNull
+    public PropertyMeta getProperty(@NotNull Property.Name propertyName) {
         final PropertyMeta meta = findProperty(propertyName);
         if (meta == null) {
             throw new IllegalArgumentException("There is no such property "
                     + propertyName + " in " + entityClass + ", available fields: "
-                    + getProperties().stream().map(PropertyMeta::getName).collect(Collectors.joining(", ")));
+                    + getProperties().stream().map(p -> p.getName().toString()).collect(Collectors.joining(", ")));
         }
         return meta;
     }
@@ -178,6 +189,17 @@ public final class EntityMeta<E> {
      */
     @Nullable
     public PropertyMeta findProperty(@NotNull String propertyName) {
+        return findProperty(new Property.Name(propertyName));
+    }
+
+    /**
+     * Returns a persisted property with given {@code propertyName} for this entity. Returns null if there
+     * is no such property. See {@link #getProperties()} for a list of all properties.
+     * @param propertyName the {@link PropertyMeta#getName() field name}, not null.
+     * @throws IllegalArgumentException if there is no such property.
+     */
+    @Nullable
+    public PropertyMeta findProperty(@NotNull Property.Name propertyName) {
         Objects.requireNonNull(propertyName, "propertyName");
         return entityProperties.findByName(propertyName);
     }
@@ -187,13 +209,13 @@ public final class EntityMeta<E> {
      */
     private static final class EntityProperties {
         @NotNull
-        private final Map<String, PropertyMeta> properties;
+        private final Map<Property.Name, PropertyMeta> properties;
         @NotNull
         private final Set<PropertyMeta> set;
 
         public EntityProperties(@NotNull Set<PropertyMeta> p) {
             this.set = Collections.unmodifiableSet(new HashSet<>(p));
-            final HashMap<String, PropertyMeta> map = new HashMap<>(set.size());
+            final HashMap<Property.Name, PropertyMeta> map = new HashMap<>(set.size());
             for (PropertyMeta meta : set) {
                 map.put(meta.getName(), meta);
             }
@@ -204,7 +226,7 @@ public final class EntityMeta<E> {
          * @return Unmodifiable map of all properties.
          */
         @NotNull
-        public Map<String, PropertyMeta> getMap() {
+        public Map<Property.Name, PropertyMeta> getMap() {
             return properties;
         }
 
@@ -214,7 +236,7 @@ public final class EntityMeta<E> {
          * @return meta or null.
          */
         @Nullable
-        public PropertyMeta findByName(@NotNull String name) {
+        public PropertyMeta findByName(@NotNull Property.Name name) {
             return getMap().get(name);
         }
 
@@ -419,7 +441,7 @@ public final class EntityMeta<E> {
                     .define("FIELDS", properties.stream().map(PropertyMeta::getDbColumnName).collect(Collectors.joining(", ")))
                     .define("FIELD_VALUES", properties.stream().map(it -> ":" + it.getName()).collect(Collectors.joining(", ")));
             for (PropertyMeta property : properties) {
-                update.bind(property.getName(), property.get(entity));
+                update.bind(property.getName().getName(), property.get(entity));
             }
             if (idProperties.size() > 1) {
                 if (getId(entity) == null) {

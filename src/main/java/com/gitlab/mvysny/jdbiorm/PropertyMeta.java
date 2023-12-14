@@ -46,7 +46,7 @@ public final class PropertyMeta {
      * Derived from {@link #namePath}.
      */
     @NotNull
-    private final String name;
+    private final Property.Name name;
 
     /**
      * Creates the property.
@@ -58,7 +58,7 @@ public final class PropertyMeta {
             throw new IllegalArgumentException("Parameter fieldPath: invalid value " + fieldPath + ": must not be empty");
         }
         namePath = Collections.unmodifiableList(fieldPath.stream().map(Field::getName).collect(Collectors.toList()));
-        name = namePath.size() == 1 ? namePath.get(0) : String.join(".", namePath);
+        name = new Property.Name(namePath.size() == 1 ? namePath.get(0) : String.join(".", namePath));
     }
 
     /**
@@ -85,7 +85,7 @@ public final class PropertyMeta {
      * @return The {@link Field#getName()}, not null.
      */
     @NotNull
-    public String getName() {
+    public Property.Name getName() {
         return name;
     }
 

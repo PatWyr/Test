@@ -5,8 +5,8 @@ import java.lang.IllegalStateException
 import kotlin.reflect.KProperty
 import kotlin.test.expect
 
-val String.asc get() = OrderBy(this, OrderBy.ASC)
-val String.desc get() = OrderBy(this, OrderBy.DESC)
+val String.asc get() = OrderBy(Property.Name(this), OrderBy.ASC)
+val String.desc get() = OrderBy(Property.Name(this), OrderBy.DESC)
 val KProperty<*>.asc get() = name.asc
 val KProperty<*>.desc get() = name.desc
 

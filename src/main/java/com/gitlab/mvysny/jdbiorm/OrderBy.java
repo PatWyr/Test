@@ -19,11 +19,8 @@ public final class OrderBy implements Serializable {
     @NotNull
     public static final Order DESC = Order.DESC;
 
-    /**
-     * {@link PropertyMeta#getName()}.
-     */
     @NotNull
-    private final String name;
+    private final Property.Name name;
     @NotNull
     private final Order order;
 
@@ -32,13 +29,13 @@ public final class OrderBy implements Serializable {
      * @param name {@link PropertyMeta#getName()}. May only contain characters that are valid part of a Java {@link java.lang.reflect.Field#getName}.
      * @param order the ordering, not null.
      */
-    public OrderBy(@NotNull String name, @NotNull Order order) {
+    public OrderBy(@NotNull Property.Name name, @NotNull Order order) {
         this.name = Objects.requireNonNull(name);
-        // verify that name doesn't contain funny characters
-        if (name.indexOf(' ') >= 0 || name.indexOf('\'') >= 0 || name.indexOf('"') >= 0) {
-            throw new IllegalArgumentException("Parameter name: invalid value " + name + ": must not contain weird characters");
-        }
         this.order = Objects.requireNonNull(order);
+    }
+
+    public OrderBy(@NotNull String name, @NotNull Order order) {
+        this(new Property.Name(name), order);
     }
 
     /**
@@ -46,7 +43,7 @@ public final class OrderBy implements Serializable {
      * @return {@link PropertyMeta#getName()}.
      */
     @NotNull
-    public String getName() {
+    public Property.Name getName() {
         return name;
     }
 

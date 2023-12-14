@@ -6,6 +6,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -20,6 +23,66 @@ import java.util.Objects;
  * @param <V> the value of this property
  */
 public interface Property<V> extends Serializable {
+
+    /**
+     * The full name of a property. Most often the {@link Field#getName() Java field name} from an entity bean.
+     * However, in case of composite IDs this is a comma-separated {@link #getNamePath()} e.g. "id.component1".
+     */
+    final class Name implements Serializable {
+        @NotNull
+        private final String name;
+
+        public Name(@NotNull String name) {
+            if (name.isBlank()) {
+                throw new IllegalArgumentException("Parameter name: can not be blank");
+            }
+            // verify that name doesn't contain funny characters
+            if (name.indexOf(' ') >= 0 || name.indexOf('\'') >= 0 || name.indexOf('"') >= 0) {
+                throw new IllegalArgumentException("Parameter name: invalid value " + name + ": must not contain weird characters");
+            }
+            this.name = name;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Name name1 = (Name) o;
+            return Objects.equals(name, name1.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name);
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+
+        /**
+         * @return The full name of a property. Most often the {@link Field#getName() Java field name} from an entity bean.
+         * However, in case of composite IDs this is a comma-separated {@link #getNamePath()} e.g. "id.component1".
+         */
+        @NotNull
+        public String getName() {
+            return name;
+        }
+
+        @NotNull
+        public List<String> getNamePath() {
+            return Arrays.asList(name.split("\\."));
+        }
+    }
+
+    /**
+     * The full name of a property. Most often the {@link Field#getName() Java field name} from an entity bean.
+     * However, in case of composite IDs this is a comma-separated value such as <code>id.component1</code>.
+     * @return the name
+     */
+    @NotNull
+    Name getName();
 
     /**
      * The database name of this field. This is the column name which must be used in the WHERE clauses.
@@ -83,8 +146,13 @@ public interface Property<V> extends Serializable {
         }
 
         @Override
+        public @NotNull Name getName() {
+            throw new UnsupportedOperationException("Value has no name");
+        }
+
+        @Override
         public @NotNull String getQualifiedName() {
-            throw new UnsupportedOperationException("Value has no qualified name");
+            throw new UnsupportedOperationException("Value has no name");
         }
     }
 }

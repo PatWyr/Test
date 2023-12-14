@@ -57,6 +57,11 @@ public final class TableProperty<E, V> implements Property<V> {
     }
 
     @Override
+    public @NotNull Name getName() {
+        return getMeta().getName();
+    }
+
+    @Override
     public @NotNull String getQualifiedName() {
         return EntityMeta.of(entityClass).getDatabaseTableName() + "." + getMeta().getDbColumnName();
     }
@@ -75,6 +80,11 @@ public final class TableProperty<E, V> implements Property<V> {
         private AliasedTableProperty(@NotNull TableProperty tableProperty, @NotNull String tableNameAlias) {
             this.tableProperty = tableProperty;
             this.tableNameAlias = tableNameAlias;
+        }
+
+        @Override
+        public @NotNull Name getName() {
+            return tableProperty.getName();
         }
 
         @Override
