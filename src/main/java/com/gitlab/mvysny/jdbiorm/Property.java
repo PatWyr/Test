@@ -21,11 +21,17 @@ import java.util.Objects;
  */
 public interface Property<V> extends Serializable {
 
+    /**
+     * The <code>EQ</code> operator.
+     */
     @NotNull
     default Condition eq(@Nullable V value) {
         return eq(new Value<>(value));
     }
 
+    /**
+     * The <code>EQ</code> operator.
+     */
     @NotNull
     default Condition eq(@NotNull Property<V> value) {
         return new Eq(this, value);

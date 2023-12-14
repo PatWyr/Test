@@ -5,6 +5,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
+/**
+ * The <code>EQ</code> statement.
+ */
 public final class Eq implements Condition {
     @NotNull
     private final Property<?> arg1;
