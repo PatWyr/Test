@@ -263,7 +263,7 @@ public final class EntityMeta<E> {
             return Collections.emptyList();
         }
         final List<Field> fields = Arrays.stream(clazz.getDeclaredFields())
-                .filter(it -> isFieldPersisted(it))
+                .filter(EntityMeta::isFieldPersisted)
                 .collect(Collectors.toList());
         fields.addAll(computePersistedFields(clazz.getSuperclass()));
         return fields;
