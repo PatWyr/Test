@@ -37,4 +37,10 @@ final class Not implements Condition {
     public Condition getCondition() {
         return condition;
     }
+
+    @Override
+    public @NotNull ParametrizedSql toSql() {
+        final ParametrizedSql sql = condition.toSql();
+        return new ParametrizedSql("NOT (" + sql.getSql92() + ")", sql.getSql92Parameters());
+    }
 }

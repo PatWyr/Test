@@ -60,4 +60,9 @@ public final class Op implements Condition {
     public Operator getOperator() {
         return operator;
     }
+
+    @Override
+    public @NotNull ParametrizedSql toSql() {
+        return ParametrizedSql.mergeWithOperator(operator.sql92Operator, arg1.toSql(), arg2.toSql());
+    }
 }

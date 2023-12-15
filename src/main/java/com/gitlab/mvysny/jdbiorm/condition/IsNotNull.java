@@ -33,4 +33,10 @@ public final class IsNotNull implements Condition {
     public @NotNull Expression<?> getArg() {
         return arg;
     }
+
+    @Override
+    public @NotNull ParametrizedSql toSql() {
+        final ParametrizedSql sql = arg.toSql();
+        return new ParametrizedSql("(" + sql.getSql92() + ") IS NOT NULL", sql.getSql92Parameters());
+    }
 }

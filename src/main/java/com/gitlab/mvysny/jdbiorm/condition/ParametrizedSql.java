@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -30,6 +31,18 @@ public final class ParametrizedSql implements Serializable {
     public ParametrizedSql(@NotNull String sql92, @NotNull Map<String, Object> sql92Parameters) {
         this.sql92 = sql92;
         this.sql92Parameters = Collections.unmodifiableMap(sql92Parameters);
+    }
+
+    @NotNull
+    public static ParametrizedSql merge(@NotNull String sql92, @NotNull Map<String, Object> sql92Parameters, @NotNull Map<String, Object> additionalSql92Parameters) {
+        final HashMap<String, Object> params = new HashMap<>(sql92Parameters);
+        params.putAll(additionalSql92Parameters);
+        return new ParametrizedSql(sql92, params);
+    }
+
+    @NotNull
+    public static ParametrizedSql mergeWithOperator(@NotNull String operator, @NotNull ParametrizedSql sql1, @NotNull ParametrizedSql sql2) {
+        return ParametrizedSql.merge("(" + sql1.getSql92() + ") " + operator + " (" + sql2.getSql92() + ")", sql1.getSql92Parameters(), sql2.getSql92Parameters());
     }
 
     public ParametrizedSql(@NotNull String sql92) {

@@ -38,4 +38,7 @@ public interface Condition extends Serializable {
     default Condition xor(@Nullable Condition other) {
         return other == null ? this : new Xor(this, other);
     }
+
+    @NotNull
+    ParametrizedSql toSql();
 }

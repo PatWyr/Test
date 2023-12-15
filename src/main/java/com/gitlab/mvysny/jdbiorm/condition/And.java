@@ -45,4 +45,9 @@ final class And implements Condition {
     public Condition getCondition2() {
         return condition2;
     }
+
+    @Override
+    public @NotNull ParametrizedSql toSql() {
+        return ParametrizedSql.mergeWithOperator("AND", condition1.toSql(), condition2.toSql());
+    }
 }

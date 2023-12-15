@@ -3,6 +3,8 @@ package com.gitlab.mvysny.jdbiorm.condition;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -42,5 +44,17 @@ public final class In implements Condition {
 
     public @NotNull Collection<?> getValues() {
         return values;
+    }
+
+    @Override
+    public @NotNull ParametrizedSql toSql() {
+        final ParametrizedSql sql1 = arg1.toSql();
+        final List<ParametrizedSql> valuesSqls = values.stream().map(Expression::toSql).collect(Collectors.toList());
+
+        final HashMap<String, Object> params = new HashMap<>(sql1.getSql92Parameters());
+        for (ParametrizedSql valuesSql : valuesSqls) {
+            params.putAll(valuesSql.getSql92Parameters());
+        }
+        return new ParametrizedSql("(" + sql1.getSql92() + ") IN (" + valuesSqls.stream().map(it -> "(" + it.getSql92() + ")").collect(Collectors.joining(", ")) + ")", params);
     }
 }

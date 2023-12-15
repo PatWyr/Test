@@ -41,4 +41,10 @@ public final class IsTrue implements Condition {
     public @NotNull Expression<?> getArg() {
         return arg;
     }
+
+    @Override
+    public @NotNull ParametrizedSql toSql() {
+        final ParametrizedSql sql = arg.toSql();
+        return new ParametrizedSql("lower(" + sql.getSql92() + ") in (\"1\", \"y\", \"yes\", \"true\", \"on\", \"enabled\")", sql.getSql92Parameters());
+    }
 }

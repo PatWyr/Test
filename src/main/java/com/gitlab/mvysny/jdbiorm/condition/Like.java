@@ -41,4 +41,9 @@ public final class Like implements Condition {
     public @NotNull Expression<?> getArg2() {
         return arg2;
     }
+
+    @Override
+    public @NotNull ParametrizedSql toSql() {
+        return ParametrizedSql.mergeWithOperator("LIKE", arg1.toSql(), arg2.toSql());
+    }
 }
