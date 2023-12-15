@@ -1,5 +1,7 @@
 package com.gitlab.mvysny.jdbiorm;
 
+import org.jdbi.v3.core.annotation.JdbiProperty;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -12,6 +14,10 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  */
 @Table("JOIN_TABLE")
 public class JoinTable implements Serializable {
+    @JdbiProperty(map = false)
+    public static final TableProperty<JoinTable, Integer> CUSTOMERID = TableProperty.of(JoinTable.class, "customerId");
+    @JdbiProperty(map = false)
+    public static final TableProperty<JoinTable, Integer> ORDERID = TableProperty.of(JoinTable.class, "orderId");
     private Integer customerId;
     private Integer orderId;
 

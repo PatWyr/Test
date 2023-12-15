@@ -5,11 +5,6 @@ import java.lang.IllegalStateException
 import kotlin.reflect.KProperty
 import kotlin.test.expect
 
-val String.asc get() = OrderBy(Property.Name(this), OrderBy.ASC)
-val String.desc get() = OrderBy(Property.Name(this), OrderBy.DESC)
-val KProperty<*>.asc get() = name.asc
-val KProperty<*>.desc get() = name.desc
-
 @DynaTestDsl
 fun DynaNodeGroup.joinTableTestSuite() {
     group("findAll") {
@@ -35,12 +30,12 @@ fun DynaNodeGroup.joinTableTestSuite() {
         }
         test("sorting") {
             db { (0..100).forEach { JoinTable(it, -it).save() } }
-            expect((0..9).toList()) { JoinTable.dao.findAll(listOf("customerId".asc), 0L, 10L).map { it.customerId } }
-            expect((100 downTo 91).toList()) { JoinTable.dao.findAll(listOf("customerId".desc), 0L, 10L).map { it.customerId } }
-            expect((0..9).toList()) { JoinTable.dao.findAll(listOf("customerId".asc, "orderId".asc), 0L, 10L).map { it.customerId } }
-            expect((100 downTo 91).toList()) { JoinTable.dao.findAll(listOf("customerId".desc, "orderId".asc), 0L, 10L).map { it.customerId } }
-            expect((0..9).toList()) { JoinTable.dao.findAll(listOf("orderId".desc, "customerId".asc), 0L, 10L).map { it.customerId } }
-            expect((100 downTo 91).toList()) { JoinTable.dao.findAll(listOf("orderId".asc, "customerId".asc), 0L, 10L).map { it.customerId } }
+            expect((0..9).toList()) { JoinTable.dao.findAll(listOf(JoinTable.CUSTOMERID.asc()), 0L, 10L).map { it.customerId } }
+            expect((100 downTo 91).toList()) { JoinTable.dao.findAll(listOf(JoinTable.CUSTOMERID.desc()), 0L, 10L).map { it.customerId } }
+            expect((0..9).toList()) { JoinTable.dao.findAll(listOf(JoinTable.CUSTOMERID.asc(), JoinTable.ORDERID.asc()), 0L, 10L).map { it.customerId } }
+            expect((100 downTo 91).toList()) { JoinTable.dao.findAll(listOf(JoinTable.CUSTOMERID.desc(), JoinTable.ORDERID.asc()), 0L, 10L).map { it.customerId } }
+            expect((0..9).toList()) { JoinTable.dao.findAll(listOf(JoinTable.ORDERID.desc(), JoinTable.CUSTOMERID.asc()), 0L, 10L).map { it.customerId } }
+            expect((100 downTo 91).toList()) { JoinTable.dao.findAll(listOf(JoinTable.ORDERID.asc(), JoinTable.CUSTOMERID.asc()), 0L, 10L).map { it.customerId } }
         }
         group("findAllBy") {
             test("non-paged") {

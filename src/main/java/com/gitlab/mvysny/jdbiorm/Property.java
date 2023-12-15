@@ -18,6 +18,7 @@ import java.util.Objects;
  * <p></p>
  * {@link Object#toString()} must be implemented, to ease app debugging. This is not necessarily a valid SQL92 WHERE
  * clause.
+ *
  * @param <V> the value of this property
  */
 public interface Property<V> extends Expression<V> {
@@ -129,6 +130,7 @@ public interface Property<V> extends Expression<V> {
          * separated by a dot (.) character.
          * <p></p>
          * Example: PERSON.id
+         *
          * @return the qualified name of the column
          */
         @NotNull
@@ -138,6 +140,7 @@ public interface Property<V> extends Expression<V> {
 
         /**
          * This is just the name of the column, exactly as present in the database.
+         *
          * @return the name of the column, without the name of the table.
          */
         @NotNull
@@ -154,6 +157,7 @@ public interface Property<V> extends Expression<V> {
     /**
      * The full name of a property. Most often the {@link Field#getName() Java field name} from an entity bean.
      * However, in case of composite IDs this is a comma-separated value such as <code>id.component1</code>.
+     *
      * @return the name
      */
     @NotNull
@@ -168,8 +172,19 @@ public interface Property<V> extends Expression<V> {
      * field</i>, including the table name, e.g. PERSON.id</li>
      * <li>The alias of an <i>aliased field</i></li>
      * </ul>
+     *
      * @return the database column name, not null.
      */
     @NotNull
     DbName getDbName();
- }
+
+    @NotNull
+    default OrderBy asc() {
+        return new OrderBy(getName(), OrderBy.ASC);
+    }
+
+    @NotNull
+    default OrderBy desc() {
+        return new OrderBy(getName(), OrderBy.DESC);
+    }
+}
