@@ -1,8 +1,10 @@
 package com.gitlab.mvysny.jdbiorm;
 
+import com.gitlab.mvysny.jdbiorm.condition.ParametrizedSql;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -76,15 +78,20 @@ public final class TableProperty<E, V> implements Property<V> {
         return new AliasedTableProperty<>(this, tableNameAlias);
     }
 
-    private static final class AliasedTableProperty<V> implements Property<V> {
+    @Override
+    public @NotNull ParametrizedSql toSql() {
+        return new ParametrizedSql(getDbName().getQualifiedName());
+    }
+
+    private static final class AliasedTableProperty<E, V> implements Property<V> {
         @NotNull
-        private final TableProperty tableProperty;
+        private final TableProperty<E, V> tableProperty;
         @NotNull
         private final String tableNameAlias;
 
-        private AliasedTableProperty(@NotNull TableProperty tableProperty, @NotNull String tableNameAlias) {
-            this.tableProperty = tableProperty;
-            this.tableNameAlias = tableNameAlias;
+        private AliasedTableProperty(@NotNull TableProperty<E, V> tableProperty, @NotNull String tableNameAlias) {
+            this.tableProperty = Objects.requireNonNull(tableProperty);
+            this.tableNameAlias = Objects.requireNonNull(tableNameAlias);
         }
 
         @Override
@@ -101,7 +108,7 @@ public final class TableProperty<E, V> implements Property<V> {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            AliasedTableProperty<?> that = (AliasedTableProperty<?>) o;
+            AliasedTableProperty<?, ?> that = (AliasedTableProperty<?, ?>) o;
             return Objects.equals(tableProperty, that.tableProperty) && Objects.equals(tableNameAlias, that.tableNameAlias);
         }
 
@@ -113,6 +120,11 @@ public final class TableProperty<E, V> implements Property<V> {
         @Override
         public String toString() {
             return tableProperty.entityClass.getSimpleName() + " " + tableNameAlias + "." + tableProperty.getName();
+        }
+
+        @Override
+        public @NotNull ParametrizedSql toSql() {
+            return new ParametrizedSql(getDbName().getQualifiedName());
         }
     }
 }

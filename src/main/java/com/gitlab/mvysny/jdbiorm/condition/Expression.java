@@ -55,6 +55,17 @@ public interface Expression<V> extends Serializable {
         public int hashCode() {
             return Objects.hash(value);
         }
+
+        @Override
+        public @NotNull ParametrizedSql toSql() {
+            final String parameterName = ParametrizedSql.generateParameterName(this);
+            return new ParametrizedSql(":" + parameterName, parameterName, value);
+        }
+
+        @Nullable
+        public V getValue() {
+            return value;
+        }
     }
 
     /**
@@ -69,7 +80,7 @@ public interface Expression<V> extends Serializable {
      * The <code>EQ</code> operator.
      */
     @NotNull
-    default Condition eq(@NotNull Expression value) {
+    default Condition eq(@NotNull Expression<?> value) {
         return new Eq(this, value);
     }
 
@@ -422,4 +433,7 @@ public interface Expression<V> extends Serializable {
     default Condition isNotNull() {
         return new IsNotNull(this);
     }
+
+    @NotNull
+    ParametrizedSql toSql();
 }

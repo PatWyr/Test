@@ -33,4 +33,10 @@ public final class Lower<V> implements Expression<V> {
     public @NotNull Expression<V> getArg() {
         return arg;
     }
+
+    @Override
+    public @NotNull ParametrizedSql toSql() {
+        final ParametrizedSql sql = arg.toSql();
+        return new ParametrizedSql("lower(" + sql.getSql92() + ")", sql.getSql92Parameters());
+    }
 }
