@@ -1,5 +1,7 @@
 package com.gitlab.mvysny.jdbiorm.condition;
 
+import com.gitlab.mvysny.jdbiorm.JdbiOrm;
+import com.gitlab.mvysny.jdbiorm.quirks.DatabaseVariant;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -43,6 +45,9 @@ public final class IsFalse implements Condition {
 
     @Override
     public @NotNull ParametrizedSql toSql() {
+        if (JdbiOrm.databaseVariant == DatabaseVariant.PostgreSQL) {
+            return new Eq(arg, new Expression.Value<>(false)).toSql();
+        }
         final ParametrizedSql sql = arg.toSql();
         return new ParametrizedSql("lower(" + sql.getSql92() + ") in ('0', 'n', 'no', 'false', 'off', 'disabled')", sql.getSql92Parameters());
     }

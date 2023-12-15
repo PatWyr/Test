@@ -44,6 +44,6 @@ public final class LikeIgnoreCase implements Condition {
 
     @Override
     public @NotNull ParametrizedSql toSql() {
-        return ParametrizedSql.mergeWithOperator("ILIKE", arg1.toSql(), arg2.toSql());
+        return ParametrizedSql.mergeWithOperator("LIKE", arg1.lower().toSql(), arg2.lower().toSql());
     }
 }
