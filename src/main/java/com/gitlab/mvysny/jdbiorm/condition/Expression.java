@@ -406,4 +406,20 @@ public interface Expression<V> extends Serializable {
     default Condition likeIgnoreCase(@NotNull Expression<String> pattern) {
         return new LikeIgnoreCase(this, pattern);
     }
+
+    /**
+     * The <code>IS_NULL</code> operator.
+     */
+    @NotNull
+    default Condition isNull() {
+        return new IsNull(this);
+    }
+
+    /**
+     * The <code>IS_NOT_NULL</code> operator.
+     */
+    @NotNull
+    default Condition isNotNull() {
+        return new IsNotNull(this);
+    }
 }
