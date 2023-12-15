@@ -34,6 +34,7 @@ public final class OrderBy implements Serializable {
         this.order = Objects.requireNonNull(order);
     }
 
+    @Deprecated
     public OrderBy(@NotNull String name, @NotNull Order order) {
         this(new Property.Name(name), order);
     }
