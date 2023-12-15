@@ -44,6 +44,6 @@ public final class IsFalse implements Condition {
     @Override
     public @NotNull ParametrizedSql toSql() {
         final ParametrizedSql sql = arg.toSql();
-        return new ParametrizedSql("lower(" + sql.getSql92() + ") in (\"0\", \"n\", \"no\", \"false\", \"off\", \"disabled\")", sql.getSql92Parameters());
+        return new ParametrizedSql("lower(" + sql.getSql92() + ") in ('0', 'n', 'no', 'false', 'off', 'disabled')", sql.getSql92Parameters());
     }
 }

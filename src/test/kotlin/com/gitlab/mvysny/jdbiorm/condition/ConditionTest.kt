@@ -37,7 +37,20 @@ fun DynaNodeGroup.conditionTests() {
             JoinTable.dao.findAllBy(JoinTable.ORDERID.ge(JoinTable.CUSTOMERID))
             JoinTable.dao.findAllBy(JoinTable.ORDERID.ne(1))
             JoinTable.dao.findAllBy(JoinTable.ORDERID.ne(JoinTable.CUSTOMERID))
-            // @todo mavi all other operators
+            JoinTable.dao.findAllBy(JoinTable.ORDERID.`in`(1, 2, 3))
+            JoinTable.dao.findAllBy(JoinTable.ORDERID.`in`(JoinTable.CUSTOMERID))
+            JoinTable.dao.findAllBy(JoinTable.ORDERID.notIn(1, 2, 3))
+            JoinTable.dao.findAllBy(JoinTable.ORDERID.notIn(JoinTable.CUSTOMERID))
+            JoinTable.dao.findAllBy(JoinTable.ORDERID.between(1, 10))
+            JoinTable.dao.findAllBy(JoinTable.ORDERID.notBetween(1, 10))
+            Person.dao.findAllBy(Person.ISALIVE25.isTrue())
+            Person.dao.findAllBy(Person.ISALIVE25.isFalse())
+            Person.dao.findAllBy(Person.NAME.equalIgnoreCase("Foo"))
+            Person.dao.findAllBy(Person.NAME.notEqualIgnoreCase("Bar"))
+            Person.dao.findAllBy(Person.NAME.like("%Bar"))
+            Person.dao.findAllBy(Person.NAME.likeIgnoreCase("%Baz"))
+            Person.dao.findAllBy(Person.NAME.isNull())
+            Person.dao.findAllBy(Person.NAME.isNotNull())
         }
         test("combining") {
             JoinTable.dao.findAllBy(JoinTable.ORDERID.eq(1).and(JoinTable.CUSTOMERID.eq(2)))
