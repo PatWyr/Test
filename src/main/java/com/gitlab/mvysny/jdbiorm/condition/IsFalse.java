@@ -14,10 +14,10 @@ import java.util.Objects;
  */
 public final class IsFalse implements Condition {
     @NotNull
-    private final Property<?> arg;
+    private final Expression<?> arg;
 
-    public IsFalse(@NotNull Property<?> arg) {
-        this.arg = arg;
+    public IsFalse(@NotNull Expression<?> arg) {
+        this.arg = Objects.requireNonNull(arg);
     }
 
     @Override
@@ -36,5 +36,9 @@ public final class IsFalse implements Condition {
     @Override
     public String toString() {
         return arg + " IS FALSE";
+    }
+
+    public @NotNull Expression<?> getArg() {
+        return arg;
     }
 }

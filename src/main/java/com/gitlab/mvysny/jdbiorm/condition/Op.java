@@ -7,13 +7,13 @@ import java.util.Objects;
 
 public final class Op implements Condition {
     @NotNull
-    private final Property<?> arg1;
+    private final Expression<?> arg1;
     @NotNull
-    private final Property<?> arg2;
+    private final Expression<?> arg2;
     @NotNull
     private final Operator operator;
 
-    public Op(@NotNull Property<?> arg1, @NotNull Property<?> arg2, @NotNull Operator operator) {
+    public Op(@NotNull Expression<?> arg1, @NotNull Expression<?> arg2, @NotNull Operator operator) {
         this.arg1 = Objects.requireNonNull(arg1);
         this.arg2 = Objects.requireNonNull(arg2);
         this.operator = Objects.requireNonNull(operator);
@@ -48,12 +48,12 @@ public final class Op implements Condition {
     }
 
     @NotNull
-    public Property<?> getArg1() {
+    public Expression<?> getArg1() {
         return arg1;
     }
 
     @NotNull
-    public Property<?> getArg2() {
+    public Expression<?> getArg2() {
         return arg2;
     }
 

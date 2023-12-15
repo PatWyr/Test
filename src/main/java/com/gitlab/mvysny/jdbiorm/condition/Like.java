@@ -7,11 +7,11 @@ import java.util.Objects;
 
 public final class Like implements Condition {
     @NotNull
-    private final Property<?> arg1;
+    private final Expression<?> arg1;
     @NotNull
-    private final Property<?> arg2;
+    private final Expression<?> arg2;
 
-    public Like(@NotNull Property<?> arg1, @NotNull Property<?> arg2) {
+    public Like(@NotNull Expression<?> arg1, @NotNull Expression<?> arg2) {
         this.arg1 = arg1;
         this.arg2 = arg2;
     }
@@ -34,11 +34,11 @@ public final class Like implements Condition {
         return arg1 + " LIKE " + arg2;
     }
 
-    public @NotNull Property<?> getArg1() {
+    public @NotNull Expression<?> getArg1() {
         return arg1;
     }
 
-    public @NotNull Property<?> getArg2() {
+    public @NotNull Expression<?> getArg2() {
         return arg2;
     }
 }

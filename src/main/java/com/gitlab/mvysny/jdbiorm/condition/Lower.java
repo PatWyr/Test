@@ -1,15 +1,14 @@
 package com.gitlab.mvysny.jdbiorm.condition;
 
-import com.gitlab.mvysny.jdbiorm.Property;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-public final class Lower<V> implements Property<V> {
+public final class Lower<V> implements Expression<V> {
     @NotNull
-    private final Property<V> arg;
+    private final Expression<V> arg;
 
-    public Lower(@NotNull Property<V> arg) {
+    public Lower(@NotNull Expression<V> arg) {
         this.arg = arg;
     }
 
@@ -17,7 +16,7 @@ public final class Lower<V> implements Property<V> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Lower lower = (Lower) o;
+        Lower<?> lower = (Lower<?>) o;
         return Objects.equals(arg, lower.arg);
     }
 
@@ -31,17 +30,7 @@ public final class Lower<V> implements Property<V> {
         return "LOWER(" + arg + ")";
     }
 
-    public @NotNull Property<V> getArg() {
+    public @NotNull Expression<V> getArg() {
         return arg;
-    }
-
-    @Override
-    public @NotNull Name getName() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public @NotNull DbName getDbName() {
-        throw new UnsupportedOperationException();
     }
 }

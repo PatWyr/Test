@@ -1,6 +1,5 @@
 package com.gitlab.mvysny.jdbiorm.condition;
 
-import com.gitlab.mvysny.jdbiorm.Property;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -10,11 +9,11 @@ import java.util.Objects;
  */
 public final class Eq implements Condition {
     @NotNull
-    private final Property<?> arg1;
+    private final Expression arg1;
     @NotNull
-    private final Property<?> arg2;
+    private final Expression arg2;
 
-    public Eq(@NotNull Property<?> arg1, @NotNull Property<?> arg2) {
+    public Eq(@NotNull Expression arg1, @NotNull Expression arg2) {
         this.arg1 = arg1;
         this.arg2 = arg2;
     }
@@ -38,12 +37,12 @@ public final class Eq implements Condition {
     }
 
     @NotNull
-    public Property<?> getArg1() {
+    public Expression getArg1() {
         return arg1;
     }
 
     @NotNull
-    public Property<?> getArg2() {
+    public Expression getArg2() {
         return arg2;
     }
 }

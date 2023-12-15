@@ -1,6 +1,5 @@
 package com.gitlab.mvysny.jdbiorm.condition;
 
-import com.gitlab.mvysny.jdbiorm.Property;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -9,12 +8,12 @@ import java.util.stream.Collectors;
 
 public final class In implements Condition {
     @NotNull
-    private final Property<?> property;
+    private final Expression<?> arg1;
     @NotNull
-    private final Collection<Property<?>> values;
+    private final Collection<? extends Expression<?>> values;
 
-    public In(@NotNull Property<?> property, @NotNull Collection<Property<?>> values) {
-        this.property = Objects.requireNonNull(property);
+    public In(@NotNull Expression<?> arg1, @NotNull Collection<? extends Expression<?>> values) {
+        this.arg1 = Objects.requireNonNull(arg1);
         this.values = Objects.requireNonNull(values);
     }
 
@@ -23,22 +22,22 @@ public final class In implements Condition {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         In in = (In) o;
-        return Objects.equals(property, in.property) && Objects.equals(values, in.values);
+        return Objects.equals(arg1, in.arg1) && Objects.equals(values, in.values);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(property, values);
+        return Objects.hash(arg1, values);
     }
 
     @Override
     public String toString() {
-        return property + " IN (" + values.stream().map(Objects::toString).collect(Collectors.joining(", ")) + ")";
+        return arg1 + " IN (" + values.stream().map(Objects::toString).collect(Collectors.joining(", ")) + ")";
     }
 
     @NotNull
-    public Property<?> getProperty() {
-        return property;
+    public Expression<?> getArg1() {
+        return arg1;
     }
 
     public @NotNull Collection<?> getValues() {

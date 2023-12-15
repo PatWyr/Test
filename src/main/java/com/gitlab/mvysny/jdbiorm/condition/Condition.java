@@ -14,7 +14,7 @@ import java.io.Serializable;
  * <p></p>
  * {@link Object#toString()} must be implemented, to ease app debugging. This is not necessarily a valid SQL92 WHERE
  * clause.
- **/
+ */
 public interface Condition extends Serializable {
     /**
      * The <code>NOT</code> operator.
