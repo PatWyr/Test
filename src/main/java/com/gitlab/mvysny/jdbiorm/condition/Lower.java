@@ -3,7 +3,6 @@ package com.gitlab.mvysny.jdbiorm.condition;
 import com.gitlab.mvysny.jdbiorm.Property;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Field;
 import java.util.Objects;
 
 public final class Lower<V> implements Property<V> {

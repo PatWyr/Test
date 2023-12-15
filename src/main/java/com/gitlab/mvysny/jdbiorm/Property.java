@@ -485,7 +485,7 @@ public interface Property<V> extends Serializable {
      */
     @NotNull
     default Condition notEqualIgnoreCase(String value) {
-        return equalIgnoreCase(value).not();
+        return notEqualIgnoreCase(new Value<>(value));
     }
 
     /**
@@ -493,7 +493,7 @@ public interface Property<V> extends Serializable {
      */
     @NotNull
     default Condition notEqualIgnoreCase(@NotNull Property<String> value) {
-        return equalIgnoreCase(value).not();
+        return new Op(lower(), value.lower(), Op.Operator.NE);
     }
     /**
      * The <code>LIKE</code> operator.
@@ -511,6 +511,24 @@ public interface Property<V> extends Serializable {
     @NotNull
     default Condition like(@NotNull Property<String> pattern) {
         return new Like(this, pattern);
+    }
+
+    /**
+     * The <code>ILIKE</code> operator.
+     *
+     * @param pattern e.g. "%foo%"
+     */
+    @NotNull
+    default Condition likeIgnoreCase(@Nullable String pattern) {
+        return likeIgnoreCase(new Value<>(pattern));
+    }
+
+    /**
+     * The <code>ILIKE</code> operator.
+     */
+    @NotNull
+    default Condition likeIgnoreCase(@NotNull Property<String> pattern) {
+        return new LikeIgnoreCase(this, pattern);
     }
 
     /**
