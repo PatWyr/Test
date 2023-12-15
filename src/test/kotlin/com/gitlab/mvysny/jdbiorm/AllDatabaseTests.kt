@@ -1,6 +1,7 @@
 package com.gitlab.mvysny.jdbiorm
 
 import com.github.mvysny.dynatest.*
+import com.gitlab.mvysny.jdbiorm.condition.conditionTests
 import org.jdbi.v3.core.Handle
 import java.io.IOException
 import kotlin.test.expect
@@ -21,6 +22,9 @@ class AllDatabaseTests : DynaTest({
         }
         group("JoinTable") {
             joinTableTestSuite()
+        }
+        group("Conditions") {
+           conditionTests()
         }
     }
 })

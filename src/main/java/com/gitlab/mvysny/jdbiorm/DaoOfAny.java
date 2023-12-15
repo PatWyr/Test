@@ -1,5 +1,7 @@
 package com.gitlab.mvysny.jdbiorm;
 
+import com.gitlab.mvysny.jdbiorm.condition.Condition;
+import com.gitlab.mvysny.jdbiorm.condition.ParametrizedSql;
 import com.gitlab.mvysny.jdbiorm.quirks.Quirks;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.mapper.RowMapper;
@@ -171,6 +173,31 @@ public class DaoOfAny<T> {
     @NotNull
     public List<T> findAllBy(@NotNull String where, @Nullable final Long offset, @Nullable final Long limit, @NotNull Consumer<Query> queryConsumer) {
         return findAllBy(where, null, offset, limit, queryConsumer);
+    }
+
+    /**
+     * Finds all matching rows in given table. Fails if there is no table in the database with the
+     * name of {@link EntityMeta#getDatabaseTableName()}. If both offset and limit
+     * are specified, then the LIMIT and OFFSET sql paging is used.
+     * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
+     * @param offset start from this row. If not null, must be 0 or greater.
+     * @param limit return this count of row at most. If not null, must be 0 or greater.
+     */
+    @NotNull
+    public List<T> findAllBy(@NotNull Condition where, @Nullable final Long offset, @Nullable final Long limit) {
+        final ParametrizedSql sql = where.toSql();
+        return findAllBy(sql.getSql92(), null, offset, limit, sql::bindTo);
+    }
+
+    /**
+     * Finds all matching rows in given table. Fails if there is no table in the database with the
+     * name of {@link EntityMeta#getDatabaseTableName()}. If both offset and limit
+     * are specified, then the LIMIT and OFFSET sql paging is used.
+     * @param where the where condition.
+     */
+    @NotNull
+    public List<T> findAllBy(@NotNull Condition where) {
+        return findAllBy(where, null, null);
     }
 
     /**

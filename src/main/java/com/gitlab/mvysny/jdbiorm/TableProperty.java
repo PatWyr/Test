@@ -8,7 +8,17 @@ import java.util.HashMap;
 import java.util.Objects;
 
 /**
- * A field contained in a table.
+ * A field contained in a table. To define table properties for your entity,
+ * add a static Java field for every property. For example, if the Person entity
+ * has a String name, then the static Java field would look like this:
+ * <pre>
+ * {@literal @JdbiProperty(map = false)}
+ * public static final TableProperty<Person, String> NAME = TableProperty.of(Person.class, "name");
+ * </pre>
+ * Now you can create SQL queries programmatically, e.g.
+ * <pre>
+ * Person.dao.findAllBy(Person.NAME.eq("John"));
+ * </pre>
  * @param <E> the entity type.
  * @param <V> the value type of this field.
  */

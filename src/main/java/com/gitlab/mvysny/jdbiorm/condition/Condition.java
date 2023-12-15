@@ -6,7 +6,9 @@ import org.jetbrains.annotations.Nullable;
 import java.io.Serializable;
 
 /**
- * A SQL condition. Immutable.
+ * A SQL condition. Immutable. To use in your project, add table properties to your entities; see {@link com.gitlab.mvysny.jdbiorm.TableProperty} for more information.
+ * Then, you can write <code>Person.NAME.eq("John")</code> to create a condition which you can
+ * pass to {@link com.gitlab.mvysny.jdbiorm.DaoOfAny#findAllBy(Condition)}.
  * <h3>Implementation</h3>
  * {@link Object#equals(Object)}/{@link Object#hashCode()} must be implemented properly, so that the conditions can be
  * placed in a set. As a bare minimum, the filter type, the property name and the value which we compare against must be
@@ -32,11 +34,6 @@ public interface Condition extends Serializable {
     @NotNull
     default Condition and(@Nullable Condition other) {
         return other == null ? this : new And(this, other);
-    }
-
-    @NotNull
-    default Condition xor(@Nullable Condition other) {
-        return other == null ? this : new Xor(this, other);
     }
 
     @NotNull

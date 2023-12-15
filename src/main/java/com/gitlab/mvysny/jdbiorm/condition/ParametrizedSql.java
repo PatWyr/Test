@@ -1,5 +1,7 @@
 package com.gitlab.mvysny.jdbiorm.condition;
 
+import org.jdbi.v3.core.statement.Query;
+import org.jdbi.v3.core.statement.SqlStatement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -90,5 +92,11 @@ public final class ParametrizedSql implements Serializable {
      */
     public @NotNull Map<String, Object> getSql92Parameters() {
         return sql92Parameters;
+    }
+
+    public void bindTo(@NotNull SqlStatement<?> query) {
+        for (Map.Entry<String, Object> e : sql92Parameters.entrySet()) {
+            query.bind(e.getKey(), e.getValue());
+        }
     }
 }
