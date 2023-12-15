@@ -1,6 +1,5 @@
 package com.gitlab.mvysny.jdbiorm.condition;
 
-import com.gitlab.mvysny.jdbiorm.Property;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
