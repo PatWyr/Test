@@ -109,4 +109,27 @@ fun DynaNodeGroup.conditionTests() {
         expectList(person) { Person.dao.findAllBy(Person.AGE.ge(25)) }
         expectList() { Person.dao.findAllBy(Person.AGE.ge(100)) }
     }
+    test("ne") {
+        val person = Person(name = "Foo", age = 25, isAlive25 = false)
+        person.save()
+        expectList(person) { Person.dao.findAllBy(Person.NAME.ne("Bar")) }
+        expectList() { Person.dao.findAllBy(Person.NAME.ne("Foo")) }
+        expectList(person) { Person.dao.findAllBy(Person.NAME.ne("ZZZ")) }
+        expectList(person) { Person.dao.findAllBy(Person.AGE.ne(2)) }
+        expectList() { Person.dao.findAllBy(Person.AGE.ne(25)) }
+        expectList(person) { Person.dao.findAllBy(Person.AGE.ne(100)) }
+        expectList() { Person.dao.findAllBy(Person.ISALIVE25.ne(false)) }
+        expectList(person) { Person.dao.findAllBy(Person.ISALIVE25.ne(true)) }
+    }
+    test("in") {
+        val person = Person(name = "Foo", age = 25, isAlive25 = false)
+        person.save()
+        expectList() { Person.dao.findAllBy(Person.NAME.`in`("Bar")) }
+        expectList(person) { Person.dao.findAllBy(Person.NAME.`in`("Foo", "Bar")) }
+        expectList() { Person.dao.findAllBy(Person.AGE.`in`(2)) }
+        expectList(person) { Person.dao.findAllBy(Person.AGE.`in`(2, 25)) }
+        expectList(person) { Person.dao.findAllBy(Person.AGE.`in`(2, 25, 100)) }
+        expectList() { Person.dao.findAllBy(Person.ISALIVE25.`in`(true)) }
+        expectList(person) { Person.dao.findAllBy(Person.ISALIVE25.`in`(true, false)) }
+    }
 }
