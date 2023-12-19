@@ -3,6 +3,7 @@ package com.gitlab.mvysny.jdbiorm.condition
 import com.github.mvysny.dynatest.DynaNodeGroup
 import com.github.mvysny.dynatest.DynaTest
 import com.github.mvysny.dynatest.DynaTestDsl
+import com.github.mvysny.dynatest.expectList
 import com.gitlab.mvysny.jdbiorm.JoinTable
 import com.gitlab.mvysny.jdbiorm.Person
 import kotlin.test.expect
@@ -57,5 +58,55 @@ fun DynaNodeGroup.conditionTests() {
             JoinTable.dao.findAllBy(JoinTable.ORDERID.eq(1).or(JoinTable.CUSTOMERID.eq(2)))
             JoinTable.dao.findAllBy(JoinTable.ORDERID.eq(1).and(JoinTable.CUSTOMERID.eq(2)).not())
         }
+    }
+    test("eq") {
+        val person = Person(name = "Foo", age = 25, isAlive25 = true)
+        person.save()
+        expectList() { Person.dao.findAllBy(Person.NAME.eq("Bar")) }
+        expectList(person) { Person.dao.findAllBy(Person.NAME.eq("Foo")) }
+        expectList() { Person.dao.findAllBy(Person.AGE.eq(2)) }
+        expectList(person) { Person.dao.findAllBy(Person.AGE.eq(25)) }
+        expectList() { Person.dao.findAllBy(Person.ISALIVE25.eq(false)) }
+        expectList(person) { Person.dao.findAllBy(Person.ISALIVE25.eq(true)) }
+    }
+    test("lt") {
+        val person = Person(name = "Foo", age = 25)
+        person.save()
+        expectList() { Person.dao.findAllBy(Person.NAME.lt("Bar")) }
+        expectList() { Person.dao.findAllBy(Person.NAME.lt("Foo")) }
+        expectList(person) { Person.dao.findAllBy(Person.NAME.lt("ZZZ")) }
+        expectList() { Person.dao.findAllBy(Person.AGE.lt(2)) }
+        expectList() { Person.dao.findAllBy(Person.AGE.lt(25)) }
+        expectList(person) { Person.dao.findAllBy(Person.AGE.lt(100)) }
+    }
+    test("le") {
+        val person = Person(name = "Foo", age = 25)
+        person.save()
+        expectList() { Person.dao.findAllBy(Person.NAME.le("Bar")) }
+        expectList(person) { Person.dao.findAllBy(Person.NAME.le("Foo")) }
+        expectList(person) { Person.dao.findAllBy(Person.NAME.le("ZZZ")) }
+        expectList() { Person.dao.findAllBy(Person.AGE.le(2)) }
+        expectList(person) { Person.dao.findAllBy(Person.AGE.le(25)) }
+        expectList(person) { Person.dao.findAllBy(Person.AGE.le(100)) }
+    }
+    test("gt") {
+        val person = Person(name = "Foo", age = 25)
+        person.save()
+        expectList(person) { Person.dao.findAllBy(Person.NAME.gt("Bar")) }
+        expectList() { Person.dao.findAllBy(Person.NAME.gt("Foo")) }
+        expectList() { Person.dao.findAllBy(Person.NAME.gt("ZZZ")) }
+        expectList(person) { Person.dao.findAllBy(Person.AGE.gt(2)) }
+        expectList() { Person.dao.findAllBy(Person.AGE.gt(25)) }
+        expectList() { Person.dao.findAllBy(Person.AGE.gt(100)) }
+    }
+    test("ge") {
+        val person = Person(name = "Foo", age = 25)
+        person.save()
+        expectList(person) { Person.dao.findAllBy(Person.NAME.ge("Bar")) }
+        expectList(person) { Person.dao.findAllBy(Person.NAME.ge("Foo")) }
+        expectList() { Person.dao.findAllBy(Person.NAME.ge("ZZZ")) }
+        expectList(person) { Person.dao.findAllBy(Person.AGE.ge(2)) }
+        expectList(person) { Person.dao.findAllBy(Person.AGE.ge(25)) }
+        expectList() { Person.dao.findAllBy(Person.AGE.ge(100)) }
     }
 }

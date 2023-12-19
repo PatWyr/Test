@@ -64,6 +64,9 @@ data class Person(
         val NAME = TableProperty.of<Person, String>(Person::class.java, "name")
         @JdbiProperty(map = false)
         @JvmStatic
+        val AGE = TableProperty.of<Person, Int>(Person::class.java, "age")
+        @JdbiProperty(map = false)
+        @JvmStatic
         val ISALIVE25 = TableProperty.of<Person, Boolean>(Person::class.java, "isAlive25")
     }
 
