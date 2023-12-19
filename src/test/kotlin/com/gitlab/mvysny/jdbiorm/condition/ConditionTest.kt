@@ -6,6 +6,7 @@ import com.github.mvysny.dynatest.DynaTestDsl
 import com.github.mvysny.dynatest.expectList
 import com.gitlab.mvysny.jdbiorm.JoinTable
 import com.gitlab.mvysny.jdbiorm.Person
+import com.gitlab.mvysny.jdbiorm.Person2
 import kotlin.test.expect
 
 class ConditionTest : DynaTest({
@@ -60,117 +61,150 @@ fun DynaNodeGroup.conditionTests() {
         }
     }
     test("eq") {
-        val person = Person(name = "Foo", age = 25, isAlive25 = true)
+        val person = Person2(name = "Foo", age = 25, isAlive25 = true)
         person.save()
-        expectList() { Person.dao.findAllBy(Person.NAME.eq("Bar")) }
-        expectList(person) { Person.dao.findAllBy(Person.NAME.eq("Foo")) }
-        expectList() { Person.dao.findAllBy(Person.AGE.eq(2)) }
-        expectList(person) { Person.dao.findAllBy(Person.AGE.eq(25)) }
-        expectList() { Person.dao.findAllBy(Person.ISALIVE25.eq(false)) }
-        expectList(person) { Person.dao.findAllBy(Person.ISALIVE25.eq(true)) }
+        expectList() { Person2.dao.findAllBy(Person2.NAME.eq("Bar")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.eq("Foo")) }
+        expectList() { Person2.dao.findAllBy(Person2.AGE.eq(2)) }
+        expectList(person) { Person2.dao.findAllBy(Person2.AGE.eq(25)) }
+        expectList() { Person2.dao.findAllBy(Person2.ISALIVE25.eq(false)) }
+        expectList(person) { Person2.dao.findAllBy(Person2.ISALIVE25.eq(true)) }
     }
     test("lt") {
-        val person = Person(name = "Foo", age = 25)
+        val person = Person2(name = "Foo", age = 25)
         person.save()
-        expectList() { Person.dao.findAllBy(Person.NAME.lt("Bar")) }
-        expectList() { Person.dao.findAllBy(Person.NAME.lt("Foo")) }
-        expectList(person) { Person.dao.findAllBy(Person.NAME.lt("ZZZ")) }
-        expectList() { Person.dao.findAllBy(Person.AGE.lt(2)) }
-        expectList() { Person.dao.findAllBy(Person.AGE.lt(25)) }
-        expectList(person) { Person.dao.findAllBy(Person.AGE.lt(100)) }
+        expectList() { Person2.dao.findAllBy(Person2.NAME.lt("Bar")) }
+        expectList() { Person2.dao.findAllBy(Person2.NAME.lt("Foo")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.lt("ZZZ")) }
+        expectList() { Person2.dao.findAllBy(Person2.AGE.lt(2)) }
+        expectList() { Person2.dao.findAllBy(Person2.AGE.lt(25)) }
+        expectList(person) { Person2.dao.findAllBy(Person2.AGE.lt(100)) }
     }
     test("le") {
-        val person = Person(name = "Foo", age = 25)
+        val person = Person2(name = "Foo", age = 25)
         person.save()
-        expectList() { Person.dao.findAllBy(Person.NAME.le("Bar")) }
-        expectList(person) { Person.dao.findAllBy(Person.NAME.le("Foo")) }
-        expectList(person) { Person.dao.findAllBy(Person.NAME.le("ZZZ")) }
-        expectList() { Person.dao.findAllBy(Person.AGE.le(2)) }
-        expectList(person) { Person.dao.findAllBy(Person.AGE.le(25)) }
-        expectList(person) { Person.dao.findAllBy(Person.AGE.le(100)) }
+        expectList() { Person2.dao.findAllBy(Person2.NAME.le("Bar")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.le("Foo")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.le("ZZZ")) }
+        expectList() { Person2.dao.findAllBy(Person2.AGE.le(2)) }
+        expectList(person) { Person2.dao.findAllBy(Person2.AGE.le(25)) }
+        expectList(person) { Person2.dao.findAllBy(Person2.AGE.le(100)) }
     }
     test("gt") {
-        val person = Person(name = "Foo", age = 25)
+        val person = Person2(name = "Foo", age = 25)
         person.save()
-        expectList(person) { Person.dao.findAllBy(Person.NAME.gt("Bar")) }
-        expectList() { Person.dao.findAllBy(Person.NAME.gt("Foo")) }
-        expectList() { Person.dao.findAllBy(Person.NAME.gt("ZZZ")) }
-        expectList(person) { Person.dao.findAllBy(Person.AGE.gt(2)) }
-        expectList() { Person.dao.findAllBy(Person.AGE.gt(25)) }
-        expectList() { Person.dao.findAllBy(Person.AGE.gt(100)) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.gt("Bar")) }
+        expectList() { Person2.dao.findAllBy(Person2.NAME.gt("Foo")) }
+        expectList() { Person2.dao.findAllBy(Person2.NAME.gt("ZZZ")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.AGE.gt(2)) }
+        expectList() { Person2.dao.findAllBy(Person2.AGE.gt(25)) }
+        expectList() { Person2.dao.findAllBy(Person2.AGE.gt(100)) }
     }
     test("ge") {
-        val person = Person(name = "Foo", age = 25)
+        val person = Person2(name = "Foo", age = 25)
         person.save()
-        expectList(person) { Person.dao.findAllBy(Person.NAME.ge("Bar")) }
-        expectList(person) { Person.dao.findAllBy(Person.NAME.ge("Foo")) }
-        expectList() { Person.dao.findAllBy(Person.NAME.ge("ZZZ")) }
-        expectList(person) { Person.dao.findAllBy(Person.AGE.ge(2)) }
-        expectList(person) { Person.dao.findAllBy(Person.AGE.ge(25)) }
-        expectList() { Person.dao.findAllBy(Person.AGE.ge(100)) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.ge("Bar")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.ge("Foo")) }
+        expectList() { Person2.dao.findAllBy(Person2.NAME.ge("ZZZ")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.AGE.ge(2)) }
+        expectList(person) { Person2.dao.findAllBy(Person2.AGE.ge(25)) }
+        expectList() { Person2.dao.findAllBy(Person2.AGE.ge(100)) }
     }
     test("ne") {
-        val person = Person(name = "Foo", age = 25, isAlive25 = false)
+        val person = Person2(name = "Foo", age = 25, isAlive25 = false)
         person.save()
-        expectList(person) { Person.dao.findAllBy(Person.NAME.ne("Bar")) }
-        expectList() { Person.dao.findAllBy(Person.NAME.ne("Foo")) }
-        expectList(person) { Person.dao.findAllBy(Person.NAME.ne("ZZZ")) }
-        expectList(person) { Person.dao.findAllBy(Person.AGE.ne(2)) }
-        expectList() { Person.dao.findAllBy(Person.AGE.ne(25)) }
-        expectList(person) { Person.dao.findAllBy(Person.AGE.ne(100)) }
-        expectList() { Person.dao.findAllBy(Person.ISALIVE25.ne(false)) }
-        expectList(person) { Person.dao.findAllBy(Person.ISALIVE25.ne(true)) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.ne("Bar")) }
+        expectList() { Person2.dao.findAllBy(Person2.NAME.ne("Foo")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.ne("ZZZ")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.AGE.ne(2)) }
+        expectList() { Person2.dao.findAllBy(Person2.AGE.ne(25)) }
+        expectList(person) { Person2.dao.findAllBy(Person2.AGE.ne(100)) }
+        expectList() { Person2.dao.findAllBy(Person2.ISALIVE25.ne(false)) }
+        expectList(person) { Person2.dao.findAllBy(Person2.ISALIVE25.ne(true)) }
     }
     test("in") {
-        val person = Person(name = "Foo", age = 25, isAlive25 = false)
+        val person = Person2(name = "Foo", age = 25, isAlive25 = false)
         person.save()
-        expectList() { Person.dao.findAllBy(Person.NAME.`in`("Bar")) }
-        expectList(person) { Person.dao.findAllBy(Person.NAME.`in`("Foo", "Bar")) }
-        expectList() { Person.dao.findAllBy(Person.AGE.`in`(2)) }
-        expectList(person) { Person.dao.findAllBy(Person.AGE.`in`(2, 25)) }
-        expectList(person) { Person.dao.findAllBy(Person.AGE.`in`(2, 25, 100)) }
-        expectList() { Person.dao.findAllBy(Person.ISALIVE25.`in`(true)) }
-        expectList(person) { Person.dao.findAllBy(Person.ISALIVE25.`in`(true, false)) }
+        expectList() { Person2.dao.findAllBy(Person2.NAME.`in`("Bar")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.`in`("Foo", "Bar")) }
+        expectList() { Person2.dao.findAllBy(Person2.AGE.`in`(2)) }
+        expectList(person) { Person2.dao.findAllBy(Person2.AGE.`in`(2, 25)) }
+        expectList(person) { Person2.dao.findAllBy(Person2.AGE.`in`(2, 25, 100)) }
+        expectList() { Person2.dao.findAllBy(Person2.ISALIVE25.`in`(true)) }
+        expectList(person) { Person2.dao.findAllBy(Person2.ISALIVE25.`in`(true, false)) }
     }
     test("notIn") {
-        val person = Person(name = "Foo", age = 25, isAlive25 = false)
+        val person = Person2(name = "Foo", age = 25, isAlive25 = false)
         person.save()
-        expectList(person) { Person.dao.findAllBy(Person.NAME.notIn("Bar")) }
-        expectList() { Person.dao.findAllBy(Person.NAME.notIn("Foo", "Bar")) }
-        expectList(person) { Person.dao.findAllBy(Person.AGE.notIn(2)) }
-        expectList() { Person.dao.findAllBy(Person.AGE.notIn(2, 25)) }
-        expectList() { Person.dao.findAllBy(Person.AGE.notIn(2, 25, 100)) }
-        expectList(person) { Person.dao.findAllBy(Person.ISALIVE25.notIn(true)) }
-        expectList() { Person.dao.findAllBy(Person.ISALIVE25.notIn(true, false)) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.notIn("Bar")) }
+        expectList() { Person2.dao.findAllBy(Person2.NAME.notIn("Foo", "Bar")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.AGE.notIn(2)) }
+        expectList() { Person2.dao.findAllBy(Person2.AGE.notIn(2, 25)) }
+        expectList() { Person2.dao.findAllBy(Person2.AGE.notIn(2, 25, 100)) }
+        expectList(person) { Person2.dao.findAllBy(Person2.ISALIVE25.notIn(true)) }
+        expectList() { Person2.dao.findAllBy(Person2.ISALIVE25.notIn(true, false)) }
     }
     test("between") {
-        val person = Person(name = "Foo", age = 25, isAlive25 = false)
+        val person = Person2(name = "Foo", age = 25, isAlive25 = false)
         person.save()
-        expectList() { Person.dao.findAllBy(Person.AGE.between(2, 3)) }
-        expectList(person) { Person.dao.findAllBy(Person.AGE.between(2, 25)) }
-        expectList(person) { Person.dao.findAllBy(Person.AGE.between(2, 100)) }
+        expectList() { Person2.dao.findAllBy(Person2.AGE.between(2, 3)) }
+        expectList(person) { Person2.dao.findAllBy(Person2.AGE.between(2, 25)) }
+        expectList(person) { Person2.dao.findAllBy(Person2.AGE.between(2, 100)) }
     }
     test("notBetween") {
-        val person = Person(name = "Foo", age = 25, isAlive25 = false)
+        val person = Person2(name = "Foo", age = 25, isAlive25 = false)
         person.save()
-        expectList(person) { Person.dao.findAllBy(Person.AGE.notBetween(2, 3)) }
-        expectList() { Person.dao.findAllBy(Person.AGE.notBetween(2, 25)) }
-        expectList() { Person.dao.findAllBy(Person.AGE.notBetween(2, 100)) }
+        expectList(person) { Person2.dao.findAllBy(Person2.AGE.notBetween(2, 3)) }
+        expectList() { Person2.dao.findAllBy(Person2.AGE.notBetween(2, 25)) }
+        expectList() { Person2.dao.findAllBy(Person2.AGE.notBetween(2, 100)) }
     }
     test("isTrue") {
-        val person = Person(name = "Foo", age = 25, isAlive25 = false)
+        val person = Person2(name = "Foo", age = 25, isAlive25 = false)
         person.save()
-        expectList() { Person.dao.findAllBy(Person.ISALIVE25.isTrue()) }
+        expectList() { Person2.dao.findAllBy(Person2.ISALIVE25.isTrue()) }
         person.isAlive25 = true
         person.save()
-        expectList(person) { Person.dao.findAllBy(Person.ISALIVE25.isTrue()) }
+        expectList(person) { Person2.dao.findAllBy(Person2.ISALIVE25.isTrue()) }
     }
     test("isFalse") {
-        val person = Person(name = "Foo", age = 25, isAlive25 = false)
+        val person = Person2(name = "Foo", age = 25, isAlive25 = false)
         person.save()
-        expectList(person) { Person.dao.findAllBy(Person.ISALIVE25.isFalse()) }
+        expectList(person) { Person2.dao.findAllBy(Person2.ISALIVE25.isFalse()) }
         person.isAlive25 = true
         person.save()
-        expectList() { Person.dao.findAllBy(Person.ISALIVE25.isFalse()) }
+        expectList() { Person2.dao.findAllBy(Person2.ISALIVE25.isFalse()) }
+    }
+    test("equalIgnoreCase") {
+        val person = Person2(name = "Foo", age = 25, isAlive25 = true)
+        person.save()
+        expectList() { Person2.dao.findAllBy(Person2.NAME.equalIgnoreCase("Bar")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.equalIgnoreCase("foo")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.equalIgnoreCase("Foo")) }
+    }
+    test("notEqualIgnoreCase") {
+        val person = Person2(name = "Foo", age = 25, isAlive25 = true)
+        person.save()
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.notEqualIgnoreCase("Bar")) }
+        expectList() { Person2.dao.findAllBy(Person2.NAME.notEqualIgnoreCase("foo")) }
+        expectList() { Person2.dao.findAllBy(Person2.NAME.notEqualIgnoreCase("Foo")) }
+    }
+    test("like") {
+        val person = Person2(name = "Foo", age = 25, isAlive25 = true)
+        person.save()
+        expectList() { Person2.dao.findAllBy(Person2.NAME.like("%Bar")) }
+        expectList() { Person2.dao.findAllBy(Person2.NAME.like("%foo")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.like("%Foo")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.like("Foo")) }
+        expectList() { Person2.dao.findAllBy(Person2.NAME.like("o")) }
+    }
+    test("likeIgnoreCase") {
+        val person = Person2(name = "Foo", age = 25, isAlive25 = true)
+        person.save()
+        expectList() { Person2.dao.findAllBy(Person2.NAME.likeIgnoreCase("%Bar")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.likeIgnoreCase("%foo")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.likeIgnoreCase("%Foo")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.likeIgnoreCase("Foo")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.likeIgnoreCase("foo")) }
+        expectList() { Person2.dao.findAllBy(Person2.NAME.likeIgnoreCase("o")) }
     }
 }
