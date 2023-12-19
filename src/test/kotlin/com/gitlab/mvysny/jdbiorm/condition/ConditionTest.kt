@@ -207,4 +207,20 @@ fun DynaNodeGroup.conditionTests() {
         expectList(person) { Person2.dao.findAllBy(Person2.NAME.likeIgnoreCase("foo")) }
         expectList() { Person2.dao.findAllBy(Person2.NAME.likeIgnoreCase("o")) }
     }
+    test("isNull") {
+        val person = Person2(name = "Foo", age = 25)
+        person.save()
+        expectList(person) { Person2.dao.findAllBy(Person2.ISALIVE25.isNull()) }
+        person.isAlive25 = true
+        person.save()
+        expectList() { Person2.dao.findAllBy(Person2.ISALIVE25.isNull()) }
+    }
+    test("isNotNull") {
+        val person = Person2(name = "Foo", age = 25)
+        person.save()
+        expectList() { Person2.dao.findAllBy(Person2.ISALIVE25.isNotNull()) }
+        person.isAlive25 = true
+        person.save()
+        expectList(person) { Person2.dao.findAllBy(Person2.ISALIVE25.isNotNull()) }
+    }
 }
