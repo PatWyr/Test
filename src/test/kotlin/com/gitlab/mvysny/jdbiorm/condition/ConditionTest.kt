@@ -132,4 +132,45 @@ fun DynaNodeGroup.conditionTests() {
         expectList() { Person.dao.findAllBy(Person.ISALIVE25.`in`(true)) }
         expectList(person) { Person.dao.findAllBy(Person.ISALIVE25.`in`(true, false)) }
     }
+    test("notIn") {
+        val person = Person(name = "Foo", age = 25, isAlive25 = false)
+        person.save()
+        expectList(person) { Person.dao.findAllBy(Person.NAME.notIn("Bar")) }
+        expectList() { Person.dao.findAllBy(Person.NAME.notIn("Foo", "Bar")) }
+        expectList(person) { Person.dao.findAllBy(Person.AGE.notIn(2)) }
+        expectList() { Person.dao.findAllBy(Person.AGE.notIn(2, 25)) }
+        expectList() { Person.dao.findAllBy(Person.AGE.notIn(2, 25, 100)) }
+        expectList(person) { Person.dao.findAllBy(Person.ISALIVE25.notIn(true)) }
+        expectList() { Person.dao.findAllBy(Person.ISALIVE25.notIn(true, false)) }
+    }
+    test("between") {
+        val person = Person(name = "Foo", age = 25, isAlive25 = false)
+        person.save()
+        expectList() { Person.dao.findAllBy(Person.AGE.between(2, 3)) }
+        expectList(person) { Person.dao.findAllBy(Person.AGE.between(2, 25)) }
+        expectList(person) { Person.dao.findAllBy(Person.AGE.between(2, 100)) }
+    }
+    test("notBetween") {
+        val person = Person(name = "Foo", age = 25, isAlive25 = false)
+        person.save()
+        expectList(person) { Person.dao.findAllBy(Person.AGE.notBetween(2, 3)) }
+        expectList() { Person.dao.findAllBy(Person.AGE.notBetween(2, 25)) }
+        expectList() { Person.dao.findAllBy(Person.AGE.notBetween(2, 100)) }
+    }
+    test("isTrue") {
+        val person = Person(name = "Foo", age = 25, isAlive25 = false)
+        person.save()
+        expectList() { Person.dao.findAllBy(Person.ISALIVE25.isTrue()) }
+        person.isAlive25 = true
+        person.save()
+        expectList(person) { Person.dao.findAllBy(Person.ISALIVE25.isTrue()) }
+    }
+    test("isFalse") {
+        val person = Person(name = "Foo", age = 25, isAlive25 = false)
+        person.save()
+        expectList(person) { Person.dao.findAllBy(Person.ISALIVE25.isFalse()) }
+        person.isAlive25 = true
+        person.save()
+        expectList() { Person.dao.findAllBy(Person.ISALIVE25.isFalse()) }
+    }
 }
