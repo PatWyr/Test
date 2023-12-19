@@ -192,7 +192,8 @@ fun DynaNodeGroup.conditionTests() {
         val person = Person2(name = "Foo", age = 25, isAlive25 = true)
         person.save()
         expectList() { Person2.dao.findAllBy(Person2.NAME.like("%Bar")) }
-        expectList() { Person2.dao.findAllBy(Person2.NAME.like("%foo")) }
+        // MariaDB matches case-insensitive, H2 does not.
+//        expectList() { Person2.dao.findAllBy(Person2.NAME.like("%foo")) }
         expectList(person) { Person2.dao.findAllBy(Person2.NAME.like("%Foo")) }
         expectList(person) { Person2.dao.findAllBy(Person2.NAME.like("Foo")) }
         expectList() { Person2.dao.findAllBy(Person2.NAME.like("o")) }
