@@ -158,7 +158,7 @@ The category can now be created easily:
 ```java
 Category cat = new Category();
 cat.setName("Beer");
-cat.save()
+cat.save();
 ```
 
 But how do we specify the target database where to store the category in? 
@@ -286,6 +286,7 @@ with several useful finder methods present in the [Dao](src/main/java/com/gitlab
 * `Category.dao.count()` will return the number of rows in the Category table.
 * `Category.dao.findAllBy("name = :name1 or name = :name2", null, null, q -> q.bind("name1", "Beer").bind("name2", "Cider"))` will find all categories with the name of "Beer" or "Cider".
   This is an example of a parametrized select, from which you only need to provide the WHERE clause.
+* `Category.dao.findAllBy(Category.NAME.in("Beer", "Cider"))` uses a type-safe Condition API.
 * `Category.dao.singleBy("name = :name", q -> q.bind("name", "Beer"));` will fetch exactly one matching category, failing if there is no such category or there are more than one.
 * `Category.dao.findSingleBy("name = :name", q -> q.bind("name", "Beer"));` will fetch one matching category, failing if there are more than one. Returns `null` if there is none.
 * `Category.dao.countBy("name = :name", q -> q.bind("name", "Beer"));` will return the number of rows in the Category table matching given query.
@@ -846,6 +847,35 @@ in a Grid: [Vaadin 8: vaadin8-sqldataprovider-example](https://github.com/mvysny
 and [Vaadin 14: vaadin10-sqldataprovider-example](https://github.com/mvysny/vaadin10-sqldataprovider-example)
 Despite its name, the project demoes both SQLDataProvider and EntityDataProvider.
 
+Since jdbi-orm 2.0, there is a support for creating WHERE conditions programmatically, which
+is very handy for Data Providers. See below for more information.
+
+## Condition API
+
+The Condition API offers a programmatic way to create WHERE clauses; since jdbi-orm 2.0.
+This is very handy for use with Data Providers, but also for creating simple WHERE selects quickly and easily.
+First, you need to add column definitions to your entities:
+
+```java
+public class Category implements Entity<Long> {
+  private Long id;
+  private String name;
+  // getters+setters omitted
+
+  @JdbiProperty(map = false)
+  public static final TableProperty<Category, Long> ID = TableProperty.of<>(Category.class, "id");
+  @JdbiProperty(map = false)
+  public static final TableProperty<Category, String> NAME = TableProperty.of<>(Category.class, "name");
+}
+```
+
+You need to do that for all of your database columns. This will allow you to create the Condition
+which can then be passed to your DAO:
+
+```java
+List<Category> categories = Category.dao.findAllBy(Category.NAME.like("Beer%").and(Category.ID.gt(2)));
+```
+
 ## Aliases
 
 Often database columns follow different naming convention than bean fields, e.g. database `CUSTOMER_NAME` should be mapped to the
@@ -1047,8 +1077,8 @@ The `JdbiOrm.destroy()` is supposed to be called only if you have created the `D
 
 * Simplicity is the most valued property
 * Working with plain SQL commands is preferred over having a type-safe
-  query Java API. You need to tweak the performance of your SQLs in your SQL tool, and
-  you can't just paste Java DSL code into your SQL tool and expect it to work.
+  query Java API. However, having a query API is handy to have for Data Providers,
+  and therefore jdbi-orm provides a basic Condition API (since jdbi-orm 2.0).
 * The database is the source of truth. JVM objects are nothing more than DTOs,
   merely capturing temporary snapshots of the JDBC `ResultSet` rows. The entities are populated by the
   means of reflection: for every column in
@@ -1060,6 +1090,9 @@ The `JdbiOrm.destroy()` is supposed to be called only if you have created the `D
   `jdbi-orm` should not attempt to generate SELECTs on behalf of the programmer (except for the very basic ones related to CRUD);
   instead it should simply allow SELECTs to be passed as Strings, and then map the result
   to an object of programmer's choosing.
+* The entities are hand-written, tailored towards your needs, committed in git and they
+  are never overwritten by a code generator. The downside is that you need to write them
+  by hand, there is no code generator to generate those.
 
 Please read [Back to Base - make SQL great again](http://mavi.logdown.com/posts/5771422)
 for the complete explanation of ideas behind this framework.
@@ -1072,7 +1105,8 @@ mechanism to store/update the data back to the database.
 * [ActiveJDBC](https://javalite.io/activejdbc) has much in common with jdbi-orm; the advantage of jdbi-orm
   is that we do not require any instrumentation to work (we use only Java language features).
 * [JOOQ](https://www.jooq.org/) is great but requires initial generation of java code from your database scheme
-  (you write your entities by hand with jdbi-orm), and promotes type-safe query building instead of plain SQLs.
+  (opposed to that, you write your entities by hand with jdbi-orm and you don't need to run any generator),
+  and promotes type-safe query building instead of plain SQLs.
   There's the usual set of problems coming with generated classes: you can't add your custom utility functions to those,
   you can't add validation annotations, etc.
   If you don't mind that, go for JOOQ - it's definitely more popular than jdbi-orm.
