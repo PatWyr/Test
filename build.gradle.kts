@@ -11,16 +11,16 @@ plugins {
 defaultTasks("clean", "build")
 
 allprojects {
-group = "com.gitlab.mvysny.jdbiorm"
-version = "1.1-SNAPSHOT"
+    group = "com.gitlab.mvysny.jdbiorm"
+    version = "1.1-SNAPSHOT"
 
-repositories {
-    mavenCentral()
-}
+    repositories {
+        mavenCentral()
+    }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
-}
+    tasks.withType<KotlinCompile> {
+        kotlinOptions.jvmTarget = "11"
+    }
 }
 
 subprojects {
@@ -29,7 +29,7 @@ subprojects {
         plugin("kotlin")
         plugin("org.gradle.signing")
     }
-    
+
     java {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -68,9 +68,9 @@ subprojects {
                         url = "https://gitlab.com/mvysny/jdbi-orm"
                         licenses {
                             license {
-                        name = "The MIT License"
-                        url = "https://opensource.org/licenses/MIT"
-                        distribution = "repo"
+                                name = "The MIT License"
+                                url = "https://opensource.org/licenses/MIT"
+                                distribution = "repo"
                             }
                         }
                         developers {
