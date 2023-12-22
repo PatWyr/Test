@@ -84,14 +84,14 @@ private fun DynaNodeGroup.personTestSuite() {
     }
     test("FindById") {
         expect(null) { Person.findById(25) }
-        val p = Person(name = "Albedo", age = 130)
+        val p = Person2(name = "Albedo", age = 130)
         p.save()
-        expect(p.withZeroNanos()) { Person.findById(p.id!!)?.withZeroNanos() }
+        expect(p) { Person2.findById(p.id!!) }
     }
     test("GetById") {
-        val p = Person(name = "Albedo", age = 130)
+        val p = Person2(name = "Albedo", age = 130)
         p.save()
-        expect(p.withZeroNanos()) { Person.getById(p.id!!).withZeroNanos() }
+        expect(p) { Person2.getById(p.id!!) }
     }
     test("GetById fails if there is no such entity") {
         expectThrows<IllegalStateException>("There is no Person for id 25") {
@@ -100,10 +100,10 @@ private fun DynaNodeGroup.personTestSuite() {
     }
     group("getBy() tests") {
         test("succeeds if there is exactly one matching entity") {
-            val p = Person(name = "Albedo", age = 130)
+            val p = Person2(name = "Albedo", age = 130)
             p.save()
-            expect(p.withZeroNanos()) {
-                Person.singleBy("name = :name") { it.bind("name", "Albedo") } .withZeroNanos()
+            expect(p) {
+                Person2.singleBy("name = :name") { it.bind("name", "Albedo") }
             }
         }
 
