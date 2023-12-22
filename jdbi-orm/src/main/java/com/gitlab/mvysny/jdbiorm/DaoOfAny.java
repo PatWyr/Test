@@ -14,8 +14,8 @@ import org.jdbi.v3.core.statement.Update;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -126,7 +126,7 @@ public class DaoOfAny<T> {
      * Finds all rows in given table. Fails if there is no table in the database with the
      * name of {@link EntityMeta#getDatabaseTableName()}. If both offset and limit
      * are specified, then the LIMIT and OFFSET sql paging is used.
-     * @param orderBy if not empty, this is passed in as the ORDER BY clause, e.g. {@code surname ASC, name ASC}.
+     * @param orderBy if not empty, this is passed in as the ORDER BY clause. May be empty, in such case no ordering is applied.
      * @param offset start from this row. If not null, must be 0 or greater.
      * @param limit return this count of row at most. If not null, must be 0 or greater.
      */
@@ -135,10 +135,16 @@ public class DaoOfAny<T> {
         if (limit != null && limit == 0L) {
             return new ArrayList<>();
         }
+        final String order = toSqlOrderClause(orderBy);
+        return findAll(order, offset, limit);
+    }
+
+    @Nullable
+    private String toSqlOrderClause(@NotNull List<OrderBy> orderBy) {
         final String order = orderBy.isEmpty() ? null : orderBy.stream()
                 .map(it -> meta.getProperty(it.getName()).getDbName().getQualifiedName() + " " + it.getOrder())
                 .collect(Collectors.joining(", "));
-        return findAll(order, offset, limit);
+        return order;
     }
 
     private static void checkOffsetLimit(@Nullable Long offset, @Nullable Long limit) {
@@ -179,24 +185,53 @@ public class DaoOfAny<T> {
      * Finds all matching rows in given table. Fails if there is no table in the database with the
      * name of {@link EntityMeta#getDatabaseTableName()}. If both offset and limit
      * are specified, then the LIMIT and OFFSET sql paging is used.
-     * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
+     * @param where the where condition. If null, all rows are matched.
      * @param offset start from this row. If not null, must be 0 or greater.
      * @param limit return this count of row at most. If not null, must be 0 or greater.
      */
     @NotNull
-    public List<T> findAllBy(@NotNull Condition where, @Nullable final Long offset, @Nullable final Long limit) {
-        final ParametrizedSql sql = where.toSql();
-        return findAllBy(sql.getSql92(), null, offset, limit, sql::bindTo);
+    public List<T> findAllBy(@Nullable Condition where, @Nullable final Long offset, @Nullable final Long limit) {
+        return findAllBy(where, Collections.emptyList(), offset, limit);
     }
 
     /**
      * Finds all matching rows in given table. Fails if there is no table in the database with the
      * name of {@link EntityMeta#getDatabaseTableName()}. If both offset and limit
      * are specified, then the LIMIT and OFFSET sql paging is used.
-     * @param where the where condition.
+     * @param where the where condition. If null, all rows are matched.
+     * @param orderBy if not null, this is passed in as the ORDER BY clause. May be empty, in such case no ordering is applied.
+     * @param offset start from this row. If not null, must be 0 or greater.
+     * @param limit return this count of row at most. If not null, must be 0 or greater.
      */
     @NotNull
-    public List<T> findAllBy(@NotNull Condition where) {
+    public List<T> findAllBy(@Nullable Condition where, @NotNull List<OrderBy> orderBy, @Nullable final Long offset, @Nullable final Long limit) {
+        if (where == null) {
+            return findAll(orderBy, offset, limit);
+        }
+        final ParametrizedSql sql = where.toSql();
+        final String order = toSqlOrderClause(orderBy);
+        return findAllBy(sql.getSql92(), order, offset, limit, sql::bindTo);
+    }
+
+    /**
+     * Finds all matching rows in given table. Fails if there is no table in the database with the
+     * name of {@link EntityMeta#getDatabaseTableName()}.
+     * @param where the where condition. If null, all rows are matched.
+     * @param orderBy if not null, this is passed in as the ORDER BY clause. May be empty, in such case no ordering is applied.
+     */
+    @NotNull
+    public List<T> findAllBy(@Nullable Condition where, @NotNull List<OrderBy> orderBy) {
+        return findAllBy(where, orderBy, null, null);
+    }
+
+    /**
+     * Finds all matching rows in given table. Fails if there is no table in the database with the
+     * name of {@link EntityMeta#getDatabaseTableName()}. If both offset and limit
+     * are specified, then the LIMIT and OFFSET sql paging is used.
+     * @param where the where condition. If null, all rows are matched.
+     */
+    @NotNull
+    public List<T> findAllBy(@Nullable Condition where) {
         return findAllBy(where, null, null);
     }
 
@@ -429,6 +464,18 @@ public class DaoOfAny<T> {
             queryConsumer.accept(query);
             return query.mapTo(Long.class).one();
         });
+    }
+
+    /**
+     * Counts all matching rows in this table.
+     * @param condition the where condition. If null, all rows are matched.
+     */
+    public long countBy(@Nullable Condition condition) {
+        if (condition == null) {
+            return count();
+        }
+        final ParametrizedSql sql = condition.toSql();
+        return countBy(sql.getSql92(), sql::bindTo);
     }
 
     /**

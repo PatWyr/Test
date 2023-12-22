@@ -1,1 +1,1 @@
-include("jdbi-orm")
+include("jdbi-orm", "jdbi-orm-vaadin")

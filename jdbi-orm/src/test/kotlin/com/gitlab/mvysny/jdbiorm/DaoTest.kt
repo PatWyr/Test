@@ -48,11 +48,10 @@ private fun DynaNodeGroup.personTestSuite() {
         }
         group("findAllBy") {
             test("non-paged") {
-                val p = Person(name = "Albedo", age = 130)
+                val p = Person2(name = "Albedo", age = 130)
                 p.save()
-                expectList(p.withZeroNanos()) {
-                    Person.findAllBy("name = :name", null, null) { it.bind("name", "Albedo") }
-                            .map { it.withZeroNanos() }
+                expectList(p) {
+                    Person2.findAllBy("name = :name", null, null) { it.bind("name", "Albedo") }
                 }
             }
             test("paged") {
@@ -60,6 +59,25 @@ private fun DynaNodeGroup.personTestSuite() {
                 expect((20..30).toList()) {
                     Person.findAllBy("name = :name", 20L, 11L) { it.bind("name", "Albedo") }
                             .map { it.age }
+                }
+            }
+            test("sorted") {
+                db { (0..10).forEach { Person(name = "Albedo", age = it).save() } }
+                expect((0..10).toList()) {
+                    Person.findAllBy("name = :name", "age ASC") { it.bind("name", "Albedo") }
+                        .map { it.age }
+                }
+                expect((0..10).toList().reversed()) {
+                    Person.findAllBy("name = :name", "age DESC") { it.bind("name", "Albedo") }
+                        .map { it.age }
+                }
+                expect((0..10).toList()) {
+                    Person.findAllBy(Person.NAME.eq("Albedo"), listOf(Person.AGE.asc()))
+                        .map { it.age }
+                }
+                expect((0..10).toList().reversed()) {
+                    Person.findAllBy(Person.NAME.eq("Albedo"), listOf(Person.AGE.desc()))
+                        .map { it.age }
                 }
             }
         }
@@ -119,6 +137,11 @@ private fun DynaNodeGroup.personTestSuite() {
             expect(0) { Person.countBy("age > :age") { q -> q.bind("age", 6) } }
             listOf("Albedo", "Nigredo", "Rubedo").forEach { Person(name = it, age = it.length).save() }
             expect(1) { Person.countBy("age > :age") { q -> q.bind("age", 6) } }
+        }
+        test("count with condition") {
+            expect(0) { Person.countBy(Person.AGE.gt(6)) }
+            listOf("Albedo", "Nigredo", "Rubedo").forEach { Person(name = it, age = it.length).save() }
+            expect(1) { Person.countBy(Person.AGE.gt(6)) }
         }
     }
     test("DeleteAll") {
