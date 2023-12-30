@@ -205,7 +205,7 @@ public class DaoOfAny<T> {
      */
     @NotNull
     public List<T> findAllBy(@Nullable Condition where, @NotNull List<OrderBy> orderBy, @Nullable final Long offset, @Nullable final Long limit) {
-        if (where == null) {
+        if (where == null || where == Condition.NO_CONDITION) {
             return findAll(orderBy, offset, limit);
         }
         final ParametrizedSql sql = where.toSql();
@@ -471,7 +471,7 @@ public class DaoOfAny<T> {
      * @param condition the where condition. If null, all rows are matched.
      */
     public long countBy(@Nullable Condition condition) {
-        if (condition == null) {
+        if (condition == null || condition == Condition.NO_CONDITION) {
             return count();
         }
         final ParametrizedSql sql = condition.toSql();
@@ -505,6 +505,18 @@ public class DaoOfAny<T> {
     }
 
     /**
+     * Checks whether there exists any row in this table.
+     * @param condition the where condition. If null, all rows are matched.
+     */
+    public boolean existsBy(@Nullable Condition condition) {
+        if (condition == null || condition == Condition.NO_CONDITION) {
+            return existsAny();
+        }
+        final ParametrizedSql sql = condition.toSql();
+        return existsBy(sql.getSql92(), sql::bindTo);
+    }
+
+    /**
      * Deletes rows matching given where clause.
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
      * @param updateConsumer allows you to set parameter values etc, for example {@code q -> q.bind("customerid", customerId")}.
@@ -519,6 +531,19 @@ public class DaoOfAny<T> {
             updateConsumer.accept(update);
             return update.execute();
         });
+    }
+
+    /**
+     * Deletes rows matching given where clause.
+     * @param condition the where condition. If null, all rows are matched.
+     */
+    public void deleteBy(@Nullable Condition condition) {
+        if (condition == null || condition == Condition.NO_CONDITION) {
+            deleteAll();
+        } else {
+            final ParametrizedSql sql = condition.toSql();
+            deleteBy(sql.getSql92(), sql::bindTo);
+        }
     }
 
     /**

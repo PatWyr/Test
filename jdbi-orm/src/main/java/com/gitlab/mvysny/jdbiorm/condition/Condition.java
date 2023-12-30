@@ -28,14 +28,25 @@ public interface Condition extends Serializable {
 
     @NotNull
     default Condition or(@Nullable Condition other) {
-        return other == null ? this : new Or(this, other);
+        return other == null || other == NO_CONDITION ? this : new Or(this, other);
     }
 
     @NotNull
     default Condition and(@Nullable Condition other) {
-        return other == null ? this : new And(this, other);
+        return other == null || other == NO_CONDITION ? this : new And(this, other);
     }
 
+    /**
+     * Produces a SQL statement from this condition.
+     * @return a SQL statement, never null. Some conditions (notably {@link #NO_CONDITION})
+     * can not be turned into a SQL statement.
+     */
     @NotNull
     ParametrizedSql toSql();
+
+    /**
+     * {@link NoCondition}.
+     */
+    @NotNull
+    Condition NO_CONDITION = NoCondition.INSTANCE;
 }
