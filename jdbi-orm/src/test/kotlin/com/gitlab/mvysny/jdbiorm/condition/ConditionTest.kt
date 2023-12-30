@@ -241,4 +241,40 @@ fun DynaNodeGroup.conditionTests() {
         person.save()
         expectList(person) { Person2.dao.findAllBy(Person2.ISALIVE25.isNotNull()) }
     }
+    group("no condition") {
+        test("findAllBy") {
+            val person = Person2(name = "Foo", age = 25)
+            person.save()
+            expectList(person) { Person2.dao.findAllBy(null) }
+            expectList(person) { Person2.dao.findAllBy(Condition.NO_CONDITION) }
+        }
+        test("deleteAllBy null") {
+            val person = Person2(name = "Foo", age = 25)
+            person.save()
+            Person2.dao.deleteBy(null)
+            expectList() { Person2.dao.findAll() }
+        }
+        test("deleteAllBy no condition") {
+            val person = Person2(name = "Foo", age = 25)
+            person.save()
+            Person2.dao.deleteBy(Condition.NO_CONDITION)
+            expectList() { Person2.dao.findAll() }
+        }
+        test("exists by") {
+            expect(false) { Person2.dao.existsBy(null) }
+            expect(false) { Person2.dao.existsBy(Condition.NO_CONDITION) }
+            val person = Person2(name = "Foo", age = 25)
+            person.save()
+            expect(true) { Person2.dao.existsBy(null) }
+            expect(true) { Person2.dao.existsBy(Condition.NO_CONDITION) }
+        }
+        test("countBy") {
+            expect(0) { Person2.dao.countBy(null) }
+            expect(0) { Person2.dao.countBy(Condition.NO_CONDITION) }
+            val person = Person2(name = "Foo", age = 25)
+            person.save()
+            expect(1) { Person2.dao.countBy(null) }
+            expect(1) { Person2.dao.countBy(Condition.NO_CONDITION) }
+        }
+    }
 }
