@@ -19,6 +19,23 @@ class ConditionTest : DynaTest({
             expect("(NOT(Person.id = 5)) AND (Person.id = 6)") { Person.ID.eq(5L).not().and(Person.ID.eq(6L)).toString() }
         }
     }
+    group("NoCondition") {
+        test("and") {
+            expect(Condition.NO_CONDITION) { Condition.NO_CONDITION.and(null) }
+            expect(Condition.NO_CONDITION) { Condition.NO_CONDITION.and(Condition.NO_CONDITION) }
+            expect(Person.ID.eq(5L)) { Condition.NO_CONDITION.and(Person.ID.eq(5L)) }
+            expect(Person.ID.eq(5L)) { Person.ID.eq(5L).and(Condition.NO_CONDITION) }
+        }
+        test("or") {
+            expect(Condition.NO_CONDITION) { Condition.NO_CONDITION.or(null) }
+            expect(Condition.NO_CONDITION) { Condition.NO_CONDITION.or(Condition.NO_CONDITION) }
+            expect(Person.ID.eq(5L)) { Condition.NO_CONDITION.or(Person.ID.eq(5L)) }
+            expect(Person.ID.eq(5L)) { Person.ID.eq(5L).or(Condition.NO_CONDITION) }
+        }
+        test("not") {
+            expect(Condition.NO_CONDITION) { Condition.NO_CONDITION.not() }
+        }
+    }
 })
 
 @DynaTestDsl
