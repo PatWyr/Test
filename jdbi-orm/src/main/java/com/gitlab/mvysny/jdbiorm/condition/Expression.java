@@ -436,4 +436,20 @@ public interface Expression<V> extends Serializable {
 
     @NotNull
     ParametrizedSql toSql();
+
+    /**
+     * A FullText filter which performs the case-insensitive full-text search.
+     * Any probe text must either contain all words in this query,
+     * or the query words must match beginnings of all of the words contained in the probe string.
+     * <p></p>
+     * See the jdbi-orm README.md on how to configure a full-text search in a SQL database/RDBMS system.
+     * @param query the user input, no need to normalize or remove special characters since
+     *              this is performed automatically by {@link FullTextCondition}.
+     *              If the query is blank or contains no searchable words, {@link Condition#NO_CONDITION}
+     *              is returned.
+     */
+    @NotNull
+    default Condition fullTextMatches(@NotNull String query) {
+        return FullTextCondition.of(this, query);
+    }
 }
