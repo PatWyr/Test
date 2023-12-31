@@ -14,8 +14,8 @@ public final class Eq implements Condition {
     private final Expression<?> arg2;
 
     public Eq(@NotNull Expression<?> arg1, @NotNull Expression<?> arg2) {
-        this.arg1 = arg1;
-        this.arg2 = arg2;
+        this.arg1 = Objects.requireNonNull(arg1);
+        this.arg2 = Objects.requireNonNull(arg2);
     }
 
     @Override

@@ -56,7 +56,7 @@ public final class ParametrizedSql implements Serializable {
     }
 
     @NotNull
-    public static String generateParameterName(@NotNull Expression<?> expression) {
+    public static String generateParameterName(@NotNull Object expression) {
         return "p" + Integer.toString(System.identityHashCode(expression), 36);
     }
 
@@ -99,4 +99,7 @@ public final class ParametrizedSql implements Serializable {
             query.bind(e.getKey(), e.getValue());
         }
     }
+
+    @NotNull
+    public static final ParametrizedSql MATCH_ALL = new ParametrizedSql("1=1");
 }

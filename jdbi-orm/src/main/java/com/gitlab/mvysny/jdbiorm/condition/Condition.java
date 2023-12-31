@@ -16,6 +16,9 @@ import java.io.Serializable;
  * <p></p>
  * {@link Object#toString()} must be implemented, to ease app debugging. This is not necessarily a valid SQL92 WHERE
  * clause.
+ * <p></p>
+ * Use {@link com.gitlab.mvysny.jdbiorm.JdbiOrm#databaseVariant} if you need to emit different SQL
+ * for particular database.
  */
 public interface Condition extends Serializable {
     /**

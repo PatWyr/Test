@@ -1,6 +1,5 @@
 package com.gitlab.mvysny.jdbiorm.condition;
 
-import com.gitlab.mvysny.jdbiorm.Property;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -12,8 +11,8 @@ public final class Like implements Condition {
     private final Expression<?> arg2;
 
     public Like(@NotNull Expression<?> arg1, @NotNull Expression<?> arg2) {
-        this.arg1 = arg1;
-        this.arg2 = arg2;
+        this.arg1 = Objects.requireNonNull(arg1);
+        this.arg2 = Objects.requireNonNull(arg2);
     }
 
     @Override
