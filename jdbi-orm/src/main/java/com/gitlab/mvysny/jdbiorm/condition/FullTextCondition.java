@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.text.BreakIterator;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A FullText filter which performs the case-insensitive full-text search.
@@ -145,15 +146,28 @@ public final class FullTextCondition implements Condition {
     @Override
     public @NotNull ParametrizedSql toSql() {
         final DatabaseVariant databaseVariant = JdbiOrm.databaseVariant;
+        final String parameterName = ParametrizedSql.generateParameterName(this);
+        final ParametrizedSql sql = arg.toSql();
         if (databaseVariant == DatabaseVariant.MySQLMariaDB) {
             final String booleanQuery = toMySQLFulltextBooleanQuery(getWords());
             if (booleanQuery.isBlank()) {
                 return ParametrizedSql.MATCH_ALL;
             }
-            final ParametrizedSql sql = arg.toSql();
-            return ParametrizedSql.merge("MATCH(" + sql.getSql92() + ") AGAINST (:$parameterName IN BOOLEAN MODE)",
-                    sql.getSql92Parameters(), Collections.singletonMap(ParametrizedSql.generateParameterName(this), booleanQuery));
+            return ParametrizedSql.merge("MATCH(" + sql.getSql92() + ") AGAINST (:" + parameterName + " IN BOOLEAN MODE)",
+                    sql.getSql92Parameters(), Collections.singletonMap(parameterName, booleanQuery));
         }
+        if (databaseVariant == DatabaseVariant.PostgreSQL) {
+            final String query = getWords().stream().map(it -> it + ":*").collect(Collectors.joining(" & "));
+            // see https://www.postgresql.org/docs/9.5/textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES for more documentation
+            return ParametrizedSql.merge("to_tsvector('english', " + sql.getSql92() + ") @@ to_tsquery('english', :" + parameterName + ")",
+                    sql.getSql92Parameters(), Collections.singletonMap(parameterName, query));
+        }
+        if (databaseVariant == DatabaseVariant.MSSQL) {
+            final String query = getWords().stream().map(it -> "\"" + it + "*\"").collect(Collectors.joining(", "));
+            return ParametrizedSql.merge("CONTAINS(" + sql.getSql92() + ", :" + parameterName + ")",
+                    sql.getSql92Parameters(), Collections.singletonMap(parameterName, query));
+        }
+
         throw new IllegalArgumentException("Unsupported FullText search for variant " + databaseVariant + ". Set proper variant to JdbiOrm.databaseVariant");
     }
 }
