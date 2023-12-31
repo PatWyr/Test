@@ -1,6 +1,8 @@
 package com.gitlab.mvysny.jdbiorm.condition;
 
+import com.gitlab.mvysny.jdbiorm.EntityMeta;
 import com.gitlab.mvysny.jdbiorm.JdbiOrm;
+import com.gitlab.mvysny.jdbiorm.TableProperty;
 import com.gitlab.mvysny.jdbiorm.quirks.DatabaseVariant;
 import org.jetbrains.annotations.NotNull;
 
@@ -167,7 +169,25 @@ public final class FullTextCondition implements Condition {
             return ParametrizedSql.merge("CONTAINS(" + sql.getSql92() + ", :" + parameterName + ")",
                     sql.getSql92Parameters(), Collections.singletonMap(parameterName, query));
         }
+        if (databaseVariant == DatabaseVariant.H2) {
+            final EntityMeta<?> meta = getEntityMeta();
+            final String idColumn = meta.getIdProperty().get(0).getDbName().getQualifiedName();
+            final String query = getWords().stream()
+                    .map(it -> it + "*")
+                    .collect(Collectors.joining(" AND "));
+            // Need to CAST(FT.KEYS[1] AS BIGINT) otherwise IN won't match anything
+            return ParametrizedSql.merge(idColumn + " IN (SELECT CAST(FT.KEYS[1] AS BIGINT) AS ID FROM FTL_SEARCH_DATA(:" + parameterName + ", 0, 0) FT WHERE FT.`TABLE`='" + meta.getDatabaseTableName().toUpperCase() + "')",
+                    sql.getSql92Parameters(), Collections.singletonMap(parameterName, query));
+        }
 
         throw new IllegalArgumentException("Unsupported FullText search for variant " + databaseVariant + ". Set proper variant to JdbiOrm.databaseVariant");
+    }
+
+    @NotNull
+    private EntityMeta<?> getEntityMeta() {
+        if (arg instanceof TableProperty) {
+            return EntityMeta.of(((TableProperty<?, ?>) arg).getEntityClass());
+        }
+        throw new IllegalStateException(arg + ": expected TableProperty");
     }
 }
