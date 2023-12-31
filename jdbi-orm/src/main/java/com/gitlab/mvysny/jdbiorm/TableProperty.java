@@ -22,6 +22,9 @@ import java.util.Objects;
  * @param <V> the value type of this field.
  */
 public final class TableProperty<E, V> implements Property<V> {
+    /**
+     * The class of the entity which owns this property.
+     */
     @NotNull
     private final Class<E> entityClass;
     @NotNull
@@ -35,6 +38,14 @@ public final class TableProperty<E, V> implements Property<V> {
 
     @Nullable
     private transient volatile PropertyMeta meta;
+
+    /**
+     * The class of the entity which owns this property.
+     */
+    @NotNull
+    public Class<E> getEntityClass() {
+        return entityClass;
+    }
 
     @NotNull
     private PropertyMeta getMeta() {
