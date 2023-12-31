@@ -27,9 +27,20 @@ public final class FullTextCondition implements Condition {
     @NotNull
     private final String query;
 
+    /**
+     * The database table column which is fulltext-matched against {@link #getQuery()}.
+     */
     @NotNull
     private final Expression<?> arg;
 
+    /**
+     * Creates the full text condition. If there's nothing in the query to search for,
+     * returns {@link Condition#NO_CONDITION}.
+     * @param arg The database table column which is fulltext-matched against given query.
+     * @param query Any probe text must either contain words in this query, or the query words must match beginnings of the words contained in the probe.
+     *              You can pass in raw user input here; the query is trimmed and any special characters are removed or escaped properly.
+     * @return the condition.
+     */
     @NotNull
     public static Condition of(@NotNull Expression<?> arg, @NotNull String query) {
         final FullTextCondition condition = new FullTextCondition(arg, query);
@@ -39,7 +50,7 @@ public final class FullTextCondition implements Condition {
         return condition;
     }
 
-    public FullTextCondition(@NotNull Expression<?> arg, @NotNull String query) {
+    private FullTextCondition(@NotNull Expression<?> arg, @NotNull String query) {
         this.query = Objects.requireNonNull(query).trim();
         if (query.isEmpty()) {
             throw new IllegalArgumentException("Parameter query: invalid value " + query + ": must not be blank");
@@ -47,11 +58,20 @@ public final class FullTextCondition implements Condition {
         this.arg = Objects.requireNonNull(arg);
     }
 
+    /**
+     * Any probe text must either contain words in this query,
+     * or the query words must match beginnings of the words contained in the probe.
+     * <p></p>
+     * Trimmed, not blank.
+     */
     @NotNull
     public String getQuery() {
         return query;
     }
 
+    /**
+     * The database table column which is fulltext-matched against {@link #getQuery()}.
+     */
     @NotNull
     public Expression<?> getArg() {
         return arg;
@@ -60,6 +80,8 @@ public final class FullTextCondition implements Condition {
     /**
      * In order for the probe to match, the probe must either match these words,
      * or the query words must match beginnings of the words contained in the probe.
+     * <p></p>
+     * Constructed from {@link #getQuery()}.
      */
     public Set<String> getWords() {
         final LinkedList<String> words = splitToWords(query.trim().toLowerCase(), false, Locale.getDefault());
