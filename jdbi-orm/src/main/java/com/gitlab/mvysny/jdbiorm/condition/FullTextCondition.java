@@ -147,7 +147,7 @@ public final class FullTextCondition implements Condition {
 
     @Override
     public String toString() {
-        return query + " ~ " + getWords();
+        return arg + " ~ " + getWords();
     }
 
     /**

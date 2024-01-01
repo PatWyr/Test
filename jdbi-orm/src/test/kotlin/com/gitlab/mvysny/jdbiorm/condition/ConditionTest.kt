@@ -18,6 +18,7 @@ class ConditionTest : DynaTest({
         test("expressions") {
             expect("Person.id = 5") { Person.ID.eq(5L).toString() }
             expect("(NOT(Person.id = 5)) AND (Person.id = 6)") { Person.ID.eq(5L).not().and(Person.ID.eq(6L)).toString() }
+            expect("Person.name ~ [foo]") { Person.NAME.fullTextMatches("foo").toString() }
         }
     }
     group("NoCondition") {
@@ -295,6 +296,21 @@ fun DynaNodeGroup.conditionTests(dbInfo: DatabaseInfo) {
                 val moby = Person(name = "Moby")
                 moby.create()
                 expectList(moby) { Person.findAllBy(Person.NAME.fullTextMatches("")) }
+            }
+
+            test("various queries matching/not matching Moby") {
+                val moby = Person(name = "Moby")
+                moby.create()
+                expectList() { Person.findAllBy(Person.NAME.fullTextMatches("foobar")) }
+                expectList(moby) { Person.findAllBy(Person.NAME.fullTextMatches("Moby")) }
+                expectList() { Person.findAllBy(Person.NAME.fullTextMatches("Jerry")) }
+                expectList() { Person.findAllBy(Person.NAME.fullTextMatches("Jerry Moby")) }
+            }
+
+            test("partial match") {
+                val moby = Person(name = "Moby")
+                moby.create()
+                expectList(moby) { Person.findAllBy(Person.NAME.fullTextMatches("Mob")) }
             }
         }
     }
