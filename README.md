@@ -867,9 +867,9 @@ public class Category implements Entity<Long> {
   // getters+setters omitted
 
   @JdbiProperty(map = false)
-  public static final TableProperty<Category, Long> ID = TableProperty.of<>(Category.class, "id");
+  public static final TableProperty<Category, Long> ID = TableProperty.of(Category.class, "id");
   @JdbiProperty(map = false)
-  public static final TableProperty<Category, String> NAME = TableProperty.of<>(Category.class, "name");
+  public static final TableProperty<Category, String> NAME = TableProperty.of(Category.class, "name");
 }
 ```
 
