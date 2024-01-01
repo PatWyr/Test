@@ -5,6 +5,7 @@ import com.gitlab.mvysny.jdbiorm.JdbiOrm;
 import com.gitlab.mvysny.jdbiorm.TableProperty;
 import com.gitlab.mvysny.jdbiorm.quirks.DatabaseVariant;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.text.BreakIterator;
 import java.util.*;
@@ -42,8 +43,15 @@ public final class FullTextCondition implements Condition {
      * @return the condition.
      */
     @NotNull
-    public static Condition of(@NotNull Expression<?> arg, @NotNull String query) {
-        final FullTextCondition condition = new FullTextCondition(arg, query);
+    public static Condition of(@NotNull Expression<?> arg, @Nullable String query) {
+        if (query == null) {
+            return Condition.NO_CONDITION;
+        }
+        final String trimmedQuery = query.trim();
+        if (trimmedQuery.isEmpty()) {
+            return Condition.NO_CONDITION;
+        }
+        final FullTextCondition condition = new FullTextCondition(arg, trimmedQuery);
         if (condition.getWords().isEmpty()) {
             return Condition.NO_CONDITION;
         }
@@ -77,6 +85,9 @@ public final class FullTextCondition implements Condition {
         return arg;
     }
 
+    @Nullable
+    private transient LinkedHashSet<String> words = null;
+
     /**
      * In order for the probe to match, the probe must either match these words,
      * or the query words must match beginnings of the words contained in the probe.
@@ -84,7 +95,10 @@ public final class FullTextCondition implements Condition {
      * Constructed from {@link #getQuery()}.
      */
     public Set<String> getWords() {
-        final LinkedList<String> words = splitToWords(query.trim().toLowerCase(), false, Locale.getDefault());
+        if (words == null) {
+            words = new LinkedHashSet<>(splitToWords(query.trim().toLowerCase(), false, Locale.getDefault()));
+        }
+        // defensive copy, to prevent mutation
         return new LinkedHashSet<>(words);
     }
 

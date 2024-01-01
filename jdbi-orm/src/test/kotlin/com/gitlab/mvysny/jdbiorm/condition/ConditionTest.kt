@@ -4,6 +4,7 @@ import com.github.mvysny.dynatest.DynaNodeGroup
 import com.github.mvysny.dynatest.DynaTest
 import com.github.mvysny.dynatest.DynaTestDsl
 import com.github.mvysny.dynatest.expectList
+import com.gitlab.mvysny.jdbiorm.DatabaseInfo
 import com.gitlab.mvysny.jdbiorm.JoinTable
 import com.gitlab.mvysny.jdbiorm.Person
 import com.gitlab.mvysny.jdbiorm.Person2
@@ -39,7 +40,7 @@ class ConditionTest : DynaTest({
 })
 
 @DynaTestDsl
-fun DynaNodeGroup.conditionTests() {
+fun DynaNodeGroup.conditionTests(dbInfo: DatabaseInfo) {
     // check that the produced SQL actually executes and is accepted by the database. We don't test the
     // correctness of the result just yet
     group("smoke") {
@@ -275,6 +276,26 @@ fun DynaNodeGroup.conditionTests() {
             person.save()
             expect(1) { Person2.dao.countBy(null) }
             expect(1) { Person2.dao.countBy(Condition.NO_CONDITION) }
+        }
+    }
+    group("full-text search") {
+        test("construct sql succeeds") {
+            Person2.NAME.fullTextMatches("foo").toSql()
+        }
+
+        if (dbInfo.supportsFullText) {
+            test("smoke test") {
+                Person.findAllBy(Person.NAME.fullTextMatches(""))
+                Person.findAllBy(Person.NAME.fullTextMatches("a"))
+                Person.findAllBy(Person.NAME.fullTextMatches("the"))
+                Person.findAllBy(Person.NAME.fullTextMatches("Moby"))
+            }
+
+            test("blank filter matches all records") {
+                val moby = Person(name = "Moby")
+                moby.create()
+                expectList(moby) { Person.findAllBy(Person.NAME.fullTextMatches("")) }
+            }
         }
     }
 }

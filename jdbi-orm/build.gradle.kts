@@ -23,6 +23,9 @@ dependencies {
     testImplementation("org.slf4j:slf4j-simple:${properties["slf4jVersion"]}")
     testImplementation("com.h2database:h2:2.2.224") // https://repo1.maven.org/maven2/com/h2database/h2/
 
+    testImplementation("org.apache.lucene:lucene-analyzers-common:8.11.1") // for H2 Full-Text search
+    testImplementation("org.apache.lucene:lucene-queryparser:8.11.1") // for H2 Full-Text search
+
     testImplementation("org.postgresql:postgresql:42.7.1") // check newest at https://jdbc.postgresql.org/download/
     testImplementation("com.mysql:mysql-connector-j:8.2.0") // https://dev.mysql.com/downloads/connector/j/
     testImplementation("org.mariadb.jdbc:mariadb-java-client:3.3.1") // https://mariadb.com/kb/en/about-mariadb-connector-j/

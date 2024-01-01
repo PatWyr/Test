@@ -10,7 +10,7 @@ import kotlin.test.expect
  * Only start/stop docker databases once, to speed up tests dramatically.
  */
 class AllDatabaseTests : DynaTest({
-    withAllDatabases {
+    withAllDatabases { dbInfo ->
         group("jdbi() tests") {
             jdbiFunTests()
         }
@@ -24,7 +24,7 @@ class AllDatabaseTests : DynaTest({
             joinTableTestSuite()
         }
         group("Conditions") {
-           conditionTests()
+           conditionTests(dbInfo)
         }
     }
 })

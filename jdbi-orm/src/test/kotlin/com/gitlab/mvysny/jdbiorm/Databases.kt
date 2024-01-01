@@ -92,6 +92,7 @@ private fun DynaNodeGroup.usingDockerizedPosgresql() {
                 alive boolean,
                 maritalStatus varchar(200)
                  )""")
+            ddl("""CREATE INDEX pgweb_idx ON Test USING GIN (to_tsvector('english', name));""")
             ddl("""create table if not exists EntityWithAliasedId(myid bigserial primary key, name varchar(400) not null)""")
             ddl("""create table if not exists NaturalPerson(id varchar(10) primary key, name varchar(400) not null, bytes bytea not null)""")
             ddl("""create table if not exists LogRecord(id UUID primary key, text varchar(400) not null)""")
@@ -140,6 +141,8 @@ private fun DynaNodeGroup.usingDockerizedCockroachDB() {
                 alive boolean,
                 maritalStatus varchar(200)
                  )""")
+            // full-text search not yet supported: https://github.com/cockroachdb/cockroach/issues/41288
+//            ddl("""CREATE INDEX pgweb_idx ON Test USING GIN (to_tsvector('english', name));""")
             ddl("""create table if not exists EntityWithAliasedId(myid bigserial primary key, name varchar(400) not null)""")
             ddl("""create table if not exists NaturalPerson(id varchar(10) primary key, name varchar(400) not null, bytes bytea not null)""")
             ddl("""create table if not exists LogRecord(id UUID primary key, text varchar(400) not null)""")
@@ -189,7 +192,8 @@ fun DynaNodeGroup.usingDockerizedMysql() {
                 created timestamp(3) NULL,
                 modified timestamp(3) NULL,
                 alive boolean,
-                maritalStatus varchar(200)
+                maritalStatus varchar(200),
+                FULLTEXT index (name)
                  )""")
             ddl("""create table EntityWithAliasedId(myid bigint primary key auto_increment, name varchar(400) not null)""")
             ddl("""create table NaturalPerson(id varchar(10) primary key, name varchar(400) not null, bytes binary(16) not null)""")
@@ -238,6 +242,7 @@ fun DynaNodeGroup.usingH2Database() {
     beforeEach {
         db {
             ddl("DROP ALL OBJECTS")
+            ddl("""CREATE ALIAS IF NOT EXISTS FTL_INIT FOR "org.h2.fulltext.FullTextLucene.init";CALL FTL_INIT();""")
             ddl("""create table Test (
                 id bigint primary key auto_increment,
                 name varchar not null,
@@ -254,6 +259,7 @@ fun DynaNodeGroup.usingH2Database() {
             ddl("""create table TypeMappingEntity(id bigint primary key auto_increment, enumTest ENUM('Single', 'Married', 'Divorced', 'Widowed'))""")
             ddl("""create table JOIN_TABLE(customerId bigint, orderId bigint)""")
             ddl("""create table mapping_table(person_id bigint not null, department_id bigint not null, some_data varchar(400) not null, PRIMARY KEY(person_id, department_id))""")
+            ddl("""CALL FTL_CREATE_INDEX('PUBLIC', 'TEST', 'NAME');""")
         }
     }
     afterEach {
@@ -295,7 +301,8 @@ private fun DynaNodeGroup.usingDockerizedMariaDB() {
                 created timestamp(3) NULL,
                 modified timestamp(3) NULL,
                 alive boolean,
-                maritalStatus varchar(200)
+                maritalStatus varchar(200),
+                FULLTEXT index (name)
                  )"""
             )
             ddl("""create table if not exists EntityWithAliasedId(myid bigint primary key auto_increment, name varchar(400) not null)""")
@@ -347,6 +354,21 @@ private fun DynaNodeGroup.usingDockerizedMSSQL() {
                 maritalStatus varchar(200)
                  )"""
             )
+            // unfortunately the default Docker image doesn't support the FULLTEXT index:
+            // https://stackoverflow.com/questions/60489784/installing-mssql-server-express-using-docker-with-full-text-search-support
+            // just skip the tests for now
+            /*
+                        ddl("CREATE UNIQUE INDEX ui_ukDoc ON Test(name);")
+                        ddl("""CREATE FULLTEXT INDEX ON Test
+            (
+                Test                         --Full-text index column name
+                    TYPE COLUMN name    --Name of column that contains file type information
+                    Language 2057                 --2057 is the LCID for British English
+            )
+            KEY INDEX ui_ukDoc ON AdvWksDocFTCat --Unique index
+            WITH CHANGE_TRACKING AUTO            --Population type;  """)
+            */
+
             ddl("""create table EntityWithAliasedId(myid bigint primary key IDENTITY(1,1) not null, name varchar(400) not null)""")
             ddl("""create table NaturalPerson(id varchar(10) primary key, name varchar(400) not null, bytes binary(16) not null)""")
             ddl("""create table LogRecord(id uniqueidentifier primary key, text varchar(400) not null)""")
@@ -368,10 +390,10 @@ private fun DynaNodeGroup.usingDockerizedMSSQL() {
 }
 
 @DynaTestDsl
-fun DynaNodeGroup.withAllDatabases(block: DynaNodeGroup.()->Unit) {
+fun DynaNodeGroup.withAllDatabases(block: DynaNodeGroup.(DatabaseInfo)->Unit) {
     group("H2") {
         usingH2Database()
-        block()
+        block(DatabaseInfo(DatabaseVariant.H2))
     }
 
     if (System.getProperty("h2only").toBoolean()) {
@@ -382,27 +404,32 @@ fun DynaNodeGroup.withAllDatabases(block: DynaNodeGroup.()->Unit) {
         println("Docker is available, running PostgreSQL/MySQL/MariaDB tests")
         group("PostgreSQL 15.2") {
             usingDockerizedPosgresql()
-            block()
+            block(DatabaseInfo(DatabaseVariant.PostgreSQL))
         }
 
         group("MySQL 5.7.21") {
             usingDockerizedMysql()
-            block()
+            block(DatabaseInfo(DatabaseVariant.MySQLMariaDB))
         }
 
         group("MariaDB 10.1.31") {
             usingDockerizedMariaDB()
-            block()
+            block(DatabaseInfo(DatabaseVariant.MySQLMariaDB))
         }
 
         group("MSSQL 2017 Express") {
             usingDockerizedMSSQL()
-            block()
+            // unfortunately the default Docker image doesn't support the FULLTEXT index:
+            // https://stackoverflow.com/questions/60489784/installing-mssql-server-express-using-docker-with-full-text-search-support
+            block(DatabaseInfo(DatabaseVariant.MSSQL, supportsFullText = false))
         }
 
         group("CockroachDB") {
             usingDockerizedCockroachDB()
-            block()
+            // full-text search not yet supported: https://github.com/cockroachdb/cockroach/issues/41288
+            block(DatabaseInfo(DatabaseVariant.PostgreSQL, supportsFullText = false))
         }
     }
 }
+
+data class DatabaseInfo(val variant: DatabaseVariant, val supportsFullText: Boolean = true)
