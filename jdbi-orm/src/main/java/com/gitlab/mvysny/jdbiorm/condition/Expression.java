@@ -351,6 +351,10 @@ public interface Expression<V> extends Serializable {
         return new IsFalse(this);
     }
 
+    default Condition isBoolean(boolean value) {
+        return value ? isTrue() : isFalse();
+    }
+
     /**
      * <code>lower(this) = lower(value)</code>.
      */
