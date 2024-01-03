@@ -247,11 +247,17 @@ fun DynaNodeGroup.joinTableTestSuite() {
             expect(p) {
                 JoinTable.dao.findFirstBy("customerId = :cid") { it.bind("cid", 130) }
             }
+            expect(p) {
+                JoinTable.dao.findFirstBy(JoinTable.CUSTOMERID.eq(130))
+            }
         }
 
         test("returns null if there is no such entity") {
             expect(null) {
                 JoinTable.dao.findFirstBy("customerId = :cid") { it.bind("cid", 130) }
+            }
+            expect(null) {
+                JoinTable.dao.findFirstBy(JoinTable.CUSTOMERID.eq(130))
             }
         }
 
@@ -259,6 +265,9 @@ fun DynaNodeGroup.joinTableTestSuite() {
             repeat(2) { JoinTable(130, 130).save() }
             expect(JoinTable(130, 130)) {
                 JoinTable.dao.findFirstBy("customerId = :cid") { it.bind("cid", 130) }
+            }
+            expect(JoinTable(130, 130)) {
+                JoinTable.dao.findFirstBy(JoinTable.CUSTOMERID.eq(130))
             }
         }
     }

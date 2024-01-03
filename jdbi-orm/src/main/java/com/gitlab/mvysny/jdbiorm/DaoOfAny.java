@@ -419,6 +419,15 @@ public class DaoOfAny<T> {
         return first.isEmpty() ? null : first.get(0);
     }
 
+    @Nullable
+    public T findFirstBy(@Nullable Condition where) {
+        if (where == null || where == Condition.NO_CONDITION) {
+            return findFirst();
+        }
+        final ParametrizedSql sql = where.toSql();
+        return findFirstBy(sql.getSql92(), sql::bindTo);
+    }
+
     /**
      * Retrieves single entity matching given {@code where} clause.
      * Fails if there is no such entity, or if there are two or more entities matching the criteria.
