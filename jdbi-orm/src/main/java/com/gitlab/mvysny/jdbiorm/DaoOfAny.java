@@ -318,6 +318,15 @@ public class DaoOfAny<T> {
     }
 
     @Nullable
+    public T findSingleBy(@Nullable Condition where) {
+        if (where == null || where == Condition.NO_CONDITION) {
+            return findSingle();
+        }
+        final ParametrizedSql sql = where.toSql();
+        return findSingleBy(sql.getSql92(), sql::bindTo);
+    }
+
+    @Nullable
     private T findSingleBy(@Nullable String where, boolean failOnNoResult, @NotNull Consumer<Query> queryConsumer) {
         Objects.requireNonNull(queryConsumer, "queryConsumer");
         return jdbi().withHandle(handle -> {
@@ -429,6 +438,15 @@ public class DaoOfAny<T> {
     @NotNull
     public T singleBy(@Nullable String where, Consumer<Query> queryConsumer) {
         return Objects.requireNonNull(findSingleBy(where, true, queryConsumer));
+    }
+
+    @NotNull
+    public T singleBy(@Nullable Condition where) {
+        if (where == null || where == Condition.NO_CONDITION) {
+            return single();
+        }
+        final ParametrizedSql sql = where.toSql();
+        return singleBy(sql.getSql92(), sql::bindTo);
     }
 
     /**

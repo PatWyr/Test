@@ -64,11 +64,17 @@ fun DynaNodeGroup.joinTableTestSuite() {
             expect(p) {
                 JoinTable.dao.singleBy("customerId = :cid") { it.bind("cid", 130) }
             }
+            expect(p) {
+                JoinTable.dao.singleBy(JoinTable.CUSTOMERID.eq(130))
+            }
         }
 
         test("fails if there is no such entity") {
             expectThrows<IllegalStateException>("no row matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:10}, finder:[]}") {
                 JoinTable.dao.singleBy("customerId = :cid") { it.bind("cid", 10) }
+            }
+            expectThrows<IllegalStateException>("no row matching JoinTable: '(JOIN_TABLE.customerId) = (:p") {
+                JoinTable.dao.singleBy(JoinTable.CUSTOMERID.eq(10))
             }
         }
 
@@ -77,12 +83,18 @@ fun DynaNodeGroup.joinTableTestSuite() {
             expectThrows<IllegalStateException>("too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:100}, finder:[]}") {
                 JoinTable.dao.singleBy("customerId = :cid") { it.bind("cid", 100) }
             }
+            expectThrows<IllegalStateException>("too many rows matching JoinTable: '(JOIN_TABLE.customerId) = (:p") {
+                JoinTable.dao.singleBy(JoinTable.CUSTOMERID.eq(100))
+            }
         }
 
         test("fails if there are ten matching entities") {
             repeat(10) { JoinTable(100, 100).save() }
             expectThrows<IllegalStateException>("too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:100}, finder:[]}") {
                 JoinTable.dao.singleBy("customerId = :cid") { it.bind("cid", 100) }
+            }
+            expectThrows<IllegalStateException>("too many rows matching JoinTable: '(JOIN_TABLE.customerId) = (:p") {
+                JoinTable.dao.singleBy(JoinTable.CUSTOMERID.eq(100))
             }
         }
     }
@@ -172,11 +184,17 @@ fun DynaNodeGroup.joinTableTestSuite() {
             expect(p) {
                 JoinTable.dao.findSingleBy("customerId = :cid") { it.bind("cid", 130) }
             }
+            expect(p) {
+                JoinTable.dao.findSingleBy(JoinTable.CUSTOMERID.eq(130))
+            }
         }
 
         test("returns null if there is no such entity") {
             expect(null) {
                 JoinTable.dao.findSingleBy("customerId = :cid") { it.bind("cid", 130) }
+            }
+            expect(null) {
+                JoinTable.dao.findSingleBy(JoinTable.CUSTOMERID.eq(130))
             }
         }
 
@@ -185,12 +203,18 @@ fun DynaNodeGroup.joinTableTestSuite() {
             expectThrows(IllegalStateException::class, "too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:130}, finder:[]}") {
                 JoinTable.dao.findSingleBy("customerId = :cid") { it.bind("cid", 130) }
             }
+            expectThrows(IllegalStateException::class, "too many rows matching JoinTable: '(JOIN_TABLE.customerId) = (:p") {
+                JoinTable.dao.findSingleBy(JoinTable.CUSTOMERID.eq(130))
+            }
         }
 
         test("fails if there are ten matching entities") {
             repeat(10) { JoinTable(130, 130).save() }
             expectThrows(IllegalStateException::class, "too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:130}, finder:[]}") {
                 JoinTable.dao.findSingleBy("customerId = :cid") { it.bind("cid", 130) }
+            }
+            expectThrows(IllegalStateException::class, "too many rows matching JoinTable: '(JOIN_TABLE.customerId) = (:p") {
+                JoinTable.dao.findSingleBy(JoinTable.CUSTOMERID.eq(130))
             }
         }
     }
