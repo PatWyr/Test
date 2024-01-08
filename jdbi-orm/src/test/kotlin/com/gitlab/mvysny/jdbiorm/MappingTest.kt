@@ -67,7 +67,7 @@ private fun DynaNodeGroup.personTestBattery() {
             expectList("Rubedo", "Nigredo") { Person.findAll().map { it.name } }
         }
         test("SaveEnum") {
-            val p = Person(name = "Zaphod", age = 42, maritalStatus = com.gitlab.mvysny.jdbiorm.MaritalStatus.Divorced)
+            val p = Person2(name = "Zaphod", age = 42, maritalStatus = MaritalStatus.Divorced)
             p.save()
             class Foo(var maritalStatus: String? = null) {
                 constructor(): this(null)
@@ -77,7 +77,7 @@ private fun DynaNodeGroup.personTestBattery() {
                     createQuery("select maritalStatus from Test").mapToBean(Foo::class.java).list().map { it.maritalStatus }
                 }
             }
-            expect(p.withZeroNanos()) { db { Person.findAll()[0].withZeroNanos() } }
+            expect(p) { db { Person2.findAll()[0] } }
         }
         test("SaveLocalDate") {
             val p = Person(name = "Zaphod", age = 42, dateOfBirth = LocalDate.of(1990, 1, 14))
