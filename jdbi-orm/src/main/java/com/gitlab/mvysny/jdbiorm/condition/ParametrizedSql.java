@@ -1,6 +1,5 @@
 package com.gitlab.mvysny.jdbiorm.condition;
 
-import org.jdbi.v3.core.statement.Query;
 import org.jdbi.v3.core.statement.SqlStatement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,7 +18,7 @@ public final class ParametrizedSql implements Serializable {
     /**
      * For example `name = :name`; references database column names via
      * {@link com.gitlab.mvysny.jdbiorm.Property.DbName}. You can generate parameter names
-     * using {@link #generateParameterName(Expression)}.
+     * using {@link #generateParameterName(Object)}.
      */
     @NotNull
     private final String sql92;

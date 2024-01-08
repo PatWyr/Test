@@ -110,6 +110,7 @@ public interface Expression<V> extends Serializable {
 
     /**
      * The <code>LE</code> operator.
+     * @return the condition, not null.
      */
     @NotNull
     default Condition le(@NotNull Expression<? extends V> value) {
@@ -118,6 +119,7 @@ public interface Expression<V> extends Serializable {
 
     /**
      * The <code>GT</code> operator.
+     * @return the condition, not null.
      */
     @NotNull
     default Condition gt(@Nullable V value) {
@@ -142,6 +144,7 @@ public interface Expression<V> extends Serializable {
 
     /**
      * The <code>GE</code> operator.
+     * @return the condition, not null.
      */
     @NotNull
     default Condition ge(@NotNull Expression<? extends V> value) {
@@ -150,6 +153,7 @@ public interface Expression<V> extends Serializable {
 
     /**
      * The <code>NE</code> operator.
+     * @return the condition, not null.
      */
     @NotNull
     default Condition ne(@Nullable V value) {
@@ -158,6 +162,7 @@ public interface Expression<V> extends Serializable {
 
     /**
      * The <code>NE</code> operator.
+     * @return the condition, not null.
      */
     @NotNull
     default Condition ne(@NotNull Expression<? extends V> value) {
@@ -180,6 +185,7 @@ public interface Expression<V> extends Serializable {
      * <li><code>IN</code> predicates on temporary tables</li>
      * <li><code>IN</code> predicates on unnested array bind variables</li>
      * </ul>
+     * @return the condition, not null.
      */
     @NotNull
     default Condition in(@NotNull Collection<? extends V> values) {
@@ -224,6 +230,7 @@ public interface Expression<V> extends Serializable {
      * <li><code>IN</code> predicates on temporary tables</li>
      * <li><code>IN</code> predicates on unnested array bind variables</li>
      * </ul>
+     * @return the condition, not null.
      */
     @NotNull
     default Condition in(@NotNull Expression<? extends V>... values) {
@@ -245,6 +252,7 @@ public interface Expression<V> extends Serializable {
      * <li><code>IN</code> predicates on temporary tables</li>
      * <li><code>IN</code> predicates on unnested array bind variables</li>
      * </ul>
+     * @return the condition, not null.
      */
     @NotNull
     default Condition notIn(@NotNull Collection<? extends V> values) {
@@ -267,6 +275,7 @@ public interface Expression<V> extends Serializable {
      * <li><code>IN</code> predicates on temporary tables</li>
      * <li><code>IN</code> predicates on unnested array bind variables</li>
      * </ul>
+     * @return the condition, not null.
      */
     @NotNull
     default Condition notIn(@NotNull V... values) {
@@ -289,26 +298,38 @@ public interface Expression<V> extends Serializable {
      * <li><code>IN</code> predicates on temporary tables</li>
      * <li><code>IN</code> predicates on unnested array bind variables</li>
      * </ul>
+     * @return the condition, not null.
      */
     @NotNull
     default Condition notIn(@NotNull Expression<? extends V>... values) {
         return in(values).not();
     }
 
+    /**
+     * Create a condition which matches a value against min or max value, whichever is not null.
+     * If both parameters are null, {@link Condition#NO_CONDITION} is returned.
+     * @param minValue the min value; matched value must be equal to or greater than this value. If null, no lower bound is set.
+     * @param maxValue the max value; matched value must be equal to or lower than this value. If null, no upper bound is set.
+     * @return the condition, not null.
+     */
     @NotNull
     default Condition between(@Nullable V minValue, @Nullable V maxValue) {
-        if (minValue == null) {
-            return le(maxValue);
-        } else if (maxValue == null) {
-            return ge(minValue);
-        } else {
-            return ge(minValue).and(le(maxValue));
-        }
+        return between(minValue == null ? null : new Value<>(minValue), maxValue == null ? null : new Value<>(maxValue));
     }
 
+    /**
+     * Create a condition which matches a value against min or max value, whichever is not null.
+     * If both parameters are null, {@link Condition#NO_CONDITION} is returned.
+     * @param minValue the min value; matched value must be equal to or greater than this value. If null, no lower bound is set.
+     * @param maxValue the max value; matched value must be equal to or lower than this value. If null, no upper bound is set.
+     * @return the condition, not null.
+     */
     @NotNull
     default Condition between(@Nullable Expression<? extends V> minValue, @Nullable Expression<? extends V> maxValue) {
         if (minValue == null) {
+            if (maxValue == null) {
+                return Condition.NO_CONDITION;
+            }
             return le(maxValue);
         } else if (maxValue == null) {
             return ge(minValue);
@@ -333,6 +354,7 @@ public interface Expression<V> extends Serializable {
      * <p>
      * SQL:
      * <code>lower(this) in ("1", "y", "yes", "true", "on", "enabled")</code>
+     * @return the condition, not null.
      */
     @NotNull
     default Condition isTrue() {
@@ -345,18 +367,26 @@ public interface Expression<V> extends Serializable {
      * <p>
      * SQL:
      * <code>lower(this) in ("0", "n", "no", "false", "off", "disabled")</code>
+     * @return the condition, not null.
      */
     @NotNull
     default Condition isFalse() {
         return new IsFalse(this);
     }
 
-    default Condition isBoolean(boolean value) {
+    /**
+     * Calls {@link #isTrue()} or {@link #isFalse()}, depending on the input value.
+     * @param value the input value
+     * @return the condition, not null.
+     */
+    @NotNull
+    default Condition is(boolean value) {
         return value ? isTrue() : isFalse();
     }
 
     /**
      * <code>lower(this) = lower(value)</code>.
+     * @return the condition, not null.
      */
     @NotNull
     default Condition equalIgnoreCase(@Nullable String value) {
@@ -365,6 +395,7 @@ public interface Expression<V> extends Serializable {
 
     /**
      * <code>lower(this) = lower(value)</code>.
+     * @return the condition, not null.
      */
     @NotNull
     default Condition equalIgnoreCase(@NotNull Expression<String> value) {
@@ -373,6 +404,7 @@ public interface Expression<V> extends Serializable {
 
     /**
      * <code>lower(this) != lower(value)</code>.
+     * @return the condition, not null.
      */
     @NotNull
     default Condition notEqualIgnoreCase(String value) {
@@ -381,6 +413,7 @@ public interface Expression<V> extends Serializable {
 
     /**
      * <code>lower(this) != lower(value)</code>.
+     * @return the condition, not null.
      */
     @NotNull
     default Condition notEqualIgnoreCase(@NotNull Expression<String> value) {
@@ -390,6 +423,7 @@ public interface Expression<V> extends Serializable {
      * The <code>LIKE</code> operator.
      *
      * @param pattern e.g. "%foo%"
+     * @return the condition, not null.
      */
     @NotNull
     default Condition like(@Nullable String pattern) {
@@ -398,6 +432,8 @@ public interface Expression<V> extends Serializable {
 
     /**
      * The <code>LIKE</code> operator.
+     * @param pattern e.g. "%foo%"
+     * @return the condition, not null.
      */
     @NotNull
     default Condition like(@NotNull Expression<String> pattern) {
@@ -408,6 +444,7 @@ public interface Expression<V> extends Serializable {
      * The <code>ILIKE</code> operator.
      *
      * @param pattern e.g. "%foo%"
+     * @return the condition, not null.
      */
     @NotNull
     default Condition likeIgnoreCase(@Nullable String pattern) {
@@ -416,6 +453,7 @@ public interface Expression<V> extends Serializable {
 
     /**
      * The <code>ILIKE</code> operator.
+     * @return the condition, not null.
      */
     @NotNull
     default Condition likeIgnoreCase(@NotNull Expression<String> pattern) {
@@ -424,6 +462,7 @@ public interface Expression<V> extends Serializable {
 
     /**
      * The <code>IS_NULL</code> operator.
+     * @return the condition, not null.
      */
     @NotNull
     default Condition isNull() {
@@ -432,12 +471,18 @@ public interface Expression<V> extends Serializable {
 
     /**
      * The <code>IS_NOT_NULL</code> operator.
+     * @return the condition, not null.
      */
     @NotNull
     default Condition isNotNull() {
         return new IsNotNull(this);
     }
 
+    /**
+     * Converts this condition to a {@link ParametrizedSql} which can then be
+     * passed to a SELECT. Used by DAOs to create proper SQL statements.
+     * @return the WHERE SQL part, not null.
+     */
     @NotNull
     ParametrizedSql toSql();
 
@@ -451,6 +496,7 @@ public interface Expression<V> extends Serializable {
      *              this is performed automatically by {@link FullTextCondition}.
      *              If the query is blank or contains no searchable words, {@link Condition#NO_CONDITION}
      *              is returned.
+     * @return the condition, not null.
      */
     @NotNull
     default Condition fullTextMatches(@NotNull String query) {
