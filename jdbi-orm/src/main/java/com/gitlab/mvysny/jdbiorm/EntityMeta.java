@@ -79,7 +79,6 @@ public final class EntityMeta<E> implements Serializable {
         final Table annotation = findAnnotationRecursively(entityClass, Table.class);
         final String name = annotation == null ? null : annotation.value();
         databaseTableName = name == null || name.trim().isEmpty() ? entityClass.getSimpleName() : name;
-
     }
 
     /**

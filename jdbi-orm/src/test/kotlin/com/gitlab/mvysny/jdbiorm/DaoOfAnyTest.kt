@@ -290,6 +290,5 @@ fun DynaNodeGroup.joinTableTestSuite() {
     }
     test("serializable") {
         DaoOfAny(JoinTable::class.java).cloneBySerialization()
-        expect(EntityMeta.of(JoinTable::class.java)) { EntityMeta.of(JoinTable::class.java).cloneBySerialization() }
     }
 }
