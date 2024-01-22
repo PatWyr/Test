@@ -1,5 +1,7 @@
 package com.gitlab.mvysny.jdbiorm;
 
+import jakarta.validation.constraints.NotNull;
+import org.jdbi.v3.core.annotation.JdbiProperty;
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 import org.jetbrains.annotations.Nullable;
 
@@ -68,4 +70,8 @@ public class EntityWithAliasedId implements Entity<Long> {
     public int hashCode() {
         return Objects.hash(id, name);
     }
+
+    @NotNull
+    @JdbiProperty(map = false)
+    public static final TableProperty<EntityWithAliasedId, String> ID = TableProperty.of(EntityWithAliasedId.class, "id");
 }

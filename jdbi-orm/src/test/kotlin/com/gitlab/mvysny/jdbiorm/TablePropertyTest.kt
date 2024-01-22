@@ -7,5 +7,22 @@ import kotlin.test.expect
 class TablePropertyTest : DynaTest({
     test("serialization") {
         expect(Person.ID) { Person.ID.cloneBySerialization() }
+        expect(EntityWithAliasedId.ID) { EntityWithAliasedId.ID.cloneBySerialization() }
+        expect(MappingTable.ID_PERSONID) { MappingTable.ID_PERSONID.cloneBySerialization() }
+    }
+    test("name") {
+        expect("id") { Person.ID.name.name }
+        expect("id") { EntityWithAliasedId.ID.name.name }
+        expect("id.personId") { MappingTable.ID_PERSONID.name.name }
+    }
+    test("dbName.qualifiedName") {
+        expect("Test.id") { Person.ID.dbName.qualifiedName }
+        expect("EntityWithAliasedId.myid") { EntityWithAliasedId.ID.dbName.qualifiedName }
+        expect("mapping_table.person_id") { MappingTable.ID_PERSONID.dbName.qualifiedName }
+    }
+    test("dbName.unqualifiedName") {
+        expect("id") { Person.ID.dbName.unqualifiedName }
+        expect("myid") { EntityWithAliasedId.ID.dbName.unqualifiedName }
+        expect("person_id") { MappingTable.ID_PERSONID.dbName.unqualifiedName }
     }
 })
