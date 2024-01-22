@@ -10,6 +10,10 @@ import org.jetbrains.annotations.Nullable;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -30,7 +34,7 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  * Thread-safe.
  * @author mavi
  */
-public final class EntityMeta<E> {
+public final class EntityMeta<E> implements Serializable {
     /**
      * Usually a class implementing {@link Entity} but may be any class. Not null.
      */
@@ -508,5 +512,28 @@ public final class EntityMeta<E> {
         final Dao dao = new Dao<>(((Class<AbstractEntity>) entityClass));
         final AbstractEntity<?> current = dao.getById(getId(entity));
         dao.meta.copyTo(current, entity);
+    }
+
+    // see https://www.digitalocean.com/community/tutorials/serialization-in-java#serialization-proxy-pattern
+    private static class SerializationProxy implements Serializable {
+        @NotNull
+        private final Class<?> clazz;
+
+        public SerializationProxy(@NotNull Class<?> clazz) {
+            this.clazz = clazz;
+        }
+
+        private Object readResolve() {
+            return EntityMeta.of(clazz);
+        }
+    }
+
+    @NotNull
+    private Object writeReplace() {
+        return new SerializationProxy(entityClass);
+    }
+
+    private void readObject(@NotNull ObjectInputStream ois) throws InvalidObjectException {
+        throw new InvalidObjectException("Proxy is not used, something fishy");
     }
 }

@@ -14,6 +14,7 @@ import org.jdbi.v3.core.statement.Update;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,7 +41,7 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  * the database column name.
  * @param <T> the type of the class provided by this Dao
  */
-public class DaoOfAny<T> {
+public class DaoOfAny<T> implements Serializable {
     @NotNull
     public final Class<T> entityClass;  // public because of vok-orm
     @NotNull
@@ -580,7 +581,7 @@ public class DaoOfAny<T> {
      * These functions are generally not intended to be invoked by the user of this library.
      * @param <T> the entity type
      */
-    public static final class Helper<T> {
+    public static final class Helper<T> implements Serializable {
         @NotNull
         public final Class<T> entityClass;
 

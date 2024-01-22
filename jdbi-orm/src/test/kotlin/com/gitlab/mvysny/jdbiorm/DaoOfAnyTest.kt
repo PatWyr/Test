@@ -288,4 +288,8 @@ fun DynaNodeGroup.joinTableTestSuite() {
             expect(false) { JoinTable.dao.existsBy("customerId>=200") {} }
         }
     }
+    test("serializable") {
+        DaoOfAny(JoinTable::class.java).cloneBySerialization()
+        expect(EntityMeta.of(JoinTable::class.java)) { EntityMeta.of(JoinTable::class.java).cloneBySerialization() }
+    }
 }
