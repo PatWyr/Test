@@ -26,7 +26,8 @@ import java.util.stream.Collectors;
 import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
 
 /**
- * Sometimes you don't want a class to be an entity for some reason (e.g. when it doesn't have a primary key),
+ * Sometimes you don't want a class to be an entity for some reason
+ * (e.g. you don't want to edit the rows of a table, or the table doesn't have a primary key),
  * but still it's mapped to a table and you would want to have Dao support for that class.
  * Just let your class have a static field, for example:
  * <pre>
@@ -73,12 +74,7 @@ public class DaoOfAny<T> implements Serializable {
      */
     @NotNull
     public List<T> findAll() {
-        return jdbi().withHandle(handle -> handle.createQuery("select <FIELDS> from <TABLE>")
-                .define("FIELDS", meta.getPersistedFieldDbNames().stream().map(Property.DbName::getUnqualifiedName).collect(Collectors.joining(", ")))
-                .define("TABLE", meta.getDatabaseTableName())
-                .map(getRowMapper())
-                .list()
-        );
+        return findAll((String) null, null, null);
     }
 
     /**
