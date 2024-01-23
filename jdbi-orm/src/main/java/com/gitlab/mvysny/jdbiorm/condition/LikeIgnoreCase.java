@@ -48,7 +48,7 @@ public final class LikeIgnoreCase implements Condition {
     }
 
     @Override
-    public boolean test() {
-        return new Like(new Lower<>(arg1), new Lower<>(arg2)).test();
+    public boolean test(@NotNull Object row) {
+        return new Like(new Lower<>(arg1), new Lower<>(arg2)).test(row);
     }
 }

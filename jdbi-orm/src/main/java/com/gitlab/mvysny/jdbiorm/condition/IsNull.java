@@ -41,7 +41,7 @@ public final class IsNull implements Condition {
     }
 
     @Override
-    public boolean test() {
-        return arg.calculate() == null;
+    public boolean test(@NotNull Object row) {
+        return arg.calculate(row) == null;
     }
 }

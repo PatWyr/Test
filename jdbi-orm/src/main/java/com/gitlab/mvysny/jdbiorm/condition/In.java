@@ -70,13 +70,13 @@ public final class In implements Condition {
     }
 
     @Override
-    public boolean test() {
-        final Object value = arg1.calculate();
+    public boolean test(@NotNull Object row) {
+        final Object value = arg1.calculate(row);
         if (value == null) {
             return false;
         }
         for (Expression<?> expression : values) {
-            if (value.equals(expression.calculate())) {
+            if (value.equals(expression.calculate(row))) {
                 return true;
             }
         }

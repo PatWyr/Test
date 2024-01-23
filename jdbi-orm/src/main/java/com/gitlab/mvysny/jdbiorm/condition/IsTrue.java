@@ -57,17 +57,8 @@ public final class IsTrue implements Condition {
     private static final Set<String> trueValues = Set.of("1", "y", "yes", "true", "on", "enabled");
 
     @Override
-    public boolean test() {
-        return test(arg);
-    }
-
-    /**
-     * Tests whether given expression calculates to true.
-     * @param expression the expression to test, not null.
-     * @return true if the expression calculated to true; false if the expression calculated to null or non-true value (e.g. 25, "false" etc).
-     */
-    public static boolean test(@NotNull Expression<?> expression) {
-        final Object value = expression.calculate();
+    public boolean test(@NotNull Object row) {
+        final Object value = arg.calculate(row);
         return value != null && trueValues.contains(value.toString().toLowerCase(JdbiOrm.getLocale()));
     }
 }

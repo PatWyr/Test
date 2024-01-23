@@ -47,15 +47,15 @@ public final class Like implements Condition {
     }
 
     @Override
-    public boolean test() {
-        final Object pattern = arg2.calculate();
+    public boolean test(@NotNull Object row) {
+        final Object pattern = arg2.calculate(row);
         if (pattern == null) {
             throw new IllegalStateException("Invalid state: " + arg2 + " evaluated to null");
         }
         if (!(pattern instanceof String)) {
             throw new IllegalStateException("Invalid state: " + arg2 + " evaluated to a non-String value " + pattern);
         }
-        final Object string = arg1.calculate();
+        final Object string = arg1.calculate(row);
         if (string == null) {
             return false;
         }
