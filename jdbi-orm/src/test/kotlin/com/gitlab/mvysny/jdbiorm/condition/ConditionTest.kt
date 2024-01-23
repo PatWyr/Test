@@ -49,39 +49,39 @@ class ConditionTest : DynaTest({
     }
     group("Condition.test") {
         test("IsFalse") {
-            expect(true) { IsFalse.test(Expression.Value(0)) }
-            expect(true) { IsFalse.test(Expression.Value("0")) }
-            expect(true) { IsFalse.test(Expression.Value("off")) }
-            expect(false) { IsFalse.test(Expression.Value(1)) }
-            expect(false) { IsFalse.test(Expression.Value(25)) }
+            expect(true) { IsFalse(Expression.Value(0)).test("ignored") }
+            expect(true) { IsFalse(Expression.Value("0")).test("ignored") }
+            expect(true) { IsFalse(Expression.Value("off")).test("ignored") }
+            expect(false) { IsFalse(Expression.Value(1)).test("ignored") }
+            expect(false) { IsFalse(Expression.Value(25)).test("ignored") }
         }
         test("IsTrue") {
-            expect(false) { IsFalse.test(Expression.Value(0)) }
-            expect(false) { IsFalse.test(Expression.Value("0")) }
-            expect(false) { IsFalse.test(Expression.Value("off")) }
-            expect(true) { IsFalse.test(Expression.Value(1)) }
-            expect(true) { IsFalse.test(Expression.Value("on")) }
-            expect(false) { IsFalse.test(Expression.Value(25)) }
+            expect(false) { IsTrue(Expression.Value(0)).test("ignored") }
+            expect(false) { IsTrue(Expression.Value("0")).test("ignored") }
+            expect(false) { IsTrue(Expression.Value("off")).test("ignored") }
+            expect(true) { IsTrue(Expression.Value(1)).test("ignored") }
+            expect(true) { IsTrue(Expression.Value("on")).test("ignored") }
+            expect(false) { IsTrue(Expression.Value(25)).test("ignored") }
         }
         test("NoCondition") {
-            expect(true) { NoCondition.INSTANCE.test() }
+            expect(true) { NoCondition.INSTANCE.test("ignored") }
         }
         test("IsNull") {
-            expect(true) { IsNull(Expression.Value(null)).test() }
-            expect(false) { IsNull(Expression.Value(4)).test() }
+            expect(true) { IsNull(Expression.Value(null)).test("ignored") }
+            expect(false) { IsNull(Expression.Value(4)).test("ignored") }
         }
         test("IsNotNull") {
-            expect(false) { IsNotNull(Expression.Value(null)).test() }
-            expect(true) { IsNotNull(Expression.Value(4)).test() }
+            expect(false) { IsNotNull(Expression.Value(null)).test("ignored") }
+            expect(true) { IsNotNull(Expression.Value(4)).test("ignored") }
         }
         test("Eq") {
-            expect(false) { Eq(Expression.Value(null), Expression.Value(null)).test() }
-            expect(false) { Eq(Expression.Value(null), Expression.Value(2)).test() }
-            expect(false) { Eq(Expression.Value("2"), Expression.Value(2)).test() }
-            expect(true) { Eq(Expression.Value("2"), Expression.Value("2")).test() }
+            expect(false) { Eq(Expression.Value(null), Expression.Value(null)).test("ignored") }
+            expect(false) { Eq(Expression.Value(null), Expression.Value(2)).test("ignored") }
+            expect(false) { Eq(Expression.Value("2"), Expression.Value(2)).test("ignored") }
+            expect(true) { Eq(Expression.Value("2"), Expression.Value("2")).test("ignored") }
         }
         test("Like") {
-            fun like(val1: Any?, val2: Any?) = Like(Expression.Value(val1), Expression.Value(val2)).test()
+            fun like(val1: Any?, val2: Any?) = Like(Expression.Value(val1), Expression.Value(val2)).test("ignored")
             expect(false) { like(null, "%") }
             expect(true) { like("a", "%") }
             expect(true) { like("a", "%a") }
@@ -104,56 +104,56 @@ class ConditionTest : DynaTest({
         }
         group("Op") {
             test("Eq") {
-                expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.EQ).test() }
-                expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.EQ).test() }
-                expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.EQ).test() }
-                expect(true) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.EQ).test() }
-                expect(true) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.EQ).test() }
-                expect(false) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.EQ).test() }
+                expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.EQ).test("ignored") }
+                expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.EQ).test("ignored") }
+                expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.EQ).test("ignored") }
+                expect(true) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.EQ).test("ignored") }
+                expect(true) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.EQ).test("ignored") }
+                expect(false) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.EQ).test("ignored") }
             }
             test("Lt") {
-                expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.LT).test() }
-                expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.LT).test() }
-                expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.LT).test() }
-                expect(false) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.LT).test() }
-                expect(true) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.LT).test() }
-                expect(false) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.LT).test() }
+                expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.LT).test("ignored") }
+                expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.LT).test("ignored") }
+                expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.LT).test("ignored") }
+                expect(false) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.LT).test("ignored") }
+                expect(true) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.LT).test("ignored") }
+                expect(false) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.LT).test("ignored") }
             }
             test("LE") {
-                expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.LE).test() }
-                expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.LE).test() }
-                expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.LE).test() }
-                expect(true) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.LE).test() }
-                expect(true) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.LE).test() }
-                expect(false) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.LE).test() }
+                expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.LE).test("ignored") }
+                expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.LE).test("ignored") }
+                expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.LE).test("ignored") }
+                expect(true) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.LE).test("ignored") }
+                expect(true) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.LE).test("ignored") }
+                expect(false) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.LE).test("ignored") }
             }
             test("GT") {
-                expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.GT).test() }
-                expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.GT).test() }
-                expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.GT).test() }
-                expect(false) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.GT).test() }
-                expect(false) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.GT).test() }
-                expect(true) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.GT).test() }
+                expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.GT).test("ignored") }
+                expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.GT).test("ignored") }
+                expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.GT).test("ignored") }
+                expect(false) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.GT).test("ignored") }
+                expect(false) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.GT).test("ignored") }
+                expect(true) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.GT).test("ignored") }
             }
             test("GE") {
-                expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.GE).test() }
-                expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.GE).test() }
-                expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.GE).test() }
-                expect(true) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.GE).test() }
-                expect(false) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.GE).test() }
-                expect(true) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.GE).test() }
+                expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.GE).test("ignored") }
+                expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.GE).test("ignored") }
+                expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.GE).test("ignored") }
+                expect(true) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.GE).test("ignored") }
+                expect(false) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.GE).test("ignored") }
+                expect(true) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.GE).test("ignored") }
             }
             test("NE") {
-                expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.NE).test() }
-                expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.NE).test() }
-                expect(true) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.NE).test() }
-                expect(false) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.NE).test() }
-                expect(true) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.NE).test() }
-                expect(true) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.NE).test() }
+                expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.NE).test("ignored") }
+                expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.NE).test("ignored") }
+                expect(true) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.NE).test("ignored") }
+                expect(false) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.NE).test("ignored") }
+                expect(true) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.NE).test("ignored") }
+                expect(true) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.NE).test("ignored") }
             }
         }
         test("LikeIgnoreCase") {
-            fun ilike(val1: Any?, val2: Any?) = Like(Expression.Value(val1), Expression.Value(val2)).test()
+            fun ilike(val1: Any?, val2: Any?) = Like(Expression.Value(val1), Expression.Value(val2)).test("ignored")
             expect(false) { ilike(null, "%") }
             expect(true) { ilike("a", "%") }
             expect(true) { ilike("a", "%a") }
@@ -178,7 +178,7 @@ class ConditionTest : DynaTest({
             fun ft(val1: Any?, query: String) = FullTextCondition.of(Expression.Value(val1), query).test("ignored")
             expect(false) { ft("", "foo") }
             expect(false) { ft(null, "foo") }
-            expect(false) { ft(null, "") }
+            expect(true) { ft(null, "") }
             expect(true) { ft("foo", "foo") }
             expect(true) { ft("fat cat", "c") }
             expect(true) { ft("fat cat", "cat") }
@@ -187,9 +187,14 @@ class ConditionTest : DynaTest({
         }
     }
     group("Expression.calculate()") {
+        test("Value") {
+            expect(null) { Expression.Value(null).calculate("ignored") }
+            expect("Foo") { Expression.Value("Foo").calculate("ignored") }
+            expect(5) { Expression.Value(5).calculate("ignored") }
+        }
         test("Lower") {
-            expect("foo") { Lower(Expression.Value("FOO")).calculate() }
-            expect(null) { Lower(Expression.Value(null)).calculate() }
+            expect("foo") { Lower(Expression.Value("FOO")).calculate("ignored") }
+            expect(null) { Lower(Expression.Value(null)).calculate("ignored") }
         }
     }
 })

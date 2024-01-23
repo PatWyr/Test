@@ -99,7 +99,7 @@ public final class Op implements Condition {
     }
 
     @Override
-    public boolean test() {
-        return operator.test(arg1.calculate(), arg2.calculate());
+    public boolean test(@NotNull Object row) {
+        return operator.test(arg1.calculate(row), arg2.calculate(row));
     }
 }

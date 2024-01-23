@@ -52,7 +52,7 @@ final class Or implements Condition {
     }
 
     @Override
-    public boolean test() {
-        return condition1.test() || condition2.test();
+    public boolean test(@NotNull Object row) {
+        return condition1.test(row) || condition2.test(row);
     }
 }

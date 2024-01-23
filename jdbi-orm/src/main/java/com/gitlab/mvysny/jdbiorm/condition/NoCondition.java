@@ -44,7 +44,7 @@ public final class NoCondition implements Condition {
     }
 
     @Override
-    public boolean test() {
+    public boolean test(@NotNull Object row) {
         return true;
     }
 

@@ -47,8 +47,8 @@ public final class Lower<V> implements Expression<V> {
     }
 
     @Override
-    public @Nullable Object calculate() {
-        final Object value = arg.calculate();
+    public @Nullable Object calculate(@NotNull Object row) {
+        final Object value = arg.calculate(row);
         if (value == null) {
             return null;
         }

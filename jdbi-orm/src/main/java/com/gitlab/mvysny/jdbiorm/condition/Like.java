@@ -62,6 +62,9 @@ public final class Like implements Condition {
         if (!(string instanceof String)) {
             throw new IllegalStateException("Invalid state: " + arg1 + " evaluated to a non-String value " + string);
         }
+        if (string.equals("%")) {
+            return true;
+        }
 
         final String strPattern = (String) pattern;
         if (strPattern.startsWith("%")) {

@@ -45,7 +45,7 @@ final class Not implements Condition {
     }
 
     @Override
-    public boolean test() {
-        return !condition.test();
+    public boolean test(@NotNull Object row) {
+        return !condition.test(row);
     }
 }
