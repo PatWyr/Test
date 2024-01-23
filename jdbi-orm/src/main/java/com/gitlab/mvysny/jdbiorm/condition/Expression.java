@@ -521,4 +521,24 @@ public interface Expression<V> extends Serializable {
      */
     @Nullable
     Object calculate(@NotNull Object row);
+
+    /**
+     * The <code>COALESCE</code> operator.
+     * @param other other value, returned when this expression evaluates to null.
+     * @return the COALESCE expression.
+     */
+    @NotNull
+    default Expression<V> coalesce(@NotNull Expression<? extends V> other) {
+        return new Coalesce<>(this, other);
+    }
+
+    /**
+     * The <code>COALESCE</code> operator.
+     * @param other other value, returned when this expression evaluates to null.
+     * @return the COALESCE expression.
+     */
+    @NotNull
+    default Expression<V> coalesce(@Nullable V other) {
+        return coalesce(new Expression.Value<>(other));
+    }
 }

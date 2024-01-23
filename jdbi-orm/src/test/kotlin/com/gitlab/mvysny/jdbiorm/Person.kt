@@ -96,7 +96,8 @@ data class Person2(
     // test of aliased field
     @field:ColumnName("alive")
     var isAlive25: Boolean? = null,
-    var maritalStatus: MaritalStatus? = null
+    var maritalStatus: MaritalStatus? = null,
+    var someStringValue: String? = null
 
 ) : Entity<Long> {
     override fun getId(): Long? = id
@@ -118,6 +119,9 @@ data class Person2(
         @JdbiProperty(map = false)
         @JvmStatic
         val ISALIVE25 = TableProperty.of<Person2, Boolean>(Person2::class.java, "isAlive25")
+        @JdbiProperty(map = false)
+        @JvmStatic
+        val SOMESTRINGVALUE = TableProperty.of<Person2, String>(Person2::class.java, "someStringValue")
     }
 }
 

@@ -90,7 +90,8 @@ private fun DynaNodeGroup.usingDockerizedPosgresql() {
                 created timestamp,
                 modified timestamp,
                 alive boolean,
-                maritalStatus varchar(200)
+                maritalStatus varchar(200),
+                someStringValue varchar(200)
                  )""")
             ddl("""CREATE INDEX pgweb_idx ON Test USING GIN (to_tsvector('english', name));""")
             ddl("""create table if not exists EntityWithAliasedId(myid bigserial primary key, name varchar(400) not null)""")
@@ -139,7 +140,8 @@ private fun DynaNodeGroup.usingDockerizedCockroachDB() {
                 created timestamp,
                 modified timestamp,
                 alive boolean,
-                maritalStatus varchar(200)
+                maritalStatus varchar(200),
+                someStringValue varchar(200)
                  )""")
             // full-text search not yet supported: https://github.com/cockroachdb/cockroach/issues/41288
 //            ddl("""CREATE INDEX pgweb_idx ON Test USING GIN (to_tsvector('english', name));""")
@@ -193,6 +195,7 @@ fun DynaNodeGroup.usingDockerizedMysql() {
                 modified timestamp(3) NULL,
                 alive boolean,
                 maritalStatus varchar(200),
+                someStringValue varchar(200),
                 FULLTEXT index (name)
                  )""")
             ddl("""create table EntityWithAliasedId(myid bigint primary key auto_increment, name varchar(400) not null)""")
@@ -251,7 +254,8 @@ fun DynaNodeGroup.usingH2Database() {
                 created timestamp,
                 modified timestamp,
                 alive boolean,
-                maritalStatus varchar
+                maritalStatus varchar,
+                someStringValue varchar
                  )""")
             ddl("""create table EntityWithAliasedId(myid bigint primary key auto_increment, name varchar not null)""")
             ddl("""create table NaturalPerson(id varchar(10) primary key, name varchar(400) not null, bytes binary(16) not null)""")
@@ -302,6 +306,7 @@ private fun DynaNodeGroup.usingDockerizedMariaDB() {
                 modified timestamp(3) NULL,
                 alive boolean,
                 maritalStatus varchar(200),
+                someStringValue varchar(200),
                 FULLTEXT index (name)
                  )"""
             )
@@ -351,7 +356,8 @@ private fun DynaNodeGroup.usingDockerizedMSSQL() {
                 created datetime NULL,
                 modified datetime NULL,
                 alive bit,
-                maritalStatus varchar(200)
+                maritalStatus varchar(200),
+                someStringValue varchar(200)
                  )"""
             )
             // unfortunately the default Docker image doesn't support the FULLTEXT index:

@@ -11,6 +11,9 @@ import com.gitlab.mvysny.jdbiorm.Person
 import com.gitlab.mvysny.jdbiorm.Person2
 import kotlin.test.expect
 
+/**
+ * Tests Java functionality of the [Condition] API. These tests won't go to the database - see [conditionTests] for that.
+ */
 class ConditionTest : DynaTest({
     group("toString") {
         test("simple") {
@@ -190,12 +193,19 @@ class ConditionTest : DynaTest({
             expect(5) { Expression.Value(5).calculate("ignored") }
         }
         test("Lower") {
-            expect("foo") { Lower(Expression.Value("FOO")).calculate("ignored") }
-            expect(null) { Lower(Expression.Value(null)).calculate("ignored") }
+            expect("foo") { Expression.Value("FOO").lower().calculate("ignored") }
+            expect(null) { Expression.Value(null).lower().calculate("ignored") }
+        }
+        test("Coalesce") {
+            expect("FOO") { Expression.Value("FOO").coalesce("foo").calculate("ignored") }
+            expect("foo") { Expression.Value<String>(null).coalesce("foo").calculate("ignored") }
         }
     }
 })
 
+/**
+ * A test battery which tests conditions on an actual database.
+ */
 @DynaTestDsl
 fun DynaNodeGroup.conditionTests(dbInfo: DatabaseInfo) {
     // check that the produced SQL actually executes and is accepted by the database. We don't test the
@@ -434,6 +444,14 @@ fun DynaNodeGroup.conditionTests(dbInfo: DatabaseInfo) {
             expect(1) { Person2.dao.countBy(null) }
             expect(1) { Person2.dao.countBy(Condition.NO_CONDITION) }
         }
+    }
+    test("Coalesce") {
+        Person2(name = "Foo", age = 25).save()
+        expect(1) { Person2.dao.countBy(Person2.SOMESTRINGVALUE.coalesce("Foo").eq("Foo")) }
+        Person2(name = "Foo", age = 25, someStringValue = "Bar").save()
+        expect(1) { Person2.dao.countBy(Person2.SOMESTRINGVALUE.coalesce("Foo").eq("Foo")) }
+        expect(1) { Person2.dao.countBy(Person2.SOMESTRINGVALUE.coalesce("Foo").eq("Bar")) }
+        expect(0) { Person2.dao.countBy(Person2.SOMESTRINGVALUE.coalesce("Foo").eq("Baz")) }
     }
     group("full-text search") {
         test("construct sql succeeds") {
