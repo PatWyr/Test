@@ -240,9 +240,10 @@ public final class FullTextCondition implements Condition {
         final Set<String> words = getWords();
         // all words must be contained within the probeWords
         for (String word : words) {
-            for (String probeWord : probeWords) {
-
+            if (probeWords.stream().noneMatch(it -> it.startsWith(word))) {
+                return false;
             }
         }
+        return true;
     }
 }

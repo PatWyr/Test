@@ -174,6 +174,17 @@ class ConditionTest : DynaTest({
             expect(false) { ilike("epsilon", "%lan%") }
             expect(false) { ilike("epsilon", "%LON%") }
         }
+        test("FullTextCondition") {
+            fun ft(val1: Any?, query: String) = FullTextCondition.of(Expression.Value(val1), query).test("ignored")
+            expect(false) { ft("", "foo") }
+            expect(false) { ft(null, "foo") }
+            expect(false) { ft(null, "") }
+            expect(true) { ft("foo", "foo") }
+            expect(true) { ft("fat cat", "c") }
+            expect(true) { ft("fat cat", "cat") }
+            expect(true) { ft("fat cat", "f c") }
+            expect(false) { ft("fat cat", "f k") }
+        }
     }
     group("Expression.calculate()") {
         test("Lower") {
