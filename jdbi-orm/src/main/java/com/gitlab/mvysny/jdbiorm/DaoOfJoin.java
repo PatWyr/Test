@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
 
@@ -26,12 +25,18 @@ public class DaoOfJoin<T> extends DaoOfAny<T> {
             return new ArrayList<>();
         }
         checkOffsetLimit(offset, limit);
-        return jdbi().withHandle(handle -> handle.createQuery(sql)
-                .define("WHERE", "")
-                .define("ORDER", orderBy == null ? "" : orderBy)
-                .define("PAGING", getOffsetLimit(handle, offset, limit, orderBy != null))
-                .map(getRowMapper())
-                .list()
+        final StringBuilder sql = new StringBuilder(this.sql);
+        return jdbi().withHandle(handle -> {
+                    if (orderBy != null) {
+                        sql.append(" ORDER BY ").append(orderBy);
+                    }
+                    // H2 requires ORDER BY after LIMIT+OFFSET clauses.
+                    appendOffsetLimit(sql, handle, offset, limit, orderBy != null);
+
+                    return handle.createQuery(sql.toString())
+                            .map(getRowMapper())
+                            .list();
+                }
         );
     }
 }

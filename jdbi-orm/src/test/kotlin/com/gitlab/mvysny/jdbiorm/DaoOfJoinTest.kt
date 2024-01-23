@@ -41,11 +41,9 @@ fun DynaNodeGroup.daoOfJoinTests() {
         expect(p) { joinOutcomes[0].person }
         expect(d) { joinOutcomes[0].department }
 
-/*
-        joinOutcomes = NestedJoinOutcome.dao.findAll(listOf(EntityWithAliasedId.ID.asc(), Person2.ID.desc()), null, null)
+        joinOutcomes = NestedJoinOutcome.dao.findAll(listOf(EntityWithAliasedId.ID.tableAlias("d").asc(), Person2.ID.tableAlias("p").desc()), null, null)
         expect(1) { joinOutcomes.size }
         expect(p) { joinOutcomes[0].person }
         expect(d) { joinOutcomes[0].department }
-*/
     }
 }
