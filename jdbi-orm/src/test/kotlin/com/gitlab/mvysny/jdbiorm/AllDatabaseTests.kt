@@ -26,6 +26,9 @@ class AllDatabaseTests : DynaTest({
         group("Conditions") {
            conditionTests(dbInfo)
         }
+        group("DaoOfJoin") {
+            daoOfJoinTests()
+        }
     }
 })
 

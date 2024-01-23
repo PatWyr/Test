@@ -5,13 +5,8 @@ import com.github.mvysny.dynatest.DynaTest
 import com.github.mvysny.dynatest.DynaTestDsl
 import kotlin.test.expect
 
-class DaoOfJoinTest : DynaTest({
-    usingH2Database()
-    daoOfJoinTests()
-})
-
 @DynaTestDsl
-private fun DynaNodeGroup.daoOfJoinTests() {
+fun DynaNodeGroup.daoOfJoinTests() {
     test("smoke") {
         val p = Person2(name = "Foo")
         p.create()
