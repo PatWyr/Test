@@ -832,6 +832,24 @@ public final class MappingTable implements Entity<MappingTable.ID> {
     // getters, setters, equals, hashCode, toString() omitted for brevity
 
     public static final Dao<MappingTable, ID> dao = new Dao<>(MappingTable.class);
+
+    @NotNull
+    @JdbiProperty(map = false)
+    public static final Dao<MappingTable, ID> dao = new Dao<>(MappingTable.class);
+
+    // note the dot-separated naming scheme: first part refers to the MappingTable.id Java field, second part refers to
+    // the MappingTable.ID.personId Java field.
+    @NotNull
+    @JdbiProperty(map = false)
+    public static final TableProperty<MappingTable, Long> ID_PERSONID = TableProperty.of(MappingTable.class, "id.personId");
+
+    @NotNull
+    @JdbiProperty(map = false)
+    public static final TableProperty<MappingTable, Long> ID_DEPARTMENTID = TableProperty.of(MappingTable.class, "id.departmentId");
+
+    @NotNull
+    @JdbiProperty(map = false)
+    public static final TableProperty<MappingTable, String> SOME_DATA = TableProperty.of(MappingTable.class, "someData");
 }
 ```
 
