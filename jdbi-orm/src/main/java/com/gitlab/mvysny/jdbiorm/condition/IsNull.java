@@ -4,6 +4,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
+/**
+ * The <code>IS NULL</code> expression; not to be mistaken for the <code>ISNULL()</code> function.
+ */
 public final class IsNull implements Condition {
     @NotNull
     private final Expression<?> arg;
