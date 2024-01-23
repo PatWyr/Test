@@ -198,7 +198,17 @@ class ConditionTest : DynaTest({
         }
         test("Coalesce") {
             expect("FOO") { Expression.Value("FOO").coalesce("foo").calculate("ignored") }
+            expect(null) { Expression.Value<String>(null).coalesce(null).calculate("ignored") }
+            expect("foo") { Expression.Value<String>("foo").coalesce("foo").calculate("ignored") }
             expect("foo") { Expression.Value<String>(null).coalesce("foo").calculate("ignored") }
+            expect(null) { Expression.Value<String>(null).coalesce(null).calculate("ignored") }
+        }
+        test("NullIf") {
+            expect("FOO") { Expression.Value("FOO").nullIf("foo").calculate("ignored") }
+            expect(null) { Expression.Value<String>(null).nullIf("foo").calculate("ignored") }
+            expect(null) { Expression.Value<String>("foo").nullIf("foo").calculate("ignored") }
+            expect("foo") { Expression.Value<String>("foo").nullIf(null).calculate("ignored") }
+            expect(null) { Expression.Value<String>(null).nullIf(null).calculate("ignored") }
         }
     }
 })
@@ -452,6 +462,12 @@ fun DynaNodeGroup.conditionTests(dbInfo: DatabaseInfo) {
         expect(1) { Person2.dao.countBy(Person2.SOMESTRINGVALUE.coalesce("Foo").eq("Foo")) }
         expect(1) { Person2.dao.countBy(Person2.SOMESTRINGVALUE.coalesce("Foo").eq("Bar")) }
         expect(0) { Person2.dao.countBy(Person2.SOMESTRINGVALUE.coalesce("Foo").eq("Baz")) }
+    }
+    test("NullIf") {
+        Person2(name = "Foo", age = 25).save()
+        expect(1) { Person2.dao.countBy(Person2.SOMESTRINGVALUE.nullIf("Foo").isNull()) }
+        expect(1) { Person2.dao.countBy(Person2.NAME.nullIf("Foo").isNull()) }
+        expect(1) { Person2.dao.countBy(Person2.NAME.nullIf("Bar").eq("Foo")) }
     }
     group("full-text search") {
         test("construct sql succeeds") {

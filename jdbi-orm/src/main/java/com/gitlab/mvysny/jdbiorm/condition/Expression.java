@@ -541,4 +541,24 @@ public interface Expression<V> extends Serializable {
     default Expression<V> coalesce(@Nullable V other) {
         return coalesce(new Expression.Value<>(other));
     }
+
+    /**
+     * The <code>NULLIF</code> function.
+     * @param other other value.
+     * @return the NULLIF expression.
+     */
+    @NotNull
+    default Expression<V> nullIf(@NotNull Expression<? extends V> other) {
+        return new NullIf<>(this, other);
+    }
+
+    /**
+     * The <code>NULLIF</code> function.
+     * @param other other value.
+     * @return the NULLIF expression.
+     */
+    @NotNull
+    default Expression<V> nullIf(@Nullable V other) {
+        return nullIf(new Expression.Value<>(other));
+    }
 }
