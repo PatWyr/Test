@@ -139,7 +139,7 @@ public class DaoOfAny<T> implements Serializable {
     @Nullable
     private String toSqlOrderClause(@NotNull List<OrderBy> orderBy) {
         final String order = orderBy.isEmpty() ? null : orderBy.stream()
-                .map(it -> meta.getProperty(it.getName()).getDbName().getQualifiedName() + " " + it.getOrder())
+                .map(it -> it.getProperty().getDbName().getQualifiedName() + " " + it.getOrder())
                 .collect(Collectors.joining(", "));
         return order;
     }

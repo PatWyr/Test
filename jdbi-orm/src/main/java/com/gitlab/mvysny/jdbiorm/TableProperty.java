@@ -83,6 +83,11 @@ public final class TableProperty<E, V> implements Property<V> {
         return entityClass.getSimpleName() + "." + propertyName;
     }
 
+    @NotNull
+    public String toExternalString() {
+        return "TableProperty:" + entityClass.getName() + " " + propertyName.getName();
+    }
+
     @Override
     public @NotNull Name getName() {
         return propertyName;
@@ -147,6 +152,11 @@ public final class TableProperty<E, V> implements Property<V> {
         @Override
         public String toString() {
             return tableProperty.entityClass.getSimpleName() + " " + tableNameAlias + "." + tableProperty.getName();
+        }
+
+        @NotNull
+        public String toExternalString() {
+            return "TablePropertyAlias:" + tableNameAlias + " " + tableProperty.toExternalString();
         }
 
         @Override

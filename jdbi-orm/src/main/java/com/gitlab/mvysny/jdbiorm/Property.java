@@ -180,11 +180,38 @@ public interface Property<V> extends Expression<V> {
 
     @NotNull
     default OrderBy asc() {
-        return new OrderBy(getName(), OrderBy.ASC);
+        return new OrderBy(this, OrderBy.ASC);
     }
 
     @NotNull
     default OrderBy desc() {
-        return new OrderBy(getName(), OrderBy.DESC);
+        return new OrderBy(this, OrderBy.DESC);
+    }
+
+    /**
+     * Produces an externalizable String in the form of <code>TableProperty:entityFullClassName propertyName [tableAlias]</code>
+     *
+     * @return externalizable String which can be parsed back via {@link #fromExternalString(String)}.
+     */
+    @NotNull
+    String toExternalString();
+
+    @NotNull
+    static Property<?> fromExternalString(@NotNull String externalForm) {
+        if (externalForm.startsWith("TableProperty:")) {
+            final String[] parts = externalForm.substring(14).split("\\s+");
+            try {
+                return TableProperty.of(Class.forName(parts[0]), parts[1]);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        } else if (externalForm.startsWith("TablePropertyAlias:")) {
+            final String[] parts = externalForm.substring(19).split("\\s+", 2);
+            final String alias = parts[0];
+            final TableProperty<?, ?> p = (TableProperty<?, ?>) fromExternalString(parts[1]);
+            return p.tableAlias(alias);
+        } else {
+            throw new IllegalArgumentException("Parameter externalForm: invalid value " + externalForm + ": unsupported form");
+        }
     }
 }

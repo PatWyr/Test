@@ -38,4 +38,8 @@ class TablePropertyTest : DynaTest({
         expect("d.id") { Person2.ID.tableAlias("d").dbName.qualifiedName }
         expect("id") { Person2.ID.tableAlias("d").dbName.unqualifiedName }
     }
+    test("external form") {
+        expect(Person2.ID) { Property.fromExternalString(Person2.ID.toExternalString()) }
+        expect(Person2.ID.tableAlias("d")) { Property.fromExternalString(Person2.ID.tableAlias("d").toExternalString()) }
+    }
 })

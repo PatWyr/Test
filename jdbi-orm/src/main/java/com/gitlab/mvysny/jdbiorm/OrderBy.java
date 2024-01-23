@@ -20,32 +20,28 @@ public final class OrderBy implements Serializable {
     public static final Order DESC = Order.DESC;
 
     @NotNull
-    private final Property.Name name;
+    private final Property<?> property;
     @NotNull
     private final Order order;
 
     /**
      * Creates the order-by clause
-     * @param name {@link PropertyMeta#getName()}. May only contain characters that are valid part of a Java {@link java.lang.reflect.Field#getName}.
+     * @param property the owner property, not null.
      * @param order the ordering, not null.
      */
-    public OrderBy(@NotNull Property.Name name, @NotNull Order order) {
-        this.name = Objects.requireNonNull(name);
+    public OrderBy(@NotNull Property<?> property, @NotNull Order order) {
+        this.property = Objects.requireNonNull(property);
         this.order = Objects.requireNonNull(order);
     }
 
-    @Deprecated
-    public OrderBy(@NotNull String name, @NotNull Order order) {
-        this(new Property.Name(name), order);
+    @NotNull
+    public static OrderBy of(@NotNull Class<?> entityClass, @NotNull String propertyName, @NotNull Order order) {
+        return new OrderBy(TableProperty.of(entityClass, propertyName), order);
     }
 
-    /**
-     * {@link PropertyMeta#getName()}.
-     * @return {@link PropertyMeta#getName()}.
-     */
     @NotNull
-    public Property.Name getName() {
-        return name;
+    public Property<?> getProperty() {
+        return property;
     }
 
     @NotNull
@@ -55,19 +51,19 @@ public final class OrderBy implements Serializable {
 
     @Override
     public String toString() {
-        return name + " " + order;
+        return property + " " + order;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof OrderBy)) return false;
         OrderBy orderBy = (OrderBy) o;
-        return name.equals(orderBy.name) && order == orderBy.order;
+        return Objects.equals(property, orderBy.property) && order == orderBy.order;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, order);
+        return Objects.hash(property, order);
     }
 }
