@@ -11,6 +11,20 @@ import java.util.stream.Collectors;
 
 /**
  * A SQL expression, e.g. a String constant or an operation such as "lower()". Immutable.
+ * <h3>Example of use</h3>
+ * You start creating expressions usually by starting with a {@link com.gitlab.mvysny.jdbiorm.TableProperty TableProperty} (which itself
+ * is an Expression); alternatively you can convert a constant literal into an Expression by calling
+ * <code>new Expression.Value(5)</code>. Then you use some of the default Expression
+ * functions to ultimately create a {@link Condition}, which you can then pass to DaoOfAny or Dao:
+ * <code><pre>
+ * Expression exp = Person.ID;
+ * Condition condition = exp.eq(5);
+ * List&lt;Person&gt; personnel = new Dao(Person.class).findAll(condition);
+ * </pre></code>
+ * Typically you call the above in shorthand form:
+ * <code><pre>
+ * List&lt;Person&gt; personnel = Person.dao.findAll(Person.ID.eq(5));
+ * </pre></code>
  * <h3>Implementation</h3>
  * {@link Object#equals(Object)}/{@link Object#hashCode()} must be implemented properly, so that the conditions can be
  * placed in a set. As a bare minimum, the filter type, the property name and the value which we compare against must be
