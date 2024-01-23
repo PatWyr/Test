@@ -1,9 +1,15 @@
 package com.gitlab.mvysny.jdbiorm.condition;
 
+import com.gitlab.mvysny.jdbiorm.JdbiOrm;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
+/**
+ * The LOWER operator.
+ * @param <V> the type of the accepted value, usually String.
+ */
 public final class Lower<V> implements Expression<V> {
     @NotNull
     private final Expression<V> arg;
@@ -38,5 +44,17 @@ public final class Lower<V> implements Expression<V> {
     public @NotNull ParametrizedSql toSql() {
         final ParametrizedSql sql = arg.toSql();
         return new ParametrizedSql("LOWER(" + sql.getSql92() + ")", sql.getSql92Parameters());
+    }
+
+    @Override
+    public @Nullable Object calculate() {
+        final Object value = arg.calculate();
+        if (value == null) {
+            return null;
+        }
+        if (!(value instanceof String)) {
+            throw new IllegalStateException("Expression " + arg + " doesn't produce String, can't calculate lower(): " + value);
+        }
+        return ((String) value).toLowerCase(JdbiOrm.getLocale());
     }
 }

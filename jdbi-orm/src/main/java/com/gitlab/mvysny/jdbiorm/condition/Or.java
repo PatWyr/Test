@@ -50,4 +50,9 @@ final class Or implements Condition {
     public @NotNull ParametrizedSql toSql() {
         return ParametrizedSql.mergeWithOperator("OR", condition1.toSql(), condition2.toSql());
     }
+
+    @Override
+    public boolean test() {
+        return condition1.test() || condition2.test();
+    }
 }

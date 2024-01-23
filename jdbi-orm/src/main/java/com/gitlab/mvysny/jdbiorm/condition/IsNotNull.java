@@ -39,4 +39,9 @@ public final class IsNotNull implements Condition {
         final ParametrizedSql sql = arg.toSql();
         return new ParametrizedSql("(" + sql.getSql92() + ") IS NOT NULL", sql.getSql92Parameters());
     }
+
+    @Override
+    public boolean test() {
+        return arg.calculate() != null;
+    }
 }

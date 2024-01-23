@@ -50,4 +50,17 @@ public final class Eq implements Condition {
     public @NotNull ParametrizedSql toSql() {
         return ParametrizedSql.mergeWithOperator("=", arg1.toSql(), arg2.toSql());
     }
+
+    @Override
+    public boolean test(@NotNull Object row) {
+        final Object value1 = arg1.calculate(row);
+        if (value1 == null) {
+            return false; // in SQL, null is not equal to anything
+        }
+        final Object value2 = arg2.calculate(row);
+        if (value2 == null) {
+            return false; // in SQL, null is not equal to anything
+        }
+        return value1.equals(value2);
+    }
 }

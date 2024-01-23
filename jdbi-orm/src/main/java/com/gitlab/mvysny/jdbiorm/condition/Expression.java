@@ -21,6 +21,10 @@ import java.util.stream.Collectors;
  */
 public interface Expression<V> extends Serializable {
 
+    /**
+     * The LOWER operator.
+     * @return the expression which calculates LOWER of this.
+     */
     @NotNull
     default Expression<V> lower() {
         return new Lower<>(this);
@@ -30,7 +34,7 @@ public interface Expression<V> extends Serializable {
      * A value constant expression.
      * @param <V> the value type
      */
-    class Value<V> implements Expression<V> {
+    final class Value<V> implements Expression<V> {
         @Nullable
         private final V value;
 
@@ -64,6 +68,11 @@ public interface Expression<V> extends Serializable {
 
         @Nullable
         public V getValue() {
+            return value;
+        }
+
+        @Override
+        public @Nullable Object calculate(@NotNull Object row) {
             return value;
         }
     }
@@ -502,4 +511,14 @@ public interface Expression<V> extends Serializable {
     default Condition fullTextMatches(@NotNull String query) {
         return FullTextCondition.of(this, query);
     }
+
+    /**
+     * Calculates the value of this expression via a Java code (if possible).
+     * @param row the row bean on which the expression is calculated, not null. Might be ignored by
+     *            the implementation of this function (e.g. {@link Value} ignores it).
+     * @return the calculated value
+     * @throws IllegalStateException if the value can not be calculated via Java code.
+     */
+    @Nullable
+    Object calculate(@NotNull Object row);
 }

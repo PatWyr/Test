@@ -3,6 +3,7 @@ package com.gitlab.mvysny.jdbiorm.condition;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+import java.util.function.BiPredicate;
 
 public final class Op implements Condition {
     @NotNull
@@ -18,8 +19,39 @@ public final class Op implements Condition {
         this.operator = Objects.requireNonNull(operator);
     }
 
-    public enum Operator {
-        EQ("="), LT("<"), LE("<="), GT(">"), GE(">="), NE("<>");
+    public enum Operator implements BiPredicate<Object, Object> {
+        EQ("=") {
+            @Override
+            public boolean test(Object o, Object o2) {
+                // in SQL, null is not equal to anything
+                return o != null && o.equals(o2);
+            }
+        }, LT("<") {
+            @Override
+            public boolean test(Object o, Object o2) {
+                return o != null && o2 != null && ((Comparable) o).compareTo((Comparable) o2) < 0;
+            }
+        }, LE("<=") {
+            @Override
+            public boolean test(Object o, Object o2) {
+                return o != null && o2 != null && ((Comparable) o).compareTo((Comparable) o2) <= 0;
+            }
+        }, GT(">") {
+            @Override
+            public boolean test(Object o, Object o2) {
+                return o != null && o2 != null && ((Comparable) o).compareTo((Comparable) o2) > 0;
+            }
+        }, GE(">=") {
+            @Override
+            public boolean test(Object o, Object o2) {
+                return o != null && o2 != null && ((Comparable) o).compareTo((Comparable) o2) >= 0;
+            }
+        }, NE("<>") {
+            @Override
+            public boolean test(Object o, Object o2) {
+                return o != null && o2 != null && !o.equals(o2);
+            }
+        };
         @NotNull
         public final String sql92Operator;
 
@@ -64,5 +96,10 @@ public final class Op implements Condition {
     @Override
     public @NotNull ParametrizedSql toSql() {
         return ParametrizedSql.mergeWithOperator(operator.sql92Operator, arg1.toSql(), arg2.toSql());
+    }
+
+    @Override
+    public boolean test() {
+        return operator.test(arg1.calculate(), arg2.calculate());
     }
 }

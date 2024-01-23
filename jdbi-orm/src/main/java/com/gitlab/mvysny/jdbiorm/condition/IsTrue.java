@@ -2,10 +2,10 @@ package com.gitlab.mvysny.jdbiorm.condition;
 
 import com.gitlab.mvysny.jdbiorm.JdbiOrm;
 import com.gitlab.mvysny.jdbiorm.quirks.DatabaseVariant;
-import org.jdbi.v3.core.Jdbi;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Create a condition to check this field against known string literals for
@@ -51,5 +51,23 @@ public final class IsTrue implements Condition {
         }
         final ParametrizedSql sql = arg.toSql();
         return new ParametrizedSql("lower(" + sql.getSql92() + ") in ('1', 'y', 'yes', 'true', 'on', 'enabled')", sql.getSql92Parameters());
+    }
+
+    @NotNull
+    private static final Set<String> trueValues = Set.of("1", "y", "yes", "true", "on", "enabled");
+
+    @Override
+    public boolean test() {
+        return test(arg);
+    }
+
+    /**
+     * Tests whether given expression calculates to true.
+     * @param expression the expression to test, not null.
+     * @return true if the expression calculated to true; false if the expression calculated to null or non-true value (e.g. 25, "false" etc).
+     */
+    public static boolean test(@NotNull Expression<?> expression) {
+        final Object value = expression.calculate();
+        return value != null && trueValues.contains(value.toString().toLowerCase(JdbiOrm.getLocale()));
     }
 }

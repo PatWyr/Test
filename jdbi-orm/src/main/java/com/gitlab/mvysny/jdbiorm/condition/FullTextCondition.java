@@ -96,7 +96,7 @@ public final class FullTextCondition implements Condition {
      */
     public Set<String> getWords() {
         if (words == null) {
-            words = new LinkedHashSet<>(splitToWords(query.trim().toLowerCase(), false, Locale.getDefault()));
+            words = new LinkedHashSet<>(splitToWords(query.trim().toLowerCase(JdbiOrm.getLocale()), false, JdbiOrm.getLocale()));
         }
         // defensive copy, to prevent mutation
         return new LinkedHashSet<>(words);
@@ -107,7 +107,7 @@ public final class FullTextCondition implements Condition {
      * Uses [BreakIterator.getWordInstance] - see Javadoc for [BreakIterator] for more details.
      * @param string the text to split.
      * @param punctuation defaults to false. If false, punctuation is not returned.
-     * @param locale the locale to use, use {@link Locale#getDefault()} if not sure.
+     * @param locale the locale to use, use {@link JdbiOrm#getLocale()} if not sure.
      * @return a list of words, never null, may be empty.
      */
     private static LinkedList<String> splitToWords(@NotNull String string, boolean punctuation, @NotNull Locale locale) {
@@ -225,5 +225,24 @@ public final class FullTextCondition implements Condition {
             return EntityMeta.of(((TableProperty<?, ?>) arg).getEntityClass());
         }
         throw new IllegalStateException(arg + ": expected TableProperty");
+    }
+
+    @Override
+    public boolean test(@NotNull Object row) {
+        final Object value = arg.calculate(row);
+        if (value == null) {
+            return false;
+        }
+        if (!(value instanceof String)) {
+            throw new IllegalStateException("Invalid state: " + arg + " evaluated to non-String value " + value);
+        }
+        final Set<String> probeWords = new HashSet<>(splitToWords(((String) value).toLowerCase(JdbiOrm.getLocale()), false, JdbiOrm.getLocale()));
+        final Set<String> words = getWords();
+        // all words must be contained within the probeWords
+        for (String word : words) {
+            for (String probeWord : probeWords) {
+
+            }
+        }
     }
 }

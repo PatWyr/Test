@@ -4,6 +4,7 @@ import com.github.mvysny.dynatest.DynaNodeGroup
 import com.github.mvysny.dynatest.DynaTest
 import com.github.mvysny.dynatest.DynaTestDsl
 import com.github.mvysny.dynatest.expectList
+import com.gitlab.mvysny.jdbiorm.DaoOfAny
 import com.gitlab.mvysny.jdbiorm.DatabaseInfo
 import com.gitlab.mvysny.jdbiorm.JoinTable
 import com.gitlab.mvysny.jdbiorm.Person
@@ -36,6 +37,148 @@ class ConditionTest : DynaTest({
         }
         test("not") {
             expect(Condition.NO_CONDITION) { Condition.NO_CONDITION.not() }
+        }
+    }
+    test("Condition is not @FunctionalInterface") {
+        // tests that Condition is not a FunctionalInterface.
+        fun DaoOfAny<*>.deleteBy(block: String.() -> String) {}
+        // if Condition is a functional interface, Kotlin will stubbornly use [DaoOfAny.deleteBy]
+        // instead of the extension method defined above, and the code below will fail to compile.
+        // This is problematic for vok-orm which can't then define its own extension methods using fancy {} syntax.
+        DaoOfAny(Person::class.java).deleteBy { "" }
+    }
+    group("Condition.test") {
+        test("IsFalse") {
+            expect(true) { IsFalse.test(Expression.Value(0)) }
+            expect(true) { IsFalse.test(Expression.Value("0")) }
+            expect(true) { IsFalse.test(Expression.Value("off")) }
+            expect(false) { IsFalse.test(Expression.Value(1)) }
+            expect(false) { IsFalse.test(Expression.Value(25)) }
+        }
+        test("IsTrue") {
+            expect(false) { IsFalse.test(Expression.Value(0)) }
+            expect(false) { IsFalse.test(Expression.Value("0")) }
+            expect(false) { IsFalse.test(Expression.Value("off")) }
+            expect(true) { IsFalse.test(Expression.Value(1)) }
+            expect(true) { IsFalse.test(Expression.Value("on")) }
+            expect(false) { IsFalse.test(Expression.Value(25)) }
+        }
+        test("NoCondition") {
+            expect(true) { NoCondition.INSTANCE.test() }
+        }
+        test("IsNull") {
+            expect(true) { IsNull(Expression.Value(null)).test() }
+            expect(false) { IsNull(Expression.Value(4)).test() }
+        }
+        test("IsNotNull") {
+            expect(false) { IsNotNull(Expression.Value(null)).test() }
+            expect(true) { IsNotNull(Expression.Value(4)).test() }
+        }
+        test("Eq") {
+            expect(false) { Eq(Expression.Value(null), Expression.Value(null)).test() }
+            expect(false) { Eq(Expression.Value(null), Expression.Value(2)).test() }
+            expect(false) { Eq(Expression.Value("2"), Expression.Value(2)).test() }
+            expect(true) { Eq(Expression.Value("2"), Expression.Value("2")).test() }
+        }
+        test("Like") {
+            fun like(val1: Any?, val2: Any?) = Like(Expression.Value(val1), Expression.Value(val2)).test()
+            expect(false) { like(null, "%") }
+            expect(true) { like("a", "%") }
+            expect(true) { like("a", "%a") }
+            expect(false) { like("a", "%A") }
+            expect(true) { like("a", "a") }
+            expect(true) { like("a", "a%") }
+            expect(false) { like("a", "A%") }
+            expect(true) { like("alpha", "a%") }
+            expect(false) { like("epsilon", "a%") }
+            expect(true) { like("alpha", "%a") }
+            expect(false) { like("epsilon", "%a") }
+            expect(true) { like("alpha", "%a%") }
+            expect(false) { like("epsilon", "%a%") }
+            expect(true) { like("car", "%a%") }
+            expect(true) { like("epsilon", "%psi%") }
+            expect(true) { like("epsilon", "%epsi%") }
+            expect(true) { like("epsilon", "%lon%") }
+            expect(false) { like("epsilon", "%lan%") }
+            expect(false) { like("epsilon", "%LON%") }
+        }
+        group("Op") {
+            test("Eq") {
+                expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.EQ).test() }
+                expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.EQ).test() }
+                expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.EQ).test() }
+                expect(true) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.EQ).test() }
+                expect(true) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.EQ).test() }
+                expect(false) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.EQ).test() }
+            }
+            test("Lt") {
+                expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.LT).test() }
+                expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.LT).test() }
+                expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.LT).test() }
+                expect(false) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.LT).test() }
+                expect(true) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.LT).test() }
+                expect(false) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.LT).test() }
+            }
+            test("LE") {
+                expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.LE).test() }
+                expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.LE).test() }
+                expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.LE).test() }
+                expect(true) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.LE).test() }
+                expect(true) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.LE).test() }
+                expect(false) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.LE).test() }
+            }
+            test("GT") {
+                expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.GT).test() }
+                expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.GT).test() }
+                expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.GT).test() }
+                expect(false) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.GT).test() }
+                expect(false) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.GT).test() }
+                expect(true) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.GT).test() }
+            }
+            test("GE") {
+                expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.GE).test() }
+                expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.GE).test() }
+                expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.GE).test() }
+                expect(true) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.GE).test() }
+                expect(false) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.GE).test() }
+                expect(true) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.GE).test() }
+            }
+            test("NE") {
+                expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.NE).test() }
+                expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.NE).test() }
+                expect(true) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.NE).test() }
+                expect(false) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.NE).test() }
+                expect(true) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.NE).test() }
+                expect(true) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.NE).test() }
+            }
+        }
+        test("LikeIgnoreCase") {
+            fun ilike(val1: Any?, val2: Any?) = Like(Expression.Value(val1), Expression.Value(val2)).test()
+            expect(false) { ilike(null, "%") }
+            expect(true) { ilike("a", "%") }
+            expect(true) { ilike("a", "%a") }
+            expect(true) { ilike("a", "%A") }
+            expect(true) { ilike("a", "a") }
+            expect(true) { ilike("a", "a%") }
+            expect(true) { ilike("a", "A%") }
+            expect(true) { ilike("alpha", "a%") }
+            expect(false) { ilike("epsilon", "a%") }
+            expect(true) { ilike("alpha", "%a") }
+            expect(false) { ilike("epsilon", "%a") }
+            expect(true) { ilike("alpha", "%a%") }
+            expect(false) { ilike("epsilon", "%a%") }
+            expect(true) { ilike("car", "%a%") }
+            expect(true) { ilike("epsilon", "%psi%") }
+            expect(true) { ilike("epsilon", "%epsi%") }
+            expect(true) { ilike("epsilon", "%lon%") }
+            expect(false) { ilike("epsilon", "%lan%") }
+            expect(false) { ilike("epsilon", "%LON%") }
+        }
+    }
+    group("Expression.calculate()") {
+        test("Lower") {
+            expect("foo") { Lower(Expression.Value("FOO")).calculate() }
+            expect(null) { Lower(Expression.Value(null)).calculate() }
         }
     }
 })

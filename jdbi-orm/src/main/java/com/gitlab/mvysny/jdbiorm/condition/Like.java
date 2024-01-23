@@ -45,4 +45,37 @@ public final class Like implements Condition {
     public @NotNull ParametrizedSql toSql() {
         return ParametrizedSql.mergeWithOperator("LIKE", arg1.toSql(), arg2.toSql());
     }
+
+    @Override
+    public boolean test() {
+        final Object pattern = arg2.calculate();
+        if (pattern == null) {
+            throw new IllegalStateException("Invalid state: " + arg2 + " evaluated to null");
+        }
+        if (!(pattern instanceof String)) {
+            throw new IllegalStateException("Invalid state: " + arg2 + " evaluated to a non-String value " + pattern);
+        }
+        final Object string = arg1.calculate();
+        if (string == null) {
+            return false;
+        }
+        if (!(string instanceof String)) {
+            throw new IllegalStateException("Invalid state: " + arg1 + " evaluated to a non-String value " + string);
+        }
+
+        final String strPattern = (String) pattern;
+        if (strPattern.startsWith("%")) {
+            if (strPattern.endsWith("%")) {
+                return ((String) string).contains(strPattern.substring(1, strPattern.length() - 1));
+            } else {
+                return ((String) string).endsWith(strPattern.substring(1));
+            }
+        } else {
+            if (strPattern.endsWith("%")) {
+                return ((String) string).startsWith(strPattern.substring(0, strPattern.length() - 1));
+            } else {
+                return string.equals(pattern);
+            }
+        }
+    }
 }

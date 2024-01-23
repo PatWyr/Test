@@ -103,6 +103,13 @@ public final class TableProperty<E, V> implements Property<V> {
         return new ParametrizedSql(getDbName().getQualifiedName());
     }
 
+    @Override
+    public @Nullable Object calculate(@NotNull Object row) {
+        Objects.requireNonNull(row);
+        final E bean = entityClass.cast(row);
+        return getMeta().get(bean);
+    }
+
     private static final class AliasedTableProperty<E, V> implements Property<V> {
         @NotNull
         private final TableProperty<E, V> tableProperty;
@@ -145,6 +152,11 @@ public final class TableProperty<E, V> implements Property<V> {
         @Override
         public @NotNull ParametrizedSql toSql() {
             return new ParametrizedSql(getDbName().getQualifiedName());
+        }
+
+        @Override
+        public @Nullable Object calculate(@NotNull Object row) {
+            return tableProperty.calculate(row);
         }
     }
 }

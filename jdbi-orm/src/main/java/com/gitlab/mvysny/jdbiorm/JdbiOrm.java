@@ -15,7 +15,9 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * Initializes the ORM in the current JVM. Wraps any given {@link DataSource};
@@ -139,5 +141,23 @@ public final class JdbiOrm {
             }
             dataSource = null;
         }
+    }
+
+    /**
+     * Governs the return value of {@link #getLocale()}.
+     * Returns {@link Locale#getDefault()} by default.
+     */
+    @NotNull
+    public static volatile Supplier<Locale> localeSupplier = Locale::getDefault;
+
+    /**
+     * Returns the locale used by JDBI-ORM for various purposes, e.g. {@link String#toLowerCase(Locale)}.
+     * Polls {@link #localeSupplier}.
+     * @return the locale, not null.
+     */
+    @NotNull
+    public static Locale getLocale() {
+        final Locale locale = localeSupplier.get();
+        return locale == null ? Locale.getDefault() : locale;
     }
 }

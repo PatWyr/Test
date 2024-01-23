@@ -43,6 +43,11 @@ public final class NoCondition implements Condition {
         throw new UnsupportedOperationException("Can not be converted to a SQL statement");
     }
 
+    @Override
+    public boolean test() {
+        return true;
+    }
+
     private Object readResolve() throws ObjectStreamException {
         // preserve singleton-ness
         return INSTANCE;

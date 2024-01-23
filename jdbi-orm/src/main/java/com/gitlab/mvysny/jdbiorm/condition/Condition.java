@@ -48,6 +48,15 @@ public interface Condition extends Serializable {
     ParametrizedSql toSql();
 
     /**
+     * Calculates the value of this expression via a Java code (if possible).
+     * @param row the row bean on which the expression is calculated, not null. Might be ignored by
+     *            the implementation of this function (e.g. {@link Expression.Value} ignores it).
+     * @return the calculated value
+     * @throws IllegalStateException if the value can not be calculated via Java code.
+     */
+    boolean test(@NotNull Object row);
+
+    /**
      * {@link NoCondition}.
      */
     @NotNull

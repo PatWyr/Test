@@ -29,4 +29,9 @@ class TablePropertyTest : DynaTest({
         expect("person_id") { MappingTable.ID_PERSONID.dbName.unqualifiedName }
         expect("orderId") { JoinTable.ORDERID.dbName.unqualifiedName }
     }
+    test("calculate") {
+        expect(5L) { Person.ID.calculate(Person(id = 5)) }
+        expect("foo") { Person.NAME.calculate(Person(name = "foo")) }
+        expect(4L) { MappingTable.ID_PERSONID.calculate(MappingTable(4L, 10L, "foo")) }
+    }
 })

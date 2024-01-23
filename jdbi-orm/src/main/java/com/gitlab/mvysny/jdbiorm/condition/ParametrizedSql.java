@@ -80,7 +80,7 @@ public final class ParametrizedSql implements Serializable {
     /**
      * For example `name = :name`; references database column names via
      * {@link com.gitlab.mvysny.jdbiorm.Property.DbName}. You can generate parameter names
-     * using {@link #generateParameterName(Expression)}.
+     * using {@link #generateParameterName(Object)}.
      */
     public @NotNull String getSql92() {
         return sql92;

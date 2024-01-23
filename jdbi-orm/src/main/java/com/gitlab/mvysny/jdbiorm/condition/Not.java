@@ -43,4 +43,9 @@ final class Not implements Condition {
         final ParametrizedSql sql = condition.toSql();
         return new ParametrizedSql("NOT (" + sql.getSql92() + ")", sql.getSql92Parameters());
     }
+
+    @Override
+    public boolean test() {
+        return !condition.test();
+    }
 }

@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * The IN operator: {@link #arg1} IN {@link #values}.
+ */
 public final class In implements Condition {
     @NotNull
     private final Expression<?> arg1;
@@ -37,12 +40,20 @@ public final class In implements Condition {
         return arg1 + " IN (" + values.stream().map(Objects::toString).collect(Collectors.joining(", ")) + ")";
     }
 
+    /**
+     * This value must be amongst {@link #getValues()}.
+     * @return the probe value.
+     */
     @NotNull
     public Expression<?> getArg1() {
         return arg1;
     }
 
-    public @NotNull Collection<?> getValues() {
+    /**
+     * The {@link #getArg1()} must be contained within these values.
+     * @return the set of accepted values.
+     */
+    public @NotNull Collection<? extends Expression<?>> getValues() {
         return values;
     }
 
@@ -56,5 +67,19 @@ public final class In implements Condition {
             params.putAll(valuesSql.getSql92Parameters());
         }
         return new ParametrizedSql("(" + sql1.getSql92() + ") IN (" + valuesSqls.stream().map(it -> "(" + it.getSql92() + ")").collect(Collectors.joining(", ")) + ")", params);
+    }
+
+    @Override
+    public boolean test() {
+        final Object value = arg1.calculate();
+        if (value == null) {
+            return false;
+        }
+        for (Expression<?> expression : values) {
+            if (value.equals(expression.calculate())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

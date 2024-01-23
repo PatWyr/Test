@@ -5,6 +5,7 @@ import com.gitlab.mvysny.jdbiorm.quirks.DatabaseVariant;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Create a condition to check this field against known string literals for
@@ -50,5 +51,23 @@ public final class IsFalse implements Condition {
         }
         final ParametrizedSql sql = arg.toSql();
         return new ParametrizedSql("lower(" + sql.getSql92() + ") in ('0', 'n', 'no', 'false', 'off', 'disabled')", sql.getSql92Parameters());
+    }
+
+    @NotNull
+    private static final Set<String> falseValues = Set.of("0", "n", "no", "false", "off", "disabled");
+
+    @Override
+    public boolean test() {
+        return test(arg);
+    }
+
+    /**
+     * Tests whether given expression calculates to false.
+     * @param expression the expression to test, not null.
+     * @return true if the expression calculated to false; false if the expression calculated to null or non-false value (e.g. 25, "true" etc).
+     */
+    public static boolean test(@NotNull Expression<?> expression) {
+        final Object value = expression.calculate();
+        return value != null && falseValues.contains(value.toString().toLowerCase(JdbiOrm.getLocale()));
     }
 }
