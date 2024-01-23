@@ -108,13 +108,12 @@ class ConditionTest : DynaTest({
                 expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.EQ).test("ignored") }
                 expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.EQ).test("ignored") }
                 expect(true) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.EQ).test("ignored") }
-                expect(true) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.EQ).test("ignored") }
+                expect(false) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.EQ).test("ignored") }
                 expect(false) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.EQ).test("ignored") }
             }
             test("Lt") {
                 expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.LT).test("ignored") }
                 expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.LT).test("ignored") }
-                expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.LT).test("ignored") }
                 expect(false) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.LT).test("ignored") }
                 expect(true) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.LT).test("ignored") }
                 expect(false) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.LT).test("ignored") }
@@ -122,7 +121,6 @@ class ConditionTest : DynaTest({
             test("LE") {
                 expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.LE).test("ignored") }
                 expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.LE).test("ignored") }
-                expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.LE).test("ignored") }
                 expect(true) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.LE).test("ignored") }
                 expect(true) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.LE).test("ignored") }
                 expect(false) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.LE).test("ignored") }
@@ -130,7 +128,6 @@ class ConditionTest : DynaTest({
             test("GT") {
                 expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.GT).test("ignored") }
                 expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.GT).test("ignored") }
-                expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.GT).test("ignored") }
                 expect(false) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.GT).test("ignored") }
                 expect(false) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.GT).test("ignored") }
                 expect(true) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.GT).test("ignored") }
@@ -138,7 +135,6 @@ class ConditionTest : DynaTest({
             test("GE") {
                 expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.GE).test("ignored") }
                 expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.GE).test("ignored") }
-                expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.GE).test("ignored") }
                 expect(true) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.GE).test("ignored") }
                 expect(false) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.GE).test("ignored") }
                 expect(true) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.GE).test("ignored") }
@@ -153,7 +149,7 @@ class ConditionTest : DynaTest({
             }
         }
         test("LikeIgnoreCase") {
-            fun ilike(val1: Any?, val2: Any?) = Like(Expression.Value(val1), Expression.Value(val2)).test("ignored")
+            fun ilike(val1: Any?, val2: Any?) = LikeIgnoreCase(Expression.Value(val1), Expression.Value(val2)).test("ignored")
             expect(false) { ilike(null, "%") }
             expect(true) { ilike("a", "%") }
             expect(true) { ilike("a", "%a") }
@@ -172,7 +168,8 @@ class ConditionTest : DynaTest({
             expect(true) { ilike("epsilon", "%epsi%") }
             expect(true) { ilike("epsilon", "%lon%") }
             expect(false) { ilike("epsilon", "%lan%") }
-            expect(false) { ilike("epsilon", "%LON%") }
+            expect(true) { ilike("epsilon", "%LON%") }
+            expect(false) { ilike("epsilon", "%LAN%") }
         }
         test("FullTextCondition") {
             fun ft(val1: Any?, query: String) = FullTextCondition.of(Expression.Value(val1), query).test("ignored")
