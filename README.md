@@ -576,18 +576,53 @@ class:
 
 ```java
 public class ReviewWithCategory {
-    @Nested
-    private Review review;
+  @Nested
+  private Review review;
 
-    @ColumnName("name")
-    private String categoryName;
+  @Nested
+  private Category category;
 
-    // omitted for brevity: getters & setters
+  public static List<Beverage> findAll() {
+    return jdbi().withHandle(handle -> handle
+            .createQuery("select r.*, c.* from Review r join Category c on r.category = c.id")
+            .map(FieldMapper.of(ReviewWithCategory.class))
+            .list());
+  }
 }
 ```
 
-Just use the same `ReviewWithCategoryDao` as described above, it will also work with the `@Nested`-annotated
-field.
+#### @Nested - resolving name clashes
+
+Say that both Review and Category had a field named 'name' and you tried to fetch both `Review` and `Category` as above,
+JDBI Mapper would fail with `IllegalArgumentException: 'Review.name' (name) matches multiple columns: 'name' (1) and 'name' (10)`.
+To solve this, we need to use aliases and prefixes:
+
+```java
+public class ReviewWithCategory {
+  @Nested
+  private Review review;
+
+  @Nested("category_")
+  private Category category;
+
+  public static List<Beverage> findAll() {
+    return jdbi().withHandle(handle -> handle
+            .createQuery("select r.*, c.id as category_id, c.name as category_name from Review r join Category c on r.category = c.id where c.id < 1000 order by c.id ASC")
+            .map(FieldMapper.of(ReviewWithCategory.class))
+            .list());
+  }
+}
+```
+
+The alias part (`c.name as category_name`) is only used for JDBI to map the column to the proper bean. In the SQL statement you
+can ignore the aliased name and continue to refer to the column as `c.name`.
+
+### DaoOfJoin
+
+If you need to have support for programmatic paging, sorting and filtering (e.g. via the Condition API),
+it's best to use the `DaoOfJoin` DAO which is specifically tailored towards fetching the outcomes of JOINs.
+
+TODO finalize
 
 ## Controlling The Mapping
 
