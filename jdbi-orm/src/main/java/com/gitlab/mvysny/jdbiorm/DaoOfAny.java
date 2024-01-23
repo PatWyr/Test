@@ -111,7 +111,7 @@ public class DaoOfAny<T> implements Serializable {
                     // H2 requires ORDER BY after LIMIT+OFFSET clauses.
                     appendOffsetLimit(sql, handle, offset, limit, orderBy != null);
                     return handle.createQuery(sql.toString())
-                            .define("FIELDS", meta.getPersistedFieldDbNames().stream().map(Property.DbName::getUnqualifiedName).collect(Collectors.joining(", ")))
+                            .define("FIELDS", meta.getPersistedFieldDbNames().stream().map(Property.DbName::getQualifiedName).collect(Collectors.joining(", ")))
                             .define("TABLE", meta.getDatabaseTableName())
                             .map(getRowMapper())
                             .list();
@@ -259,7 +259,7 @@ public class DaoOfAny<T> implements Serializable {
         return jdbi().withHandle(handle -> {
                     appendOffsetLimit(sql, handle, offset, limit, orderBy != null);
                     final Query query = handle.createQuery(sql.toString())
-                            .define("FIELDS", meta.getPersistedFieldDbNames().stream().map(Property.DbName::getUnqualifiedName).collect(Collectors.joining(", ")))
+                            .define("FIELDS", meta.getPersistedFieldDbNames().stream().map(Property.DbName::getQualifiedName).collect(Collectors.joining(", ")))
                             .define("TABLE", meta.getDatabaseTableName())
                             .define("WHERE", where);
                     queryConsumer.accept(query);
@@ -338,7 +338,7 @@ public class DaoOfAny<T> implements Serializable {
             sql += quirks.offsetLimit(null, 2L);
             final String sqlFinal = sql;
             final Query query = handle.createQuery(sqlFinal)
-                    .define("FIELDS", meta.getPersistedFieldDbNames().stream().map(Property.DbName::getUnqualifiedName).collect(Collectors.joining(", ")))
+                    .define("FIELDS", meta.getPersistedFieldDbNames().stream().map(Property.DbName::getQualifiedName).collect(Collectors.joining(", ")))
                     .define("TABLE", meta.getDatabaseTableName());
             if (where != null) {
                 query.define("WHERE", where);

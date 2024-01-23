@@ -34,4 +34,8 @@ class TablePropertyTest : DynaTest({
         expect("foo") { Person.NAME.calculate(Person(name = "foo")) }
         expect(4L) { MappingTable.ID_PERSONID.calculate(MappingTable(4L, 10L, "foo")) }
     }
+    test("aliased") {
+        expect("d.id") { Person2.ID.tableAlias("d").dbName.qualifiedName }
+        expect("id") { Person2.ID.tableAlias("d").dbName.unqualifiedName }
+    }
 })
