@@ -144,13 +144,20 @@ public class DaoOfAny<T> implements Serializable {
         return order;
     }
 
-    private static void checkOffsetLimit(@Nullable Long offset, @Nullable Long limit) {
+    protected static void checkOffsetLimit(@Nullable Long offset, @Nullable Long limit) {
         if (offset != null && offset < 0) {
             throw new IllegalArgumentException("Parameter offset: invalid value " + offset + ": must be 0 or greater");
         }
         if (limit != null && limit < 0) {
             throw new IllegalArgumentException("Parameter limit: invalid value " + limit + ": must be 0 or greater");
         }
+    }
+
+    @NotNull
+    protected String getOffsetLimit(@NotNull Handle handle, @Nullable final Long offset, @Nullable final Long limit, boolean sqlHasOrderBy) {
+        final StringBuilder sb = new StringBuilder();
+        appendOffsetLimit(sb, handle, offset, limit, sqlHasOrderBy);
+        return sb.toString().trim();
     }
 
     protected void appendOffsetLimit(@NotNull StringBuilder sql, @NotNull Handle handle, @Nullable final Long offset, @Nullable final Long limit, boolean sqlHasOrderBy) {

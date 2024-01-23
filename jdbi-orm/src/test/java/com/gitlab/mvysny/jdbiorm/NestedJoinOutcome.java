@@ -43,10 +43,12 @@ public class NestedJoinOutcome implements Serializable {
                 '}';
     }
 
-    public static class MyDao extends DaoOfAny<NestedJoinOutcome> {
+    public static class MyDao extends DaoOfJoin<NestedJoinOutcome> {
 
         public MyDao() {
-            super(NestedJoinOutcome.class);
+            super(NestedJoinOutcome.class, "select p.*, d.myid as department_myid, d.name as department_name\n" +
+                    "FROM Test p join mapping_table m on p.id = m.person_id join EntityWithAliasedId d on m.department_id = d.myid\n" +
+                            "WHERE 1=1 <WHERE> ORDER BY 1=1<ORDER> <PAGING>");
         }
 
         @NotNull
