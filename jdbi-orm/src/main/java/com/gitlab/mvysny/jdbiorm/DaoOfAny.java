@@ -106,24 +106,7 @@ public class DaoOfAny<T> implements Serializable {
      */
     @NotNull
     public List<T> findAll(@Nullable String orderBy, @Nullable final Long offset, @Nullable final Long limit) {
-        if (limit != null && limit == 0L) {
-            return new ArrayList<>();
-        }
-        final StringBuilder sql = new StringBuilder("select <FIELDS> from <TABLE>");
-        checkOffsetLimit(offset, limit);
-        return jdbi().withHandle(handle -> {
-                    if (orderBy != null) {
-                        sql.append(" order by ").append(orderBy);
-                    }
-                    // H2 requires ORDER BY after LIMIT+OFFSET clauses.
-                    appendOffsetLimit(sql, handle, offset, limit, orderBy != null);
-                    return handle.createQuery(sql.toString())
-                            .define("FIELDS", meta.getPersistedFieldDbNames().stream().map(Property.DbName::getQualifiedName).collect(Collectors.joining(", ")))
-                            .define("TABLE", meta.getDatabaseTableName())
-                            .map(getRowMapper())
-                            .list();
-                }
-        );
+        return findAllBy(null, orderBy, offset, limit, q -> {}, ResultIterable::list, Collections.emptyList());
     }
 
     /**
@@ -136,9 +119,6 @@ public class DaoOfAny<T> implements Serializable {
      */
     @NotNull
     public List<T> findAll(@NotNull List<OrderBy> orderBy, @Nullable final Long offset, @Nullable final Long limit) {
-        if (limit != null && limit == 0L) {
-            return new ArrayList<>();
-        }
         final String order = toSqlOrderClause(orderBy);
         return findAll(order, offset, limit);
     }
@@ -254,25 +234,54 @@ public class DaoOfAny<T> implements Serializable {
                              @Nullable final Long offset, @Nullable final Long limit,
                              @NotNull Consumer<Query> queryConsumer) {
         Objects.requireNonNull(where, "where");
+        return findAllBy(where, orderBy, offset, limit, queryConsumer, ResultIterable::list, Collections.emptyList());
+    }
+
+    /**
+     * Finds all matching rows in given table. Fails if there is no table in the database with the
+     * name of {@link EntityMeta#getDatabaseTableName()}. If both offset and limit
+     * are specified, then the LIMIT and OFFSET sql paging is used.
+     *
+     * @param where          the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
+     * @param orderBy        if not null, this is passed in as the ORDER BY clause, e.g. {@code surname ASC, name ASC}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
+     * @param offset         start from this row. If not null, must be 0 or greater.
+     * @param limit          return this count of row at most. If not null, must be 0 or greater.
+     * @param queryConsumer  allows you to set parameter values etc, for example {@code q -> q.bind("customerid", customerId")}.
+     * @param iterableMapper maps ResultIterable<T> to any result you need. Usually you call {@link ResultIterable#list()}.
+     * @param empty          return this if limit is 0.
+     * @param <R>            the type of the result
+     */
+    protected <R> R findAllBy(@Nullable String where, @Nullable String orderBy,
+                              @Nullable final Long offset, @Nullable final Long limit,
+                              @NotNull Consumer<Query> queryConsumer,
+                              @NotNull Function<ResultIterable<T>, R> iterableMapper,
+                              @Nullable R empty) {
         Objects.requireNonNull(queryConsumer, "queryConsumer");
+        Objects.requireNonNull(iterableMapper, "iterableMapper");
         if (limit != null && limit == 0L) {
-            return new ArrayList<>();
+            return empty;
         }
-        final StringBuilder sql = new StringBuilder("select <FIELDS> from <TABLE> where <WHERE>");
+        final StringBuilder sql = new StringBuilder("select <FIELDS> from <TABLE>");
+        if (where != null) {
+            sql.append(" where <WHERE>");
+        }
         if (orderBy != null) {
             sql.append(" order by ").append(orderBy);
         }
         checkOffsetLimit(offset, limit);
         return jdbi().withHandle(handle -> {
+                    // H2 requires ORDER BY after LIMIT+OFFSET clauses.
                     appendOffsetLimit(sql, handle, offset, limit, orderBy != null);
                     final Query query = handle.createQuery(sql.toString())
                             .define("FIELDS", meta.getPersistedFieldDbNames().stream().map(Property.DbName::getQualifiedName).collect(Collectors.joining(", ")))
-                            .define("TABLE", meta.getDatabaseTableName())
-                            .define("WHERE", where);
+                            .define("TABLE", meta.getDatabaseTableName());
+                    if (where != null) {
+                        query.define("WHERE", where);
+                    }
                     queryConsumer.accept(query);
-                    return query
-                            .map(getRowMapper())
-                            .list();
+                    final ResultIterable<T> resultIterable = query
+                            .map(getRowMapper());
+                    return iterableMapper.apply(resultIterable);
                 }
         );
     }
