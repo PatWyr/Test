@@ -60,6 +60,14 @@ public final class TableProperty<E, V> implements Property<V> {
         return new TableProperty<>(entity, propertyName);
     }
 
+    /**
+     * Creates a table property for given entity and property name.
+     * @param entity the entity class.
+     * @param propertyName the property name, see {@link Property.Name} for details on the naming scheme.
+     * @return the table property.
+     * @param <E> the entity type
+     * @param <V> the property value type, e.g. Long or String.
+     */
     @NotNull
     public static <E, V> TableProperty<E, V> of(@NotNull Class<E> entity, @NotNull String propertyName) {
         return new TableProperty<>(entity, new Property.Name(propertyName));

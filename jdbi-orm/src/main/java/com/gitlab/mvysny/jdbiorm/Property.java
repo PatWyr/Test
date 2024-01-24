@@ -178,14 +178,32 @@ public interface Property<V> extends Expression<V> {
     @NotNull
     DbName getDbName();
 
+    /**
+     * Returns the sorting clause which uses ascending order over this property.
+     * @return the sorting clause.
+     */
     @NotNull
     default OrderBy asc() {
-        return new OrderBy(this, OrderBy.ASC);
+        return orderBy(OrderBy.ASC);
     }
 
+    /**
+     * Returns the sorting clause which uses descending order over this property.
+     * @return the sorting clause.
+     */
     @NotNull
     default OrderBy desc() {
-        return new OrderBy(this, OrderBy.DESC);
+        return orderBy(OrderBy.DESC);
+    }
+
+    /**
+     * Returns the sorting clause which uses given order over this property.
+     * @param order the sorting order to use.
+     * @return the sorting clause.
+     */
+    @NotNull
+    default OrderBy orderBy(@NotNull OrderBy.Order order) {
+        return new OrderBy(this, order);
     }
 
     /**
