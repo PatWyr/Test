@@ -16,12 +16,29 @@ import java.util.stream.Collectors;
 
 import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
 
+/**
+ * A DAO which maps an outcome of a JOIN statement (or any SQL statement in general).
+ * DaoOfJoin will automatically append "WHERE", "ORDER BY", "OFFSET" and "LIMIT" clauses at the end of your SQL statement, so
+ * you have to omit those in your SQL statement.
+ * @param <T> the type of the Java POJO entities being returned.
+ */
 public class DaoOfJoin<T> extends DaoOfAny<T> {
+    /**
+     * The part of the SQL statement which may be appended with WHERE / ORDER BY / OFFSET / LIMIT stanzas.
+     */
     @NotNull
     private final String sql;
 
-    public DaoOfJoin(@NotNull Class<T> entityClass, @NotNull @Language("sql") String sql) {
-        super(entityClass);
+    /**
+     * Creates the DAO.
+     * @param pojoClass the class of Java POJO to which the result will be mapped. The class doesn't need to implement anything, not even Serializable.
+     *                  JDBI is still used to map the JDBC resultset to the fields of the class; therefore the fields
+     *                  may be annotated with {@link org.jdbi.v3.core.mapper.Nested @Nested}, {@link org.jdbi.v3.core.annotation.JdbiProperty} and other annotations
+     *                  to configure the mapping. FieldMapper is used by default.
+     * @param sql the part of the SQL statement which may be appended with WHERE / ORDER BY / OFFSET / LIMIT stanzas.
+     */
+    public DaoOfJoin(@NotNull Class<T> pojoClass, @NotNull @Language("sql") String sql) {
+        super(pojoClass);
         this.sql = Objects.requireNonNull(sql);
     }
 
@@ -93,5 +110,10 @@ public class DaoOfJoin<T> extends DaoOfAny<T> {
     @Override
     public void deleteBy(@NotNull String where, @NotNull Consumer<Update> updateConsumer) {
         throw new UnsupportedOperationException("DaoOfJoin doesn't support deletion by default");
+    }
+
+    @Override
+    public String toString() {
+        return "DaoOfJoin{" + entityClass.getSimpleName() + ": '" + sql + "'}";
     }
 }

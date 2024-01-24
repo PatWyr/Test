@@ -709,4 +709,9 @@ public class DaoOfAny<T> implements Serializable {
                 }
         );
     }
+
+    @Override
+    public String toString() {
+        return "DaoOfAny{" +  entityClass.getSimpleName() + '}';
+    }
 }
