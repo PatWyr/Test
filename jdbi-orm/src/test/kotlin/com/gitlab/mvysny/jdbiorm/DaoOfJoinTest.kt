@@ -74,4 +74,27 @@ fun DynaNodeGroup.daoOfJoinTests() {
         expect(p) { joinOutcomes[0].person }
         expect(d) { joinOutcomes[0].department }
     }
+
+    test("count") {
+        expect(0) { NestedJoinOutcome.dao.count() }
+
+        val p = Person2(name = "Foo")
+        p.create()
+        val d = EntityWithAliasedId("My department")
+        d.create()
+        MappingTable(p.id!!, d.id!!, "").create()
+        expect(1) { NestedJoinOutcome.dao.count() }
+    }
+
+    test("countBy") {
+        expect(0) { NestedJoinOutcome.dao.countBy(Person2.NAME.eq("Foo")) }
+
+        val p = Person2(name = "Foo")
+        p.create()
+        val d = EntityWithAliasedId("My department")
+        d.create()
+        MappingTable(p.id!!, d.id!!, "").create()
+        expect(1) { NestedJoinOutcome.dao.countBy(Person2.NAME.eq("Foo")) }
+        expect(0) { NestedJoinOutcome.dao.countBy(Person2.NAME.eq("Bar")) }
+    }
 }

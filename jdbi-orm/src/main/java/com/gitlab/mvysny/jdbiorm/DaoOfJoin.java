@@ -32,7 +32,7 @@ public class DaoOfJoin<T> extends DaoOfAny<T> {
         }
         final StringBuilder sql = new StringBuilder(this.sql);
         if (where != null) {
-            sql.append(" WHERE ").append(where);
+            sql.append(" WHERE <WHERE>");
         }
         if (orderBy != null) {
             sql.append(" ORDER BY ").append(orderBy);
@@ -41,11 +41,41 @@ public class DaoOfJoin<T> extends DaoOfAny<T> {
         return jdbi().withHandle(handle -> {
                     appendOffsetLimit(sql, handle, offset, limit, orderBy != null);
                     final Query query = handle.createQuery(sql.toString());
+                    if (where != null) {
+                        query.define("WHERE", where);
+                    }
                     queryConsumer.accept(query);
                     final ResultIterable<T> resultIterable = query
                             .map(getRowMapper());
                     return iterableMapper.apply(resultIterable);
                 }
         );
+    }
+
+    @Override
+    public void deleteAll() {
+        throw new UnsupportedOperationException("DaoOfJoin doesn't support deletion by default");
+    }
+
+    @Override
+    public long countBy(@Nullable String where, @NotNull Consumer<Query> queryConsumer) {
+        final StringBuilder sb = new StringBuilder(this.sql);
+        if (where != null) {
+            sb.append(" WHERE <WHERE>");
+        }
+        // previously, the count was obtained by a dirty trick - the ResultSet was simply scrolled to the last line and the row number is obtained.
+        // however, PostgreSQL doesn't seem to like this: https://github.com/mvysny/vaadin-on-kotlin/issues/19
+        // anyway there is a better way: simply wrap the select with "SELECT count(*) FROM (select)"
+        // subquery in FROM must have an alias
+        final String sql = "SELECT count(*) FROM (" + sb + ") AS Foo";
+        return jdbi().withHandle(handle -> {
+            final Query query = handle.createQuery(sql)
+                    .define("TABLE", meta.getDatabaseTableName());
+            if (where != null) {
+                query.define("WHERE", where);
+            }
+            queryConsumer.accept(query);
+            return query.mapTo(Long.class).one();
+        });
     }
 }

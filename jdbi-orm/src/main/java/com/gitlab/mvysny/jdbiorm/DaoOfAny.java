@@ -509,9 +509,7 @@ public class DaoOfAny<T> implements Serializable {
      * Counts all rows in this table.
      */
     public long count() {
-        return jdbi().withHandle(handle -> handle.createQuery("select count(*) from <TABLE>")
-                .define("TABLE", meta.getDatabaseTableName())
-                .mapTo(Long.class).one());
+        return countBy(null, q -> {});
     }
 
     /**
@@ -519,13 +517,18 @@ public class DaoOfAny<T> implements Serializable {
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
      * @param queryConsumer allows you to set parameter values etc, for example {@code q -> q.bind("customerid", customerId")}.
      */
-    public long countBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
-        Objects.requireNonNull(where, "where");
+    public long countBy(@Nullable String where, @NotNull Consumer<Query> queryConsumer) {
         Objects.requireNonNull(queryConsumer, "queryConsumer");
+        final StringBuilder sb = new StringBuilder("select count(*) from <TABLE>");
+        if (where != null) {
+            sb.append(" where <WHERE>");
+        }
         return jdbi().withHandle(handle -> {
-            final Query query = handle.createQuery("select count(*) from <TABLE> where <WHERE>")
-                    .define("TABLE", meta.getDatabaseTableName())
-                    .define("WHERE", where);
+            final Query query = handle.createQuery(sb.toString())
+                    .define("TABLE", meta.getDatabaseTableName());
+            if (where != null) {
+                query.define("WHERE", where);
+            }
             queryConsumer.accept(query);
             return query.mapTo(Long.class).one();
         });
