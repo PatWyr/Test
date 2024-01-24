@@ -160,13 +160,6 @@ public class DaoOfAny<T> implements Serializable {
         }
     }
 
-    @NotNull
-    protected String getOffsetLimit(@NotNull Handle handle, @Nullable final Long offset, @Nullable final Long limit, boolean sqlHasOrderBy) {
-        final StringBuilder sb = new StringBuilder();
-        appendOffsetLimit(sb, handle, offset, limit, sqlHasOrderBy);
-        return sb.toString().trim();
-    }
-
     protected void appendOffsetLimit(@NotNull StringBuilder sql, @NotNull Handle handle, @Nullable final Long offset, @Nullable final Long limit, boolean sqlHasOrderBy) {
         if (offset == null && limit == null) {
             return;
