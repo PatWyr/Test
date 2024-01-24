@@ -622,6 +622,52 @@ can ignore the aliased name and continue to refer to the column as `c.name`.
 If you need to have support for programmatic paging, sorting and filtering (e.g. via the Condition API),
 it's best to use the `DaoOfJoin` DAO which is specifically tailored towards fetching the outcomes of JOINs.
 
+The plain fields example:
+```java
+public class JoinOutcome implements Serializable {
+    public static final @NotNull Property<Long> DEPARTMENT_ID = EntityWithAliasedId.ID.tableAlias("d");
+    public static final @NotNull Property<String> DEPARTMENT_NAME = EntityWithAliasedId.NAME.tableAlias("d");
+
+    @ColumnName("id")
+    public Long personId;
+
+    @ColumnName("name")
+    public String personName;
+
+    @ColumnName("department_myid")
+    public Long departmentId;
+
+    @ColumnName("department_name")
+    public String departmentName;
+
+    public static class MyDao extends DaoOfJoin<JoinOutcome> {
+
+        public MyDao() {
+            // use both table aliases (EntityWithAliasedId d) and table real names (Test), to test
+            // both qualified names and table aliases API.
+            super(JoinOutcome.class, "select Test.id, Test.name, d.myid as department_myid, d.name as department_name\n" +
+                    "FROM Test join mapping_table m on Test.id = m.person_id join EntityWithAliasedId d on m.department_id = d.myid\n");
+        }
+    }
+
+    @NotNull
+    public static final MyDao dao = new MyDao();
+}
+```
+
+Now you can use all paged finder methods, count methods etc to fetch instances of JestedJoinOutcome from the DAO:
+```
+JoinOutcome.dao.findAllBy(Person.NAME.eq("Foo"),
+  List.of(JoinOutcome.DEPARTMENT_ID.asc(), Person.ID.desc()),
+  null, null);
+```
+
+DaoOfJoin will automatically append "WHERE", "ORDER BY", "OFFSET" and "LIMIT" clauses at the end of your SQL statement, so
+you have to omit those in your SQL statement.
+
+
+The `@Nested` fields example:
+
 ```java
 public class NestedJoinOutcome implements Serializable {
     @Nested
@@ -642,14 +688,11 @@ public class NestedJoinOutcome implements Serializable {
 }
 ```
 Now you can use all paged finder methods, count methods etc to fetch instances of JestedJoinOutcome from the DAO:
-```java
-NestedJoinOutcome.dao.findAllBy(Person.NAME.tableAlias("p").eq("Foo"),
-  List.of(Department.ID.tableAlias("d").asc(), Person.ID.tableAlias("p").desc()),
+```
+NestedJoinOutcome.dao.findAllBy(Person.NAME.eq("Foo"),
+  List.of(Department.ID.tableAlias("d").asc(), Person.ID.desc()),
   null, null);
 ```
-
-DaoOfJoin will automatically append "WHERE", "ORDER BY", "OFFSET" and "LIMIT" clauses at the end of your SQL statement, so
-you have to omit those in your SQL statement.
 
 ### Table Aliases
 

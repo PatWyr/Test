@@ -7,12 +7,9 @@ import org.jdbi.v3.core.statement.Update;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
 
@@ -20,6 +17,9 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  * A DAO which maps an outcome of a JOIN statement (or any SQL statement in general).
  * DaoOfJoin will automatically append "WHERE", "ORDER BY", "OFFSET" and "LIMIT" clauses at the end of your SQL statement, so
  * you have to omit those in your SQL statement.
+ * <p></p>
+ * See the main README.md documentation on how to map aliased tables, aliased columns and <code>@Nested</code> beans and how to structure
+ * your SQL to provide for such use-cases.
  * @param <T> the type of the Java POJO entities being returned.
  */
 public class DaoOfJoin<T> extends DaoOfAny<T> {
@@ -33,7 +33,7 @@ public class DaoOfJoin<T> extends DaoOfAny<T> {
      * Creates the DAO.
      * @param pojoClass the class of Java POJO to which the result will be mapped. The class doesn't need to implement anything, not even Serializable.
      *                  JDBI is still used to map the JDBC resultset to the fields of the class; therefore the fields
-     *                  may be annotated with {@link org.jdbi.v3.core.mapper.Nested @Nested}, {@link org.jdbi.v3.core.annotation.JdbiProperty} and other annotations
+     *                  may be annotated with {@link org.jdbi.v3.core.mapper.Nested @Nested}, {@link org.jdbi.v3.core.annotation.JdbiProperty @JdbiProperty}, {@link org.jdbi.v3.core.mapper.reflect.ColumnName @ColumnName} and other annotations
      *                  to configure the mapping. FieldMapper is used by default.
      * @param sql the part of the SQL statement which may be appended with WHERE / ORDER BY / OFFSET / LIMIT stanzas.
      */

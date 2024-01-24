@@ -14,6 +14,7 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  * Note the clashing column {@link Person2#getName()} and {@link EntityWithAliasedId#getName()}.
  */
 public class NestedJoinOutcome implements Serializable {
+    public static final @NotNull Property<Long> DEPARTMENT_ID = EntityWithAliasedId.ID.tableAlias("d");
     public static final @NotNull Property<String> DEPARTMENT_NAME = EntityWithAliasedId.NAME.tableAlias("d");
     @Nested
     private Person2 person = new Person2();
