@@ -625,6 +625,8 @@ it's best to use the `DaoOfJoin` DAO which is specifically tailored towards fetc
 The plain fields example:
 ```java
 public class JoinOutcome implements Serializable {
+    public static final @NotNull Property<Long> PERSON_ID = Person.ID;
+    public static final @NotNull Property<String> PERSON_NAME = Person.NAME;
     public static final @NotNull Property<Long> DEPARTMENT_ID = Department.ID.tableAlias("d");
     public static final @NotNull Property<String> DEPARTMENT_NAME = Department.NAME.tableAlias("d");
 
@@ -728,7 +730,7 @@ NestedJoinOutcome.dao.findAllBy(Person.NAME.eq("Foo"),
 ```
 This is the recommended way.
 
-### Summary
+## Summary So Far
 
 To summarize the syntax of the custom SQL SELECTs:
 
@@ -737,6 +739,14 @@ To summarize the syntax of the custom SQL SELECTs:
 3. `select Person.id from Person` will work properly, with Conditions such as `Person.NAME.eq("Foo")`
 4. Aliases work as well: `select id as myid from Person` will work if the field is annotated with `@ColumnName("myid")`. The Conditions will work as usual: `Person.ID.eq(5)`.
 5. With aliases you can make the item 1 work: `select id from Person` will work if the field is annotated with `@ColumnName("id")`. The Conditions will work as usual: `Person.ID.eq(5)`.
+
+Further rules:
+
+1. `TableProperty` such as `Person.NAME` are used to construct the WHERE part of the SQL query, and they honor the `@ColumnName` and `@Nested` annotation. If you'll get error in SQL statements,
+   the `TableProperty` is what you need to fix - maybe use `tableAlias()` or different `@ColumnName`.
+2. Afterwards, the SQL statement is executed by the database and mapped to the bean by JDBI. JDBI honors `@ColumnName` and `@Nested` and `@JdbiProperty` annotations.
+   If you're getting null values in your beans or they're not populated properly, this is where to start experimenting. You can read the [JDBI documentation](http://jdbi.org/) and
+   you can call `DaoOfAny.dump()` to see the actual contents of the table for comparison.
 
 ## Controlling The Mapping
 

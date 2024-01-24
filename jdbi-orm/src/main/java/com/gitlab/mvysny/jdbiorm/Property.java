@@ -78,7 +78,7 @@ public interface Property<V> extends Expression<V> {
     }
 
     /**
-     * A fully qualified database name of a column.
+     * A fully-qualified database name of a column.
      * The name is any of these:
      * <ul>
      * <li>The formal name of the field, if it is a <i>physical table/view
