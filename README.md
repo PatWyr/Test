@@ -625,8 +625,8 @@ it's best to use the `DaoOfJoin` DAO which is specifically tailored towards fetc
 The plain fields example:
 ```java
 public class JoinOutcome implements Serializable {
-    public static final @NotNull Property<Long> DEPARTMENT_ID = EntityWithAliasedId.ID.tableAlias("d");
-    public static final @NotNull Property<String> DEPARTMENT_NAME = EntityWithAliasedId.NAME.tableAlias("d");
+    public static final @NotNull Property<Long> DEPARTMENT_ID = Department.ID.tableAlias("d");
+    public static final @NotNull Property<String> DEPARTMENT_NAME = Department.NAME.tableAlias("d");
 
     @ColumnName("id")
     public Long personId;
@@ -643,10 +643,10 @@ public class JoinOutcome implements Serializable {
     public static class MyDao extends DaoOfJoin<JoinOutcome> {
 
         public MyDao() {
-            // use both table aliases (EntityWithAliasedId d) and table real names (Test), to test
+            // use both table aliases (Department d) and table real names (Person), to test
             // both qualified names and table aliases API.
-            super(JoinOutcome.class, "select Test.id, Test.name, d.myid as department_myid, d.name as department_name\n" +
-                    "FROM Test join mapping_table m on Test.id = m.person_id join EntityWithAliasedId d on m.department_id = d.myid\n");
+            super(JoinOutcome.class, "select Person.id, Person.name, d.myid as department_myid, d.name as department_name\n" +
+                    "FROM Person join mapping_table m on Person.id = m.person_id join Department d on m.department_id = d.myid\n");
         }
     }
 
@@ -671,7 +671,7 @@ The `@Nested` fields example:
 ```java
 public class NestedJoinOutcome implements Serializable {
     @Nested
-    private Person2 person = new Person2();
+    private Person person = new Person();
     @Nested("department_")
     private EntityWithAliasedId department = new EntityWithAliasedId();
 
@@ -720,7 +720,7 @@ public static class MyDao extends DaoOfJoin<NestedJoinOutcome> {
     }
 }
 ```
-Now you can leverage the existing Property constants from `Person` and `Department`:
+Now you can simply leverage the existing Property constants from `Person` and `Department`:
 ```
 NestedJoinOutcome.dao.findAllBy(Person.NAME.eq("Foo"),
   List.of(EntityWithAliasedId.ID.asc(), Person.ID.desc()),
