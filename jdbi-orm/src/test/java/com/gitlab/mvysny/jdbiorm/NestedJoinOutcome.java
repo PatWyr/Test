@@ -1,6 +1,5 @@
 package com.gitlab.mvysny.jdbiorm;
 
-import org.jdbi.v3.core.annotation.JdbiProperty;
 import org.jdbi.v3.core.mapper.Nested;
 import org.jetbrains.annotations.NotNull;
 
