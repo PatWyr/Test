@@ -728,6 +728,16 @@ NestedJoinOutcome.dao.findAllBy(Person.NAME.eq("Foo"),
 ```
 This is the recommended way.
 
+### Summary
+
+To summarize the syntax of the custom SQL SELECTs:
+
+1. `select id from Person` will not work by default since JDBI-ORM by default fully-qualified column names. Can be made to work with `@ColumnName`, read on.
+2. `select p.id from Person p` will work but you need to tablealias the TableProperty when constructing Conditions, e.g. `Person.NAME.tableAlias("p").eq("Foo")`
+3. `select Person.id from Person` will work properly, with Conditions such as `Person.NAME.eq("Foo")`
+4. Aliases work as well: `select id as myid from Person` will work if the field is annotated with `@ColumnName("myid")`. The Conditions will work as usual: `Person.ID.eq(5)`.
+5. With aliases you can make the item 1 work: `select id from Person` will work if the field is annotated with `@ColumnName("id")`. The Conditions will work as usual: `Person.ID.eq(5)`.
+
 ## Controlling The Mapping
 
 When saving, creating or loading from the database, JDBI-ORM simply consults all
