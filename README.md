@@ -663,9 +663,7 @@ NestedJoinOutcome.dao.findAllBy(Person.NAME.tableAlias("p").eq("Foo"),
 You can create a static constants in `NestedJoinOutcome` itself, for easy reference:
 ```java
 public class NestedJoinOutcome implements Serializable {
-    @JdbiProperty(map = false)
     public static final @NotNull Property<String> PERSON_NAME = Person2.NAME.tableAlias("p");
-    @JdbiProperty(map = false)
     public static final @NotNull Property<String> DEPARTMENT_NAME = EntityWithAliasedId.NAME.tableAlias("d");
 }
 ```
@@ -932,21 +930,17 @@ public final class MappingTable implements Entity<MappingTable.ID> {
     public static final Dao<MappingTable, ID> dao = new Dao<>(MappingTable.class);
 
     @NotNull
-    @JdbiProperty(map = false)
     public static final Dao<MappingTable, ID> dao = new Dao<>(MappingTable.class);
 
     // note the dot-separated naming scheme: first part refers to the MappingTable.id Java field, second part refers to
     // the MappingTable.ID.personId Java field.
     @NotNull
-    @JdbiProperty(map = false)
     public static final TableProperty<MappingTable, Long> ID_PERSONID = TableProperty.of(MappingTable.class, "id.personId");
 
     @NotNull
-    @JdbiProperty(map = false)
     public static final TableProperty<MappingTable, Long> ID_DEPARTMENTID = TableProperty.of(MappingTable.class, "id.departmentId");
 
     @NotNull
-    @JdbiProperty(map = false)
     public static final TableProperty<MappingTable, String> SOME_DATA = TableProperty.of(MappingTable.class, "someData");
 }
 ```
@@ -982,9 +976,7 @@ public class Category implements Entity<Long> {
   private String name;
   // getters+setters omitted
 
-  @JdbiProperty(map = false)
   public static final TableProperty<Category, Long> ID = TableProperty.of(Category.class, "id");
-  @JdbiProperty(map = false)
   public static final TableProperty<Category, String> NAME = TableProperty.of(Category.class, "name");
 }
 ```
