@@ -6,7 +6,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api:${properties["slf4jVersion"]}")
 
     // db
-    api("org.jdbi:jdbi3-core:3.42.0")
+    api("org.jdbi:jdbi3-core:3.43.0")
 
     // validation support
     api("jakarta.validation:jakarta.validation-api:3.0.2")  // to have JSR303 validations in the entities
