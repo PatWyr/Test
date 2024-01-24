@@ -13,6 +13,7 @@
  */
 package com.gitlab.mvysny.jdbiorm.jdbi;
 
+import com.gitlab.mvysny.jdbiorm.EntityMeta;
 import org.jdbi.v3.core.annotation.internal.JdbiAnnotations;
 import org.jdbi.v3.core.mapper.*;
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
@@ -134,7 +135,7 @@ public final class FieldMapper<T> implements RowMapper<T> {
         for (Class<?> aType = type; aType != null; aType = aType.getSuperclass()) {
             for (Field field : aType.getDeclaredFields()) {
                 Nested nested = field.getAnnotation(Nested.class);
-                if (Modifier.isStatic(field.getModifiers())) {  // PATCH
+                if (!EntityMeta.isFieldPersisted(field)) {  // PATCH
                     continue;
                 }
 

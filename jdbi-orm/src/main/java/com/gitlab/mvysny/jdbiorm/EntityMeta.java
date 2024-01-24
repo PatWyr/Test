@@ -274,7 +274,12 @@ public final class EntityMeta<E> implements Serializable {
         return a == null || a.map();
     }
 
-    private static boolean isFieldPersisted(@NotNull Field field) {
+    /**
+     * Checks whether given Java field is persisted.
+     * @param field the field to check
+     * @return true if persisted, false if ignored by JDBI-ORM.
+     */
+    public static boolean isFieldPersisted(@NotNull Field field) {
         return !Modifier.isTransient(field.getModifiers())
                 && !field.isSynthetic()
                 && !Modifier.isStatic(field.getModifiers())
