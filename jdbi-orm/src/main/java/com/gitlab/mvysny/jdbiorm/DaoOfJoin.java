@@ -114,6 +114,6 @@ public class DaoOfJoin<T> extends DaoOfAny<T> {
 
     @Override
     public String toString() {
-        return "DaoOfJoin{" + entityClass.getSimpleName() + ": '" + sql + "'}";
+        return getClass().getSimpleName() + "{" + entityClass.getSimpleName() + ": '" + sql + "'}";
     }
 }
