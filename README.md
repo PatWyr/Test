@@ -622,7 +622,70 @@ can ignore the aliased name and continue to refer to the column as `c.name`.
 If you need to have support for programmatic paging, sorting and filtering (e.g. via the Condition API),
 it's best to use the `DaoOfJoin` DAO which is specifically tailored towards fetching the outcomes of JOINs.
 
-TODO finalize
+```java
+public class NestedJoinOutcome implements Serializable {
+    @Nested
+    private Person2 person = new Person2();
+    @Nested("department_")
+    private EntityWithAliasedId department = new EntityWithAliasedId();
+
+    public static class MyDao extends DaoOfJoin<NestedJoinOutcome> {
+
+        public MyDao() {
+            super(NestedJoinOutcome.class, "select p.*, d.myid as department_myid, d.name as department_name\n" +
+                    "FROM Person p join mapping_table m on Test.id = m.person_id join EntityWithAliasedId d on m.department_id = d.myid\n");
+        }
+    }
+
+    @NotNull
+    public static final MyDao dao = new MyDao();
+}
+```
+Now you can use all paged finder methods, count methods etc to fetch instances of JestedJoinOutcome from the DAO:
+```java
+NestedJoinOutcome.dao.findAllBy(Person.NAME.tableAlias("p").eq("Foo"),
+  List.of(Department.ID.tableAlias("d").asc(), Person.ID.tableAlias("p").desc()),
+  null, null);
+```
+
+DaoOfJoin will automatically append "WHERE", "ORDER BY", "OFFSET" and "LIMIT" clauses at the end of your SQL statement, so
+you have to omit those in your SQL statement.
+
+### Table Aliases
+
+Since we're using table aliases here, we need to refer to the columns in a different way when constructing Conditions
+or OrderBy clauses:
+```
+NestedJoinOutcome.dao.findAllBy(Person.NAME.tableAlias("p").eq("Foo"),
+  List.of(Department.ID.tableAlias("d").asc(), Person.ID.tableAlias("p").desc()),
+  null, null);
+```
+You can create a static constants in `NestedJoinOutcome` itself, for easy reference:
+```java
+public class NestedJoinOutcome implements Serializable {
+    @JdbiProperty(map = false)
+    public static final @NotNull Property<String> PERSON_NAME = Person2.NAME.tableAlias("p");
+    @JdbiProperty(map = false)
+    public static final @NotNull Property<String> DEPARTMENT_NAME = EntityWithAliasedId.NAME.tableAlias("d");
+}
+```
+
+However, much easier is to rewrite the SELECT and stop using table aliases:
+```java
+public static class MyDao extends DaoOfJoin<NestedJoinOutcome> {
+    public MyDao() {
+        super(NestedJoinOutcome.class, "select Person.*, Department.id as department_id, Department.name as department_name\n" +
+                "FROM Person join mapping_table on Test.id = mapping_table.person_id join Department on mapping_table.department_id = Department.id\n");
+    }
+}
+```
+Now you can leverage the existing Property constants from `Person` and `Department`:
+```
+NestedJoinOutcome.dao.findAllBy(Person.NAME.eq("Foo"),
+  List.of(EntityWithAliasedId.ID.asc(), Person.ID.desc()),
+  null, null);
+```
+This is the recommended way.
 
 ## Controlling The Mapping
 

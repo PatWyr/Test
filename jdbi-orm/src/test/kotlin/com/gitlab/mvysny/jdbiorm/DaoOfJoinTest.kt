@@ -41,7 +41,7 @@ fun DynaNodeGroup.daoOfJoinTests() {
         expect(p) { joinOutcomes[0].person }
         expect(d) { joinOutcomes[0].department }
 
-        joinOutcomes = NestedJoinOutcome.dao.findAll(listOf(EntityWithAliasedId.ID.tableAlias("d").asc(), Person2.ID.tableAlias("p").desc()), null, null)
+        joinOutcomes = NestedJoinOutcome.dao.findAll(listOf(EntityWithAliasedId.ID.tableAlias("d").asc(), Person2.ID.desc()), null, null)
         expect(1) { joinOutcomes.size }
         expect(p) { joinOutcomes[0].person }
         expect(d) { joinOutcomes[0].department }
@@ -54,22 +54,22 @@ fun DynaNodeGroup.daoOfJoinTests() {
         d.create()
         MappingTable(p.id!!, d.id!!, "").create()
 
-        var joinOutcomes = NestedJoinOutcome.dao.findAllBy(NestedJoinOutcome.PERSON_NAME.eq("Foo"))
+        var joinOutcomes = NestedJoinOutcome.dao.findAllBy(Person2.NAME.eq("Foo"))
         expect(1) { joinOutcomes.size }
         expect(p) { joinOutcomes[0].person }
         expect(d) { joinOutcomes[0].department }
         joinOutcomes = NestedJoinOutcome.dao.findAllBy(NestedJoinOutcome.DEPARTMENT_NAME.eq("Foo"))
         expectList() { joinOutcomes }
 
-        joinOutcomes = NestedJoinOutcome.dao.findAllBy(NestedJoinOutcome.PERSON_NAME.eq("Foo"), 1L, null)
+        joinOutcomes = NestedJoinOutcome.dao.findAllBy(Person2.NAME.eq("Foo"), 1L, null)
         expectList() { joinOutcomes }
 
-        joinOutcomes = NestedJoinOutcome.dao.findAllBy(NestedJoinOutcome.PERSON_NAME.eq("Foo"), 0L, 1L)
+        joinOutcomes = NestedJoinOutcome.dao.findAllBy(Person2.NAME.eq("Foo"), 0L, 1L)
         expect(1) { joinOutcomes.size }
         expect(p) { joinOutcomes[0].person }
         expect(d) { joinOutcomes[0].department }
 
-        joinOutcomes = NestedJoinOutcome.dao.findAllBy(NestedJoinOutcome.PERSON_NAME.eq("Foo"), listOf(EntityWithAliasedId.ID.tableAlias("d").asc(), Person2.ID.tableAlias("p").desc()), null, null)
+        joinOutcomes = NestedJoinOutcome.dao.findAllBy(Person2.NAME.eq("Foo"), listOf(EntityWithAliasedId.ID.tableAlias("d").asc(), Person2.ID.desc()), null, null)
         expect(1) { joinOutcomes.size }
         expect(p) { joinOutcomes[0].person }
         expect(d) { joinOutcomes[0].department }

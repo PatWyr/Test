@@ -16,8 +16,6 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  */
 public class NestedJoinOutcome implements Serializable {
     @JdbiProperty(map = false)
-    public static final @NotNull Property<String> PERSON_NAME = Person2.getNAME().tableAlias("p");
-    @JdbiProperty(map = false)
     public static final @NotNull Property<String> DEPARTMENT_NAME = EntityWithAliasedId.NAME.tableAlias("d");
     @Nested
     private Person2 person = new Person2();
@@ -51,15 +49,19 @@ public class NestedJoinOutcome implements Serializable {
     public static class MyDao extends DaoOfJoin<NestedJoinOutcome> {
 
         public MyDao() {
-            super(NestedJoinOutcome.class, "select p.*, d.myid as department_myid, d.name as department_name\n" +
-                    "FROM Test p join mapping_table m on p.id = m.person_id join EntityWithAliasedId d on m.department_id = d.myid\n");
+            // use both table aliases (EntityWithAliasedId d) and table real names (Test), to test
+            // both qualified names and table aliases API.
+            super(NestedJoinOutcome.class, "select Test.*, d.myid as department_myid, d.name as department_name\n" +
+                    "FROM Test join mapping_table m on Test.id = m.person_id join EntityWithAliasedId d on m.department_id = d.myid\n");
         }
 
         @NotNull
         public List<NestedJoinOutcome> findAllCustom() {
+            // use both table aliases (EntityWithAliasedId d) and table real names (Test), to test
+            // both qualified names and table aliases API.
             return jdbi().withHandle(handle -> handle
-                    .createQuery("select p.*, d.myid as department_myid, d.name as department_name\n" +
-                            "FROM Test p join mapping_table m on p.id = m.person_id join EntityWithAliasedId d on m.department_id = d.myid\n" +
+                    .createQuery("select Test.*, d.myid as department_myid, d.name as department_name\n" +
+                            "FROM Test join mapping_table m on Test.id = m.person_id join EntityWithAliasedId d on m.department_id = d.myid\n" +
                             "ORDER BY d.myid ASC")
                     .map(getRowMapper())
                     .list());
@@ -68,6 +70,4 @@ public class NestedJoinOutcome implements Serializable {
 
     @NotNull
     public static final MyDao dao = new MyDao();
-
-    ;
 }
