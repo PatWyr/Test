@@ -748,6 +748,10 @@ Further rules:
    If you're getting null values in your beans or they're not populated properly, this is where to start experimenting. You can read the [JDBI documentation](http://jdbi.org/) and
    you can call `DaoOfAny.dump()` to see the actual contents of the table for comparison.
 
+Tips:
+
+1. Fully-qualified names in `@ColumnName` do not seem to work with JDBI; use aliases instead.
+
 ## Controlling The Mapping
 
 When saving, creating or loading from the database, JDBI-ORM simply consults all
