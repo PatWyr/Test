@@ -4,7 +4,9 @@ import com.gitlab.mvysny.jdbiorm.condition.Condition;
 import com.gitlab.mvysny.jdbiorm.condition.ParametrizedSql;
 import com.gitlab.mvysny.jdbiorm.quirks.Quirks;
 import org.jdbi.v3.core.Handle;
+import org.jdbi.v3.core.mapper.MapMapper;
 import org.jdbi.v3.core.mapper.RowMapper;
+import org.jdbi.v3.core.mapper.reflect.BeanMapper;
 import org.jdbi.v3.core.mapper.reflect.FieldMapper;
 import org.jdbi.v3.core.result.ResultIterable;
 import org.jdbi.v3.core.result.ResultIterator;
@@ -15,10 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -64,6 +63,15 @@ public class DaoOfAny<T> implements Serializable {
      */
     @NotNull
     public RowMapper<T> getRowMapper() {  // public because of vok-orm
+        // the reason we're using FieldMapper over BeanMapper is that BeanMapper doesn't
+        // support some corner-cases properly. For example, having a boolean property and
+        // adding all sorts of annotations will still not work:
+        //
+        //     @get:ColumnName("alive") @field:ColumnName("alive") @param:ColumnName("alive")
+        //    var isAlive25: Boolean? = null,
+        //
+        // BeanMapper will still fail to populate the field from the database. Therefore we
+        // will default to FieldMapper.
         return FieldMapper.of(entityClass);
     }
 
@@ -650,5 +658,26 @@ public class DaoOfAny<T> implements Serializable {
         public T getSingleFromIterable(ResultIterable<T> iterable, @NotNull Function<Binding, String> errorSupplier) {
             return findSingleFromIterable(iterable, true, errorSupplier);
         }
+    }
+
+    /**
+     * Dumps the contents of the table to STDOUT, using the {@link MapMapper}.
+     * Each row is printed in a separate row in the console. Used for debugging.
+     */
+    public void dump() {
+        final StringBuilder sql = new StringBuilder("select <FIELDS> from <TABLE>");
+        jdbi().withHandle(handle -> {
+                    final Query query = handle.createQuery(sql.toString())
+                            .define("FIELDS", meta.getPersistedFieldDbNames().stream().map(Property.DbName::getQualifiedName).collect(Collectors.joining(", ")))
+                            .define("TABLE", meta.getDatabaseTableName());
+                    final List<Map<String, Object>> result = query
+                            .map(new MapMapper())
+                            .list();
+                    for (Map<String, Object> row : result) {
+                        System.out.println(row);
+                    }
+                    return null;
+                }
+        );
     }
 }
