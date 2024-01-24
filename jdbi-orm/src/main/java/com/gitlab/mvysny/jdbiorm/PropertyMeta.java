@@ -125,7 +125,16 @@ public final class PropertyMeta {
      */
     @NotNull
     public Property.DbName getDbName() {
-        return new Property.DbName(EntityMeta.of(entityClass).getDatabaseTableName(), getDbColumnName());
+        final String dbColumnName = getDbColumnName();
+        if (dbColumnName.contains(".")) {
+            // fully-qualified column name, pass-through.
+            final String[] split = dbColumnName.split("[.]");
+            if (split.length != 2) {
+                throw new IllegalStateException("We only support fully-qualified database names with two components (TABLE.COLUMN) but got " + dbColumnName);
+            }
+            return new Property.DbName(split[0], split[1]);
+        }
+        return new Property.DbName(EntityMeta.of(entityClass).getDatabaseTableName(), dbColumnName);
     }
 
     /**
