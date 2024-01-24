@@ -46,4 +46,32 @@ fun DynaNodeGroup.daoOfJoinTests() {
         expect(p) { joinOutcomes[0].person }
         expect(d) { joinOutcomes[0].department }
     }
+
+    test("findAllBy") {
+        val p = Person2(name = "Foo")
+        p.create()
+        val d = EntityWithAliasedId("My department")
+        d.create()
+        MappingTable(p.id!!, d.id!!, "").create()
+
+        var joinOutcomes = NestedJoinOutcome.dao.findAllBy(NestedJoinOutcome.PERSON_NAME.eq("Foo"))
+        expect(1) { joinOutcomes.size }
+        expect(p) { joinOutcomes[0].person }
+        expect(d) { joinOutcomes[0].department }
+        joinOutcomes = NestedJoinOutcome.dao.findAllBy(NestedJoinOutcome.DEPARTMENT_NAME.eq("Foo"))
+        expectList() { joinOutcomes }
+
+        joinOutcomes = NestedJoinOutcome.dao.findAllBy(NestedJoinOutcome.PERSON_NAME.eq("Foo"), 1L, null)
+        expectList() { joinOutcomes }
+
+        joinOutcomes = NestedJoinOutcome.dao.findAllBy(NestedJoinOutcome.PERSON_NAME.eq("Foo"), 0L, 1L)
+        expect(1) { joinOutcomes.size }
+        expect(p) { joinOutcomes[0].person }
+        expect(d) { joinOutcomes[0].department }
+
+        joinOutcomes = NestedJoinOutcome.dao.findAllBy(NestedJoinOutcome.PERSON_NAME.eq("Foo"), listOf(EntityWithAliasedId.ID.tableAlias("d").asc(), Person2.ID.tableAlias("p").desc()), null, null)
+        expect(1) { joinOutcomes.size }
+        expect(p) { joinOutcomes[0].person }
+        expect(d) { joinOutcomes[0].department }
+    }
 }

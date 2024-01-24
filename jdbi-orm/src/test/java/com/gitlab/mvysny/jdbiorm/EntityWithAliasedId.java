@@ -73,5 +73,8 @@ public class EntityWithAliasedId implements Entity<Long> {
 
     @NotNull
     @JdbiProperty(map = false)
-    public static final TableProperty<EntityWithAliasedId, String> ID = TableProperty.of(EntityWithAliasedId.class, "id");
+    public static final TableProperty<EntityWithAliasedId, Long> ID = TableProperty.of(EntityWithAliasedId.class, "id");
+    @NotNull
+    @JdbiProperty(map = false)
+    public static final TableProperty<EntityWithAliasedId, String> NAME = TableProperty.of(EntityWithAliasedId.class, "name");
 }

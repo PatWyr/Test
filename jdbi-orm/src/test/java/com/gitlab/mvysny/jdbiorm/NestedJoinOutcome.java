@@ -1,5 +1,6 @@
 package com.gitlab.mvysny.jdbiorm;
 
+import org.jdbi.v3.core.annotation.JdbiProperty;
 import org.jdbi.v3.core.mapper.Nested;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,6 +15,10 @@ import static com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi;
  * Note the clashing column {@link Person2#getName()} and {@link EntityWithAliasedId#getName()}.
  */
 public class NestedJoinOutcome implements Serializable {
+    @JdbiProperty(map = false)
+    public static final @NotNull Property<String> PERSON_NAME = Person2.getNAME().tableAlias("p");
+    @JdbiProperty(map = false)
+    public static final @NotNull Property<String> DEPARTMENT_NAME = EntityWithAliasedId.NAME.tableAlias("d");
     @Nested
     private Person2 person = new Person2();
     @Nested("department_")
@@ -63,4 +68,6 @@ public class NestedJoinOutcome implements Serializable {
 
     @NotNull
     public static final MyDao dao = new MyDao();
+
+    ;
 }
