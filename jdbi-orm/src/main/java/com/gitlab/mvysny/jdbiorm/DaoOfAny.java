@@ -330,6 +330,21 @@ public class DaoOfAny<T> implements Serializable {
         return findSingleBy(where, false, queryConsumer);
     }
 
+    /**
+     * Retrieves single entity matching given {@code where} clause.
+     * Returns null if there is no such entity; fails if there are two or more entities matching the criteria.
+     * <p></p>
+     * Example:
+     * <pre>
+     * Person.dao.findSingleBy(Person.NAME.eq("Albedo"));
+     * </pre>
+     * <p>
+     * This function returns null if there is no item matching. Use {@link #singleBy(Condition)}
+     * if you wish to fail with an exception in case that the entity does not exist.
+     *
+     * @param where the where condition.
+     * @throws IllegalStateException if there are two or more matching entities.
+     */
     @Nullable
     public T findSingleBy(@Nullable Condition where) {
         if (where == null || where == Condition.NO_CONDITION) {
