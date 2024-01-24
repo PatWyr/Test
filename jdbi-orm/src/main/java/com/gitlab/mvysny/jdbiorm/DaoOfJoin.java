@@ -3,6 +3,7 @@ package com.gitlab.mvysny.jdbiorm;
 import org.intellij.lang.annotations.Language;
 import org.jdbi.v3.core.result.ResultIterable;
 import org.jdbi.v3.core.statement.Query;
+import org.jdbi.v3.core.statement.Update;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -77,5 +78,20 @@ public class DaoOfJoin<T> extends DaoOfAny<T> {
             queryConsumer.accept(query);
             return query.mapTo(Long.class).one();
         });
+    }
+
+    @Override
+    public boolean existsAny() {
+        return count() > 0;
+    }
+
+    @Override
+    public boolean existsBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
+        return countBy(where, queryConsumer) > 0;
+    }
+
+    @Override
+    public void deleteBy(@NotNull String where, @NotNull Consumer<Update> updateConsumer) {
+        throw new UnsupportedOperationException("DaoOfJoin doesn't support deletion by default");
     }
 }

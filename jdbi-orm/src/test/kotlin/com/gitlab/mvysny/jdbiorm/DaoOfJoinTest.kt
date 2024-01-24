@@ -97,4 +97,27 @@ fun DynaNodeGroup.daoOfJoinTests() {
         expect(1) { NestedJoinOutcome.dao.countBy(Person2.NAME.eq("Foo")) }
         expect(0) { NestedJoinOutcome.dao.countBy(Person2.NAME.eq("Bar")) }
     }
+
+    test("existsAny") {
+        expect(false) { NestedJoinOutcome.dao.existsAny() }
+
+        val p = Person2(name = "Foo")
+        p.create()
+        val d = EntityWithAliasedId("My department")
+        d.create()
+        MappingTable(p.id!!, d.id!!, "").create()
+        expect(true) { NestedJoinOutcome.dao.existsAny() }
+    }
+
+    test("existsBy") {
+        expect(false) { NestedJoinOutcome.dao.existsBy(Person2.NAME.eq("Foo")) }
+
+        val p = Person2(name = "Foo")
+        p.create()
+        val d = EntityWithAliasedId("My department")
+        d.create()
+        MappingTable(p.id!!, d.id!!, "").create()
+        expect(true) { NestedJoinOutcome.dao.existsBy(Person2.NAME.eq("Foo")) }
+        expect(false) { NestedJoinOutcome.dao.existsBy(Person2.NAME.eq("Bar")) }
+    }
 }
