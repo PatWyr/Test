@@ -52,18 +52,14 @@ fun DynaNodeGroup.jdbiFunTests() {
         expect(listOf()) { db { Person.findAll() } }
     }
     test("commitInNestedDbBlocks") {
-        val person: Person = db {
+        val person: Person2 = db {
             db {
                 db {
-                    Person(name = "foo", age = 25).apply { save() }
+                    Person2(name = "foo", age = 25).apply { save() }
                 }
             }
         }
-        expect(listOf(person.withZeroNanos())) {
-            db {
-                Person.findAll().map { it.withZeroNanos() }
-            }
-        }
+        expect(listOf(person)) { Person2.findAll() }
     }
     test("exceptionRollsBackInNestedDbBlocks") {
         expectThrows(IOException::class) {
