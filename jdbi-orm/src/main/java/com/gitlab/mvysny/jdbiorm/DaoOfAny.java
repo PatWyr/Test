@@ -342,27 +342,9 @@ public class DaoOfAny<T> implements Serializable {
     @Nullable
     private T findSingleBy(@Nullable String where, boolean failOnNoResult, @NotNull Consumer<Query> queryConsumer) {
         Objects.requireNonNull(queryConsumer, "queryConsumer");
-        return jdbi().withHandle(handle -> {
-            String sql = "select <FIELDS> from <TABLE>";
-            if (where != null) {
-                sql += " where <WHERE>";
-            }
-            final Quirks quirks = Quirks.from(handle);
-            if (quirks.offsetLimitRequiresOrderBy() != null) {
-                sql += " " + quirks.offsetLimitRequiresOrderBy();
-            }
-            sql += quirks.offsetLimit(null, 2L);
-            final String sqlFinal = sql;
-            final Query query = handle.createQuery(sqlFinal)
-                    .define("FIELDS", meta.getPersistedFieldDbNames().stream().map(Property.DbName::getQualifiedName).collect(Collectors.joining(", ")))
-                    .define("TABLE", meta.getDatabaseTableName());
-            if (where != null) {
-                query.define("WHERE", where);
-            }
-            queryConsumer.accept(query);
-            final ResultIterable<T> iterable = query.map(getRowMapper());
-            return helper.findSingleFromIterable(iterable, failOnNoResult, binding -> helper.formatQuery(where == null ? "" : where, binding));
-        });
+        return findAllBy(where, null, null, 2L, queryConsumer,
+                iterable -> helper.findSingleFromIterable(iterable, failOnNoResult, binding -> helper.formatQuery(where == null ? "" : where, binding)),
+                null);
     }
 
     /**
@@ -432,6 +414,19 @@ public class DaoOfAny<T> implements Serializable {
         return first.isEmpty() ? null : first.get(0);
     }
 
+    /**
+     * Retrieves first entity from the list of entities matching given {@code where} clause.
+     * Returns null if there is no such entity.
+     * <p></p>
+     * Example:
+     * <pre>
+     * Person.dao.findFirstBy(Person.NAME.eq("Albedo"));
+     * </pre>
+     * <p>
+     * This function returns null if there is no item matching.
+     *
+     * @param where the where condition.
+     */
     @Nullable
     public T findFirstBy(@Nullable Condition where) {
         if (where == null || where == Condition.NO_CONDITION) {
@@ -450,7 +445,7 @@ public class DaoOfAny<T> implements Serializable {
      * Person.dao.singleBy("name = :name", q -&gt; q.bind("name", "Albedo"))
      * </pre>
      * <p>
-     * This function fails if there is no such entity or there are 2 or more. Use [findSpecificBy] if you wish to return `null` in case that
+     * This function fails if there is no such entity or there are 2 or more. Use {@link #findSingleBy(Condition)} if you wish to return `null` in case that
      * the entity does not exist.
      *
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
@@ -462,6 +457,21 @@ public class DaoOfAny<T> implements Serializable {
         return Objects.requireNonNull(findSingleBy(where, true, queryConsumer));
     }
 
+    /**
+     * Retrieves single entity matching given {@code where} clause.
+     * Fails if there is no such entity, or if there are two or more entities matching the criteria.
+     * <p></p>
+     * Example:
+     * <pre>
+     * Person.dao.singleBy(Person.NAME.eq("Albedo"));
+     * </pre>
+     * <p>
+     * This function fails if there is no such entity or there are 2 or more. Use {@link #findSingleBy(Condition)} if you wish to return `null` in case that
+     * the entity does not exist.
+     *
+     * @param where the where condition.
+     * @throws IllegalStateException if there is no entity matching given criteria, or if there are two or more matching entities.
+     */
     @NotNull
     public T singleBy(@Nullable Condition where) {
         if (where == null || where == Condition.NO_CONDITION) {
