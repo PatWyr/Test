@@ -2,12 +2,11 @@ package com.gitlab.mvysny.jdbiorm;
 
 import com.gitlab.mvysny.jdbiorm.condition.Condition;
 import com.gitlab.mvysny.jdbiorm.condition.ParametrizedSql;
+import com.gitlab.mvysny.jdbiorm.jdbi.FieldMapper;
 import com.gitlab.mvysny.jdbiorm.quirks.Quirks;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.mapper.MapMapper;
 import org.jdbi.v3.core.mapper.RowMapper;
-import org.jdbi.v3.core.mapper.reflect.BeanMapper;
-import org.jdbi.v3.core.mapper.reflect.FieldMapper;
 import org.jdbi.v3.core.result.ResultIterable;
 import org.jdbi.v3.core.result.ResultIterator;
 import org.jdbi.v3.core.statement.Binding;

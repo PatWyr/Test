@@ -25,6 +25,7 @@ import org.jdbi.v3.core.statement.StatementContext;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -36,11 +37,13 @@ import static org.jdbi.v3.core.mapper.ColumnMapper.getDefaultColumnMapper;
 import static org.jdbi.v3.core.mapper.reflect.ReflectionMapperUtil.*;
 
 /**
- * A row mapper which maps the columns in a statement into an object, using reflection
- * to set fields on the object. All declared fields of the class and its superclasses
- * may be set. Nested properties are supported via the {@link Nested} annotation.
- *
- * The mapped class must have a default constructor.
+ * A copy of JDBI's `FieldMapper` class which is able to ignore static final fields.
+ * <p></p>
+ * Changes done to the class:
+ * <ul>
+ *     <li>{@link #createSpecializedRowMapper(StatementContext, List, List, List)} is patched to ignore static fields</li>
+ * </ul>
+ * Workaround for https://github.com/jdbi/jdbi/issues/2607 and https://gitlab.com/mvysny/jdbi-orm/-/issues/8
  */
 public final class FieldMapper<T> implements RowMapper<T> {
     private static final String DEFAULT_PREFIX = "";
@@ -131,6 +134,10 @@ public final class FieldMapper<T> implements RowMapper<T> {
         for (Class<?> aType = type; aType != null; aType = aType.getSuperclass()) {
             for (Field field : aType.getDeclaredFields()) {
                 Nested nested = field.getAnnotation(Nested.class);
+                if (Modifier.isStatic(field.getModifiers())) {  // PATCH
+                    continue;
+                }
+
                 if (!JdbiAnnotations.isMapped(field)) {
                     continue;
                 }

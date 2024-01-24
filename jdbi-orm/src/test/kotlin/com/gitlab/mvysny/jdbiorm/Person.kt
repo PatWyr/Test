@@ -57,16 +57,12 @@ data class Person(
         val dao = PersonDao()
 
         @JdbiProperty(map = false)
-        @JvmStatic
         val ID = TableProperty.of<Person, Long>(Person::class.java, "id")
         @JdbiProperty(map = false)
-        @JvmStatic
         val NAME = TableProperty.of<Person, String>(Person::class.java, "name")
         @JdbiProperty(map = false)
-        @JvmStatic
         val AGE = TableProperty.of<Person, Int>(Person::class.java, "age")
         @JdbiProperty(map = false)
-        @JvmStatic
         val ISALIVE25 = TableProperty.of<Person, Boolean>(Person::class.java, "isAlive25")
     }
 
@@ -107,19 +103,14 @@ data class Person2(
         @JvmStatic
         val dao = Person2Dao()
 
-        @JdbiProperty(map = false)
         @JvmStatic
         val ID = TableProperty.of<Person2, Long>(Person2::class.java, "id")
-        @JdbiProperty(map = false)
         @JvmStatic
         val NAME = TableProperty.of<Person2, String>(Person2::class.java, "name")
-        @JdbiProperty(map = false)
         @JvmStatic
         val AGE = TableProperty.of<Person2, Int>(Person2::class.java, "age")
-        @JdbiProperty(map = false)
         @JvmStatic
         val ISALIVE25 = TableProperty.of<Person2, Boolean>(Person2::class.java, "isAlive25")
-        @JdbiProperty(map = false)
         @JvmStatic
         val SOMESTRINGVALUE = TableProperty.of<Person2, String>(Person2::class.java, "someStringValue")
     }

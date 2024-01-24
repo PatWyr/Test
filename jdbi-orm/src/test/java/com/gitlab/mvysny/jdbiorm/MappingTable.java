@@ -1,6 +1,5 @@
 package com.gitlab.mvysny.jdbiorm;
 
-import org.jdbi.v3.core.annotation.JdbiProperty;
 import org.jdbi.v3.core.mapper.Nested;
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 import org.jetbrains.annotations.Nullable;
@@ -107,18 +106,14 @@ public class MappingTable implements Entity<MappingTable.ID> {
     }
 
     @NotNull
-    @JdbiProperty(map = false)
     public static final Dao<MappingTable, ID> dao = new Dao<>(MappingTable.class);
 
     @NotNull
-    @JdbiProperty(map = false)
     public static final TableProperty<MappingTable, Long> ID_PERSONID = TableProperty.of(MappingTable.class, "id.personId");
 
     @NotNull
-    @JdbiProperty(map = false)
     public static final TableProperty<MappingTable, Long> ID_DEPARTMENTID = TableProperty.of(MappingTable.class, "id.departmentId");
 
     @NotNull
-    @JdbiProperty(map = false)
     public static final TableProperty<MappingTable, String> SOME_DATA = TableProperty.of(MappingTable.class, "someData");
 }
