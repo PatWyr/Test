@@ -44,7 +44,7 @@ public final class NativeSQL implements Condition {
      */
     public NativeSQL(@NotNull String where, @NotNull Map<String, Object> params) {
         this.where = Objects.requireNonNull(where);
-        this.params = Collections.unmodifiableMap(new HashMap<>(params)); // defensive copy
+        this.params = Map.copyOf(params); // defensive copy
     }
 
     @Override
