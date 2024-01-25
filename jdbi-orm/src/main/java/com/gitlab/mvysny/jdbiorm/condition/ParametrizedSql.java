@@ -100,7 +100,7 @@ public final class ParametrizedSql implements Serializable {
 
     @Override
     public String toString() {
-        return sql92 + ":" + sql92Parameters;
+        return '\'' + sql92 + '\'' + sql92Parameters;
     }
 
     /**

@@ -211,6 +211,10 @@ class ConditionTest : DynaTest({
             expect(null) { Expression.Value<String>(null).nullIf(null).calculate("ignored") }
         }
     }
+    test("NativeSQL") {
+        expect("'name = :name'{name=foo}") { NativeSQL("name = :name", mapOf("name" to "foo")).toString() }
+        expect("'name = :name'{name=foo}") { NativeSQL("name = :name", mapOf("name" to "foo")).toSql().toString() }
+    }
 })
 
 /**
