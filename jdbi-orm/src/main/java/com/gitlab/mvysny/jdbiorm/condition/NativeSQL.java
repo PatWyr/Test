@@ -2,8 +2,6 @@ package com.gitlab.mvysny.jdbiorm.condition;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
