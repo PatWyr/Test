@@ -232,4 +232,12 @@ public interface Property<V> extends Expression<V> {
             throw new IllegalArgumentException("Parameter externalForm: invalid value " + externalForm + ": unsupported form");
         }
     }
+
+    /**
+     * Returns the type of the value of this property. Beware: this could also be a primitive type
+     * (e.g. <code>int.class</code>/{@link Integer#TYPE}).
+     * @return the type of the value, not null.
+     */
+    @NotNull
+    Class<?> getValueType();
 }

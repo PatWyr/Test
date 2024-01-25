@@ -56,14 +56,13 @@ data class Person(
         @JvmStatic
         val dao = PersonDao()
 
-        @JdbiProperty(map = false)
         val ID = TableProperty.of<Person, Long>(Person::class.java, "id")
-        @JdbiProperty(map = false)
         val NAME = TableProperty.of<Person, String>(Person::class.java, "name")
-        @JdbiProperty(map = false)
         val AGE = TableProperty.of<Person, Int>(Person::class.java, "age")
-        @JdbiProperty(map = false)
         val ISALIVE25 = TableProperty.of<Person, Boolean>(Person::class.java, "isAlive25")
+        val MARITALSTATUS = TableProperty.of<Person, MaritalStatus>(Person::class.java, "maritalStatus")
+        val CREATED = TableProperty.of<Person, Date>(Person::class.java, "created")
+        val MODIFIED = TableProperty.of<Person, Instant>(Person::class.java, "modified")
     }
 
     fun withZeroNanos(): Person = copy(created = created?.withZeroMillis, modified = modified?.withZeroNanos)

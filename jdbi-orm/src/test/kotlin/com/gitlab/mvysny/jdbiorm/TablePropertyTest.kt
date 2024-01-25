@@ -2,6 +2,8 @@ package com.gitlab.mvysny.jdbiorm
 
 import com.github.mvysny.dynatest.DynaTest
 import com.github.mvysny.dynatest.cloneBySerialization
+import java.time.Instant
+import java.util.Date
 import kotlin.test.expect
 
 class TablePropertyTest : DynaTest({
@@ -41,5 +43,14 @@ class TablePropertyTest : DynaTest({
     test("external form") {
         expect(Person2.ID) { Property.fromExternalString(Person2.ID.toExternalString()) }
         expect(Person2.ID.tableAlias("d")) { Property.fromExternalString(Person2.ID.tableAlias("d").toExternalString()) }
+    }
+    test("value type") {
+        expect(String::class.java) { Person2.NAME.valueType }
+        expect(java.lang.Long::class.java) { Person2.ID.valueType }
+        expect(Int::class.java) { Person2.AGE.valueType }
+        expect(java.lang.Boolean::class.java) { Person2.ISALIVE25.valueType }
+        expect(MaritalStatus::class.java) { Person.MARITALSTATUS.valueType }
+        expect(Date::class.java) { Person.CREATED.valueType }
+        expect(Instant::class.java) { Person.MODIFIED.valueType }
     }
 })

@@ -55,6 +55,11 @@ public final class TableProperty<E, V> implements Property<V> {
         return meta;
     }
 
+    @Override
+    public @NotNull Class<?> getValueType() {
+        return getMeta().getValueType();
+    }
+
     @NotNull
     public static <E, V> TableProperty<E, V> of(@NotNull Class<E> entity, @NotNull Property.Name propertyName) {
         return new TableProperty<>(entity, propertyName);
@@ -165,6 +170,11 @@ public final class TableProperty<E, V> implements Property<V> {
         @NotNull
         public String toExternalString() {
             return "TablePropertyAlias:" + tableNameAlias + " " + tableProperty.toExternalString();
+        }
+
+        @Override
+        public @NotNull Class<?> getValueType() {
+            return tableProperty.getValueType();
         }
 
         @Override
