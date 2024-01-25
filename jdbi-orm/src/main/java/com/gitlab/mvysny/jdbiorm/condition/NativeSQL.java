@@ -16,7 +16,7 @@ import java.util.Objects;
  * with other conditions which might bring their own parameters; generally avoid
  * parameter names produced by {@link ParametrizedSql#generateParameterName(Object)}.
  * <p></p>
- * Does not support in-memory filtering and will throw an exception.
+ * Does not support in-memory filtering: {@link #test(Object)} will throw an exception.
  */
 public final class NativeSQL implements Condition {
     /**
@@ -90,6 +90,10 @@ public final class NativeSQL implements Condition {
         return new ParametrizedSql(where, params);
     }
 
+    /**
+     * Does not support in-memory filtering and will throw the {@link UnsupportedOperationException}.
+     * @throws UnsupportedOperationException always thrown.
+     */
     @Override
     public boolean test(@NotNull Object row) {
         throw new UnsupportedOperationException("Does not support in-memory filtering");
