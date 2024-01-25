@@ -214,6 +214,8 @@ class ConditionTest : DynaTest({
     test("NativeSQL") {
         expect("'name = :name'{name=foo}") { NativeSQL("name = :name", mapOf("name" to "foo")).toString() }
         expect("'name = :name'{name=foo}") { NativeSQL("name = :name", mapOf("name" to "foo")).toSql().toString() }
+        expect("'name = :name AND age = :aaa'{aaa=25, name=foo}") { NativeSQL("name = :name AND age = :aaa", mapOf("name" to "foo", "aaa" to 25)).toString() }
+        expect("'name = :name AND age = :aaa'{aaa=25, name=foo}") { NativeSQL("name = :name AND age = :aaa", mapOf("name" to "foo", "aaa" to 25)).toSql().toString() }
     }
 })
 
@@ -258,6 +260,14 @@ fun DynaNodeGroup.conditionTests(dbInfo: DatabaseInfo) {
             JoinTable.dao.findAllBy(JoinTable.ORDERID.eq(1).or(JoinTable.CUSTOMERID.eq(2)))
             JoinTable.dao.findAllBy(JoinTable.ORDERID.eq(1).and(JoinTable.CUSTOMERID.eq(2)).not())
         }
+    }
+    test("native") {
+        val person = Person2(name = "Foo", age = 25, isAlive25 = true)
+        person.save()
+        expectList() { Person2.dao.findAllBy(NativeSQL("name = :name", mapOf("name" to "Bar"))) }
+        expectList(person) { Person2.dao.findAllBy(NativeSQL("name = :name", mapOf("name" to "Foo"))) }
+        expectList() { Person2.dao.findAllBy(NativeSQL("name = :name AND age = :a", mapOf("name" to "Foo", "a" to 26))) }
+        expectList(person) { Person2.dao.findAllBy(NativeSQL("name = :name AND age = :a", mapOf("name" to "Foo", "a" to 25))) }
     }
     test("eq") {
         val person = Person2(name = "Foo", age = 25, isAlive25 = true)

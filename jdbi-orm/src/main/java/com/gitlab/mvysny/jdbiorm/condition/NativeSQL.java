@@ -60,7 +60,7 @@ public final class NativeSQL implements Condition {
 
     @Override
     public String toString() {
-        return '\'' + where + '\'' + params;
+        return toSql().toString();
     }
 
     /**

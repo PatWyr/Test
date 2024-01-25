@@ -5,10 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Contains a native SQL-92 query or just a query part (e.g. only the part after WHERE),
@@ -46,7 +43,7 @@ public final class ParametrizedSql implements Serializable {
      */
     public ParametrizedSql(@NotNull String sql92, @NotNull Map<String, Object> sql92Parameters) {
         this.sql92 = sql92;
-        this.sql92Parameters = Collections.unmodifiableMap(sql92Parameters);
+        this.sql92Parameters = Map.copyOf(sql92Parameters);
     }
 
     @NotNull
@@ -100,7 +97,7 @@ public final class ParametrizedSql implements Serializable {
 
     @Override
     public String toString() {
-        return '\'' + sql92 + '\'' + sql92Parameters;
+        return '\'' + sql92 + '\'' + new TreeMap<>(sql92Parameters); // make sure the parameters are printed in sorted way; this way we can write tests for this
     }
 
     /**
