@@ -7,7 +7,8 @@ import java.util.Objects;
 /**
  * The <code>OR</code> statement.
  */
-final class Or implements Condition {
+public final class Or implements Condition {
+    // keep public, so that the condition can be analyzed backwards
     @NotNull
     private final Condition condition1;
     @NotNull

@@ -7,7 +7,8 @@ import java.util.Objects;
 /**
  * The <code>NOT</code> statement.
  */
-final class Not implements Condition {
+public final class Not implements Condition {
+    // keep public, so that the condition can be analyzed backwards
     @NotNull
     private final Condition condition;
 

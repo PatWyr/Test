@@ -7,7 +7,8 @@ import java.util.Objects;
 /**
  * The <code>AND</code> statement.
  */
-final class And implements Condition {
+public final class And implements Condition {
+    // keep public, so that the condition can be analyzed backwards
     @NotNull
     private final Condition condition1;
     @NotNull
