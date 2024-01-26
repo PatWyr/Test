@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
+import java.util.function.Predicate;
 
 /**
  * A SQL condition. Immutable. To use in your project, add table properties to your entities; see {@link com.gitlab.mvysny.jdbiorm.TableProperty} for more information.
@@ -20,7 +21,7 @@ import java.io.Serializable;
  * Use {@link com.gitlab.mvysny.jdbiorm.JdbiOrm#databaseVariant} if you need to emit different SQL
  * for particular database.
  */
-public interface Condition extends Serializable {
+public interface Condition extends Serializable, Predicate<Object> {
     /**
      * The <code>NOT</code> operator.
      */
