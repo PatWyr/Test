@@ -24,17 +24,26 @@ import java.util.function.Predicate;
 public interface Condition extends Serializable, Predicate<Object> {
     /**
      * The <code>NOT</code> operator.
+     * @return this condition, negated.
      */
     @NotNull
     default Condition not() {
         return new Not(this);
     }
 
+    /**
+     * The <code>OR</code> operator. x OR {@link Condition#NO_CONDITION} returns x.
+     * @return this condition OR given condition.
+     */
     @NotNull
     default Condition or(@Nullable Condition other) {
         return other == null || other == NO_CONDITION || this.equals(other) ? this : new Or(this, other);
     }
 
+    /**
+     * The <code>AND</code> operator. x AND {@link Condition#NO_CONDITION} returns x.
+     * @return this condition AND given condition.
+     */
     @NotNull
     default Condition and(@Nullable Condition other) {
         return other == null || other == NO_CONDITION || this.equals(other) ? this : new And(this, other);
