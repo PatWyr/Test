@@ -120,7 +120,7 @@ public interface Expression<V> extends Serializable {
      */
     @NotNull
     default Condition lt(@NotNull Expression<? extends V> value) {
-        return new Op(this, value, Op.Operator.LT);
+        return op(Op.Operator.LT, value);
     }
 
     /**
@@ -137,7 +137,7 @@ public interface Expression<V> extends Serializable {
      */
     @NotNull
     default Condition le(@NotNull Expression<? extends V> value) {
-        return new Op(this, value, Op.Operator.LE);
+        return op(Op.Operator.LE, value);
     }
 
     /**
@@ -154,7 +154,7 @@ public interface Expression<V> extends Serializable {
      */
     @NotNull
     default Condition gt(@NotNull Expression<? extends V> value) {
-        return new Op(this, value, Op.Operator.GT);
+        return op(Op.Operator.GT, value);
     }
 
     /**
@@ -171,7 +171,7 @@ public interface Expression<V> extends Serializable {
      */
     @NotNull
     default Condition ge(@NotNull Expression<? extends V> value) {
-        return new Op(this, value, Op.Operator.GE);
+        return op(Op.Operator.GE, value);
     }
 
     /**
@@ -189,7 +189,17 @@ public interface Expression<V> extends Serializable {
      */
     @NotNull
     default Condition ne(@NotNull Expression<? extends V> value) {
-        return new Op(this, value, Op.Operator.NE);
+        return op(Op.Operator.NE, value);
+    }
+
+    @NotNull
+    default Condition op(@NotNull Op.Operator operator, @NotNull Expression<? extends V> value) {
+        return new Op(this, value, operator);
+    }
+
+    @NotNull
+    default Condition op(@NotNull Op.Operator operator, @Nullable V value) {
+        return op(operator, new Value<>(value));
     }
 
     /**
