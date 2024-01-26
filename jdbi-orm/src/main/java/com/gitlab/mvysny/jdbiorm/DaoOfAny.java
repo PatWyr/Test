@@ -507,6 +507,7 @@ public class DaoOfAny<T> implements Serializable {
 
     /**
      * Counts all rows in this table.
+     * @return the total count of rows in the table.
      */
     public long count() {
         return countBy(null, q -> {});
@@ -516,6 +517,7 @@ public class DaoOfAny<T> implements Serializable {
      * Counts all matching rows in this table.
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
      * @param queryConsumer allows you to set parameter values etc, for example {@code q -> q.bind("customerid", customerId")}.
+     * @return count of matching rows in the table.
      */
     public long countBy(@Nullable String where, @NotNull Consumer<Query> queryConsumer) {
         Objects.requireNonNull(queryConsumer, "queryConsumer");
@@ -537,6 +539,7 @@ public class DaoOfAny<T> implements Serializable {
     /**
      * Counts all matching rows in this table.
      * @param condition the where condition. If null, all rows are matched.
+     * @return count of matching rows in the table.
      */
     public long countBy(@Nullable Condition condition) {
         if (condition == null || condition == Condition.NO_CONDITION) {
@@ -548,6 +551,7 @@ public class DaoOfAny<T> implements Serializable {
 
     /**
      * Checks whether there exists any row in this table.
+     * @return true if the table has any row, false if the table is empty.
      */
     public boolean existsAny() {
         return jdbi().withHandle(handle -> handle.createQuery("select count(1) from <TABLE>")
@@ -559,6 +563,7 @@ public class DaoOfAny<T> implements Serializable {
      * Checks whether there exists any row in this table.
      * @param where the where clause, e.g. {@code name = :name}. Careful: this goes into the SQL as-is - could be misused for SQL injection!
      * @param queryConsumer allows you to set parameter values etc, for example {@code q -> q.bind("customerid", customerId")}.
+     * @return true if the table has any matching rows.
      */
     public boolean existsBy(@NotNull String where, @NotNull Consumer<Query> queryConsumer) {
         Objects.requireNonNull(where, "where");
@@ -575,6 +580,7 @@ public class DaoOfAny<T> implements Serializable {
     /**
      * Checks whether there exists any row in this table.
      * @param condition the where condition. If null, all rows are matched.
+     * @return true if the table has any matching rows.
      */
     public boolean existsBy(@Nullable Condition condition) {
         if (condition == null || condition == Condition.NO_CONDITION) {
