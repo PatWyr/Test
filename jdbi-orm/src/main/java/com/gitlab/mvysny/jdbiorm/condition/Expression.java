@@ -1,5 +1,7 @@
 package com.gitlab.mvysny.jdbiorm.condition;
 
+import com.gitlab.mvysny.jdbiorm.JdbiOrm;
+import com.gitlab.mvysny.jdbiorm.quirks.DatabaseVariant;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,6 +33,9 @@ import java.util.stream.Collectors;
  * taken into consideration.
  * <p></p>
  * {@link Object#toString()} must be implemented, to ease app debugging.
+ * <p></p>
+ * Use {@link com.gitlab.mvysny.jdbiorm.JdbiOrm#databaseVariant} if you need to emit different SQL
+ * for particular database.
  * @param <V> the result type of the expression.
  */
 public interface Expression<V> extends Serializable {
@@ -584,5 +589,30 @@ public interface Expression<V> extends Serializable {
     @NotNull
     default Expression<V> nullIf(@Nullable V other) {
         return nullIf(new Expression.Value<>(other));
+    }
+
+    /**
+     * The <code>CAST</code> function.
+     * @param sqlType The value is cast to this SQL type, for example <code>CHAR</code>.
+     * @param valueClass The Java type corresponding to <code>sqlType</code>, e.g. <code>String.class</code>
+     * @return cast outcome
+     * @param <C> the target type of the cast.
+     */
+    @NotNull
+    default <C> Expression<C> cast(@NotNull String sqlType, @NotNull Class<C> valueClass) {
+        return new Cast<>(this, sqlType, valueClass);
+    }
+
+    /**
+     * Casts this expression to (VAR)CHAR.
+     * @return expression cast to (VAR)CHAR.
+     */
+    @NotNull
+    default Expression<String> castAsVarchar() {
+        if (JdbiOrm.databaseVariant == DatabaseVariant.MySQLMariaDB) {
+            // https://stackoverflow.com/questions/15368753/cast-int-to-varchar
+            return cast("CHAR", String.class);
+        }
+        return cast("VARCHAR", String.class);
     }
 }

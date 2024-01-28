@@ -210,6 +210,13 @@ class ConditionTest : DynaTest({
             expect("foo") { Expression.Value<String>("foo").nullIf(null).calculate("ignored") }
             expect(null) { Expression.Value<String>(null).nullIf(null).calculate("ignored") }
         }
+        test("Cast") {
+            expect("FOO") { Expression.Value("FOO").castAsVarchar().calculate("ignored") }
+            expect(null) { Expression.Value<String>(null).castAsVarchar().calculate("ignored") }
+            expect("5") { Expression.Value(5).castAsVarchar().calculate("ignored") }
+            expect("5") { Expression.Value(5L).castAsVarchar().calculate("ignored") }
+            expect("true") { Expression.Value(true).castAsVarchar().calculate("ignored") }
+        }
     }
     test("NativeSQL") {
         expect("'name = :name'{name=foo}") { NativeSQL("name = :name", mapOf("name" to "foo")).toString() }
@@ -482,6 +489,12 @@ fun DynaNodeGroup.conditionTests(dbInfo: DatabaseInfo) {
         expect(1) { Person2.dao.countBy(Person2.SOMESTRINGVALUE.nullIf("Foo").isNull()) }
         expect(1) { Person2.dao.countBy(Person2.NAME.nullIf("Foo").isNull()) }
         expect(1) { Person2.dao.countBy(Person2.NAME.nullIf("Bar").eq("Foo")) }
+    }
+    test("Cast") {
+        Person2(name = "Foo", age = 25).save()
+        expect(0) { Person2.dao.countBy(Person2.SOMESTRINGVALUE.castAsVarchar().eq("Foo")) }
+        expect(1) { Person2.dao.countBy(Person2.NAME.castAsVarchar().eq("Foo")) }
+        expect(1) { Person2.dao.countBy(Person2.AGE.castAsVarchar().eq("25")) }
     }
     group("full-text search") {
         test("construct sql succeeds") {
