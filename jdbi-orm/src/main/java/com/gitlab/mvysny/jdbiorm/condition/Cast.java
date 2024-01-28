@@ -102,10 +102,7 @@ public final class Cast<V> implements Expression<V> {
         }
         if (valueClass == Character.class || valueClass == char.class) {
             final String str = value.toString();
-            if (str.length() != 1) {
-                throw new IllegalArgumentException("Parameter str: invalid value " + str + ": can not be cast to character");
-            }
-            return str.charAt(0);
+            return str.isEmpty() ? '\0' : str.charAt(0);
         }
         if (valueClass == Float.class || valueClass == float.class) {
             return Float.valueOf(value.toString());
