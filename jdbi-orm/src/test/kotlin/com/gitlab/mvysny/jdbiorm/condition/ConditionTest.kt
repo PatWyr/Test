@@ -9,6 +9,7 @@ import com.gitlab.mvysny.jdbiorm.DatabaseInfo
 import com.gitlab.mvysny.jdbiorm.JoinTable
 import com.gitlab.mvysny.jdbiorm.Person
 import com.gitlab.mvysny.jdbiorm.Person2
+import com.gitlab.mvysny.jdbiorm.quirks.DatabaseVariant
 import kotlin.test.expect
 
 /**
@@ -202,6 +203,13 @@ class ConditionTest : DynaTest({
             expect("foo") { Expression.Value<String>("foo").coalesce("foo").calculate("ignored") }
             expect("foo") { Expression.Value<String>(null).coalesce("foo").calculate("ignored") }
             expect(null) { Expression.Value<String>(null).coalesce(null).calculate("ignored") }
+        }
+        test("IfNull") {
+            expect("FOO") { Expression.Value("FOO").ifNull("foo").calculate("ignored") }
+            expect(null) { Expression.Value<String>(null).ifNull(null).calculate("ignored") }
+            expect("foo") { Expression.Value<String>("foo").ifNull("foo").calculate("ignored") }
+            expect("foo") { Expression.Value<String>(null).ifNull("foo").calculate("ignored") }
+            expect(null) { Expression.Value<String>(null).ifNull(null).calculate("ignored") }
         }
         test("NullIf") {
             expect("FOO") { Expression.Value("FOO").nullIf("foo").calculate("ignored") }
@@ -495,6 +503,32 @@ fun DynaNodeGroup.conditionTests(dbInfo: DatabaseInfo) {
         expect(0) { Person2.dao.countBy(Person2.SOMESTRINGVALUE.castAsVarchar().eq("Foo")) }
         expect(1) { Person2.dao.countBy(Person2.NAME.castAsVarchar().eq("Foo")) }
         expect(1) { Person2.dao.countBy(Person2.AGE.castAsVarchar().eq("25")) }
+    }
+    if (dbInfo.variant == DatabaseVariant.H2) {
+        test("IfNull") {
+            Person2(name = "Foo", age = 25).save()
+            expect(1) {
+                Person2.dao.countBy(
+                    Person2.SOMESTRINGVALUE.ifNull("Foo").eq("Foo")
+                )
+            }
+            Person2(name = "Foo", age = 25, someStringValue = "Bar").save()
+            expect(1) {
+                Person2.dao.countBy(
+                    Person2.SOMESTRINGVALUE.ifNull("Foo").eq("Foo")
+                )
+            }
+            expect(1) {
+                Person2.dao.countBy(
+                    Person2.SOMESTRINGVALUE.ifNull("Foo").eq("Bar")
+                )
+            }
+            expect(0) {
+                Person2.dao.countBy(
+                    Person2.SOMESTRINGVALUE.ifNull("Foo").eq("Baz")
+                )
+            }
+        }
     }
     group("full-text search") {
         test("construct sql succeeds") {

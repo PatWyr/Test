@@ -592,6 +592,28 @@ public interface Expression<V> extends Serializable {
     }
 
     /**
+     * The <code>IFNULL</code> function, returns <code>other</code> if this evaluates
+     * to null. May not be supported on all databases; use {@link #coalesce(Object)} if not supported.
+     * @param other other value.
+     * @return the IFNULL expression.
+     */
+    @NotNull
+    default Expression<V> ifNull(@NotNull Expression<V> other) {
+        return new IfNull<>(this, other);
+    }
+
+    /**
+     * The <code>IFNULL</code> function, returns <code>other</code> if this evaluates
+     * to null. May not be supported on all databases; use {@link #coalesce(Object)} if not supported.
+     * @param other other value.
+     * @return the IFNULL expression.
+     */
+    @NotNull
+    default Expression<V> ifNull(@Nullable V other) {
+        return ifNull(new Expression.Value<>(other));
+    }
+
+    /**
      * The <code>CAST</code> function.
      * @param sqlType The value is cast to this SQL type, for example <code>CHAR</code>.
      * @param valueClass The Java type corresponding to <code>sqlType</code>, e.g. <code>String.class</code>
