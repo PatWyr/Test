@@ -18,7 +18,7 @@ hibernate-validator = "org.hibernate.validator:hibernate-validator:8.0.1.Final" 
 dynatest = "com.github.mvysny.dynatest:dynatest:0.24"
 gson = "com.google.code.gson:gson:2.10.1"
 hikaricp = "com.zaxxer:HikariCP:5.0.1"
-gsonjavatime = "com.fatboyindustrial.gson-javatime-serialisers:gson-javatime-serialisers:1.1.2"
+gsonjavatime = "com.fatboyindustrial.gson-javatime-serialisers:gson-javatime-serialisers:1.1.2"  # workaround for https://github.com/google/gson/issues/1059
 h2 = "com.h2database:h2:2.2.224" # https://repo1.maven.org/maven2/com/h2database/h2/
 lucene-analyzers = { module = "org.apache.lucene:lucene-analyzers-common", version.ref = "lucene" }
 lucene-queryparser = { module = "org.apache.lucene:lucene-queryparser", version.ref = "lucene" }
@@ -38,3 +38,4 @@ lucene = ["lucene-analyzers", "lucene-queryparser"]
 testcontainers = ["testcontainers-testcontainers", "testcontainers-postgresql", "testcontainers-mysql", "testcontainers-mariadb", "testcontainers-mssqlserver", "testcontainers-cockroachdb"]
 jdbc = ["jdbc-postgresql", "jdbc-mysql", "jdbc-mariadb", "jdbc-mssql"]
 hibernate-validator = ["hibernate-validator", "jakarta-el"]  # EL is required: http://hibernate.org/validator/documentation/getting-started/
+gson = ["gson", "gsonjavatime"]

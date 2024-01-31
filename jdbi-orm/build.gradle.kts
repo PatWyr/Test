@@ -14,10 +14,8 @@ dependencies {
 
     // tests
     testImplementation(libs.dynatest)
-    testImplementation(libs.gson)
+    testImplementation(libs.bundles.gson)
     testImplementation(libs.hikaricp)
-    // workaround for https://github.com/google/gson/issues/1059
-    testImplementation(libs.gsonjavatime)
     testImplementation(libs.slf4j.simple)
     testImplementation(libs.h2)
 
