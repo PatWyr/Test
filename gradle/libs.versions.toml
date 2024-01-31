@@ -37,3 +37,4 @@ jdbc-mssql = "com.microsoft.sqlserver:mssql-jdbc:12.2.0.jre11"
 lucene = ["lucene-analyzers", "lucene-queryparser"]
 testcontainers = ["testcontainers-testcontainers", "testcontainers-postgresql", "testcontainers-mysql", "testcontainers-mariadb", "testcontainers-mssqlserver", "testcontainers-cockroachdb"]
 jdbc = ["jdbc-postgresql", "jdbc-mysql", "jdbc-mariadb", "jdbc-mssql"]
+hibernate-validator = ["hibernate-validator", "jakarta-el"]  # EL is required: http://hibernate.org/validator/documentation/getting-started/

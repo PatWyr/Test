@@ -10,9 +10,7 @@ dependencies {
 
     // validation support
     api(libs.jakarta.validation)  // to have JSR303 validations in the entities
-    testImplementation(libs.hibernate.validator)
-    // EL is required: http://hibernate.org/validator/documentation/getting-started/
-    testImplementation(libs.jakarta.el)
+    testImplementation(libs.bundles.hibernate.validator)
 
     // tests
     testImplementation(libs.dynatest)
