@@ -24,12 +24,7 @@ dependencies {
     testImplementation(libs.h2)
 
     testImplementation(libs.bundles.lucene) // for H2 Full-Text search
-
-    testImplementation("org.postgresql:postgresql:42.7.1") // check newest at https://jdbc.postgresql.org/download/
-    testImplementation("com.mysql:mysql-connector-j:8.2.0") // https://dev.mysql.com/downloads/connector/j/
-    testImplementation("org.mariadb.jdbc:mariadb-java-client:3.3.1") // https://mariadb.com/kb/en/about-mariadb-connector-j/
-    testImplementation("com.microsoft.sqlserver:mssql-jdbc:12.2.0.jre11")
-
+    testImplementation(libs.bundles.jdbc)
     testImplementation(libs.bundles.testcontainers)
 
     // Java has no nullable types

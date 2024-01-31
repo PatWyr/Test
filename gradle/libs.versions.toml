@@ -28,7 +28,12 @@ testcontainers-mysql = { module = "org.testcontainers:mysql", version.ref = "tes
 testcontainers-mariadb = { module = "org.testcontainers:mariadb", version.ref = "testcontainers" }
 testcontainers-mssqlserver = { module = "org.testcontainers:mssqlserver", version.ref = "testcontainers" }
 testcontainers-cockroachdb = { module = "org.testcontainers:cockroachdb", version.ref = "testcontainers" }
+jdbc-postgresql = "org.postgresql:postgresql:42.7.1" #  check newest at https://jdbc.postgresql.org/download/
+jdbc-mysql = "com.mysql:mysql-connector-j:8.2.0" # https://dev.mysql.com/downloads/connector/j/
+jdbc-mariadb = "org.mariadb.jdbc:mariadb-java-client:3.3.1" # https://mariadb.com/kb/en/about-mariadb-connector-j/
+jdbc-mssql = "com.microsoft.sqlserver:mssql-jdbc:12.2.0.jre11"
 
 [bundles]
 lucene = ["lucene-analyzers", "lucene-queryparser"]
 testcontainers = ["testcontainers-testcontainers", "testcontainers-postgresql", "testcontainers-mysql", "testcontainers-mariadb", "testcontainers-mssqlserver", "testcontainers-cockroachdb"]
+jdbc = ["jdbc-postgresql", "jdbc-mysql", "jdbc-mariadb", "jdbc-mssql"]
