@@ -4,7 +4,7 @@ slf4j = "2.0.9"
 # https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-engine/
 junit = "5.9.3"
 lucene = "8.11.1"
-testcontainers = "1.19.3" # https://testcontainers.com/guides/getting-started-with-testcontainers-for-java
+testcontainers = "1.19.4" # https://testcontainers.com/guides/getting-started-with-testcontainers-for-java
 
 [libraries]
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
