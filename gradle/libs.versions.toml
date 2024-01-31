@@ -14,7 +14,7 @@ junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", vers
 jdbi3 = "org.jdbi:jdbi3-core:3.43.0"
 jakarta-validation = "jakarta.validation:jakarta.validation-api:3.0.2"
 jakarta-el = "org.glassfish:jakarta.el:4.0.2"
-hibernate-validator = "org.hibernate.validator:hibernate-validator:8.0.1.Final"
+hibernate-validator = "org.hibernate.validator:hibernate-validator:8.0.1.Final"  # check latest version at https://repo1.maven.org/maven2/org/hibernate/validator/hibernate-validator/
 dynatest = "com.github.mvysny.dynatest:dynatest:0.24"
 gson = "com.google.code.gson:gson:2.10.1"
 hikaricp = "com.zaxxer:HikariCP:5.0.1"
