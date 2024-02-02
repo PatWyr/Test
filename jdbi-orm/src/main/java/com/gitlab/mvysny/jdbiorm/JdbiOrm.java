@@ -111,10 +111,13 @@ public final class JdbiOrm {
      * Sets the data source which will be used by {@link #jdbi()} from now on. We highly recommend
      * to use a connection pooler such as HikariCP.
      * <p></p>
+     * Allows you to supply a pre-configured {@link Jdbi} instance. Handy when you use
+     * dependency injection framework to create Jdbi as a bean.
+     * <p></p>
      * Tests the data source and fills in {@link #databaseVariant}.
      * @param dataSource the data source, not null.
-     * @param jdbi the JDBI instance, using given <code>dataSource</code> and possibly
-     *             configured further by you.
+     * @param jdbi the {@link Jdbi} instance which should be used by jdbi-orm. This Jdbi instance
+     *             should have been configured to use given <code>dataSource</code>.
      */
     public static void setDataSource(@NotNull DataSource dataSource, @NotNull Jdbi jdbi) {
         Objects.requireNonNull(dataSource, "dataSource");
