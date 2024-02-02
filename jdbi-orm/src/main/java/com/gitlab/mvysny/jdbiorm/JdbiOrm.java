@@ -104,19 +104,32 @@ public final class JdbiOrm {
      * @param dataSource the data source, not null.
      */
     public static void setDataSource(@NotNull DataSource dataSource) {
-        if (JdbiOrm.dataSource != dataSource) {
-            Objects.requireNonNull(dataSource, "dataSource");
-            destroy();
-            JdbiOrm.dataSource = dataSource;
-            jdbi = Jdbi.create(dataSource);
-            jdbi.installPlugin(new DatabaseQuirksDetectorJdbiPlugin());
+        setDataSource(dataSource, Jdbi.create(dataSource));
+    }
 
-            // verify the data source and detect the variant
-            jdbi().inTransaction(handle -> {
-                JdbiOrm.databaseVariant = DatabaseVariant.from(handle);
-                return null;
-            });
-        }
+    /**
+     * Sets the data source which will be used by {@link #jdbi()} from now on. We highly recommend
+     * to use a connection pooler such as HikariCP.
+     * <p></p>
+     * Tests the data source and fills in {@link #databaseVariant}.
+     * @param dataSource the data source, not null.
+     * @param jdbi the JDBI instance, using given <code>dataSource</code> and possibly
+     *             configured further by you.
+     */
+    public static void setDataSource(@NotNull DataSource dataSource, @NotNull Jdbi jdbi) {
+        Objects.requireNonNull(dataSource, "dataSource");
+        Objects.requireNonNull(jdbi, "jdbi");
+        destroy();
+
+        JdbiOrm.dataSource = dataSource;
+        JdbiOrm.jdbi = jdbi;
+        JdbiOrm.jdbi.installPlugin(new DatabaseQuirksDetectorJdbiPlugin());
+
+        // verify the data source and detect the variant
+        jdbi().inTransaction(handle -> {
+            JdbiOrm.databaseVariant = DatabaseVariant.from(handle);
+            return null;
+        });
     }
 
     /**
