@@ -1329,12 +1329,40 @@ flyway.migrate();
 
 See the [jdbi-orm-vaadin-crud-demo](https://github.com/mvysny/jdbi-orm-vaadin-crud-demo) for an example.
 
-# Using with Spring or JavaEE
+# Using with Spring
 
-Very easy: all you need to do is just pass the `DataSource` instance to `JdbiOrm.setDataSource()`
-when your server boots up. The easiest way to achieve that is to create a singleton bean which
-is instantiated upon server start, then inject a `DataSource` to the bean and
-call `JdbiOrm.setDataSource()` in the bean's `@PostConstruct`-annotated method.
+All you need to do is just pass the `DataSource` instance to `JdbiOrm.setDataSource()`
+when your server boots up. It's a good idea to use `TransactionAwareDataSourceProxy` which
+will disable jdbi-orm transaction handling and will use Spring's transaction handling instead:
+
+```java
+@Configuration
+public class DatabaseConfiguration {
+  @Bean(name = "txAwareDS")
+  public DataSource makeTransactionAware(@Qualifier("dataSource") DataSource fromConnectionPool) {
+    return new TransactionAwareDataSourceProxy(fromConnectionPool);
+  }
+  @Bean
+  public Jdbi jdbi(@Qualifier("txAwareDS") DataSource dataSource) {
+    var jdbi = Jdbi.create(dataSource);
+    // optionally configure jdbi: install plugins, register row mappers, etc
+    return jdbi;
+  }
+}
+
+@Component
+public class ApplicationStartup
+        implements ApplicationListener<ApplicationReadyEvent> {
+  @Autowired
+  private Jdbi jdbi;
+  @Autowired @Qualifier("txAwareDS")
+  private DataSource dataSource;
+  @Override
+  public void onApplicationEvent(final ApplicationReadyEvent event) {
+    JdbiOrm.setDataSource(dataSource, jdbi);
+  }
+}
+```
 
 Since Spring or JavaEE containers manage
 data source instances for you, in such setup you must not call `JdbiOrm.destroy()`.
