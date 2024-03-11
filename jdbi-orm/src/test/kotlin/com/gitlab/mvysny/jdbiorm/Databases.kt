@@ -69,7 +69,7 @@ private fun DynaNodeGroup.usingDockerizedPosgresql() {
     check(DockerClientFactory.instance().isDockerAvailable()) { "Docker not available" }
     lateinit var container: PostgreSQLContainer<*>
     beforeGroup {
-        container = PostgreSQLContainer("postgres:15.2")
+        container = PostgreSQLContainer("postgres:16.2")
         container.start()
     }
     beforeGroup {
