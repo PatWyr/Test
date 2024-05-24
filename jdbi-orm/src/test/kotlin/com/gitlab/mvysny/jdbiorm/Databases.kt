@@ -276,7 +276,7 @@ fun DynaNodeGroup.usingH2Database() {
 }
 
 fun Handle.ddl(@Language("sql") sql: String) {
-    createUpdate(sql).execute()
+    execute(sql)
 }
 
 @DynaTestDsl
