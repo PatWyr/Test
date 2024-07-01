@@ -23,6 +23,8 @@ dependencies {
     testImplementation(libs.bundles.jdbc)
     testImplementation(libs.bundles.testcontainers)
 
+    testRuntimeOnly(libs.junit.platform.launcher)
+
     // Java has no nullable types
     api(libs.jetbrains.annotations)
 }
