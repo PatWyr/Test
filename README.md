@@ -1016,7 +1016,8 @@ public final class MappingTable implements Entity<MappingTable.ID> {
 
 ## Vaadin DataProvider
 
-Integration with [Vaadin](https://vaadin.com/) DataProvider - see [jdbi-orm-vaadin](https://gitlab.com/mvysny/jdbi-orm-vaadin).
+Integration with [Vaadin](https://vaadin.com/) DataProvider - see [jdbi-orm-vaadin](https://gitlab.com/mvysny/jdbi-orm-vaadin);
+a list of example projects is there as well.
 
 ## Data Loaders
 
