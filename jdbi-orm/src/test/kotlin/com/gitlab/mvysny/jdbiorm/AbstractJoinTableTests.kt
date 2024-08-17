@@ -1,44 +1,107 @@
 package com.gitlab.mvysny.jdbiorm
 
-import com.github.mvysny.dynatest.*
+import com.github.mvysny.dynatest.cloneBySerialization
+import com.github.mvysny.dynatest.expectList
+import com.github.mvysny.dynatest.expectThrows
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import java.lang.IllegalStateException
-import kotlin.reflect.KProperty
 import kotlin.test.expect
 
-@DynaTestDsl
-fun DynaNodeGroup.joinTableTestSuite() {
-    group("findAll") {
-        test("no rows returned on empty table") {
+abstract class AbstractJoinTableTests {
+    @Nested inner class FindAllTests {
+        @Test fun `no rows returned on empty table`() {
             expectList() { JoinTable.dao.findAll() }
         }
-        test("all rows returned") {
+        @Test fun `all rows returned`() {
             db { (0..300).forEach { JoinTable(it, it).save() } }
-            expect((0..300).toList()) { JoinTable.dao.findAll().map { it.customerId } .sorted() }
+            expect((0..300).toList()) {
+                JoinTable.dao.findAll().map { it.customerId }.sorted()
+            }
         }
-        test("empty paging") {
+        @Test fun emptyPaging() {
             db { (0..100).forEach { JoinTable(it, it).save() } }
             expectList() { JoinTable.dao.findAll(0L, 0L) }
             expectList() { JoinTable.dao.findAll(20L, 0L) }
             expectList() { JoinTable.dao.findAll(2000L, 0L) }
         }
-        test("paging") {
+        @Test fun paging() {
             db { (0..100).forEach { JoinTable(it, it).save() } }
-            expect((0..9).toList()) { JoinTable.dao.findAll("customerId ASC", 0L, 10L).map { it.customerId } }
-            expect((20..49).toList()) { JoinTable.dao.findAll("customerId ASC", 20L, 30L).map { it.customerId } }
-            expect((90..100).toList()) { JoinTable.dao.findAll("customerId ASC", 90L, 300L).map { it.customerId } }
+            expect((0..9).toList()) {
+                JoinTable.dao.findAll(
+                    "customerId ASC",
+                    0L,
+                    10L
+                ).map { it.customerId }
+            }
+            expect((20..49).toList()) {
+                JoinTable.dao.findAll(
+                    "customerId ASC",
+                    20L,
+                    30L
+                ).map { it.customerId }
+            }
+            expect((90..100).toList()) {
+                JoinTable.dao.findAll(
+                    "customerId ASC",
+                    90L,
+                    300L
+                ).map { it.customerId }
+            }
             expectList() { JoinTable.dao.findAll(2000L, 50L) }
         }
-        test("sorting") {
+        @Test fun sorting() {
             db { (0..100).forEach { JoinTable(it, -it).save() } }
-            expect((0..9).toList()) { JoinTable.dao.findAll(listOf(JoinTable.CUSTOMERID.asc()), 0L, 10L).map { it.customerId } }
-            expect((100 downTo 91).toList()) { JoinTable.dao.findAll(listOf(JoinTable.CUSTOMERID.desc()), 0L, 10L).map { it.customerId } }
-            expect((0..9).toList()) { JoinTable.dao.findAll(listOf(JoinTable.CUSTOMERID.asc(), JoinTable.ORDERID.asc()), 0L, 10L).map { it.customerId } }
-            expect((100 downTo 91).toList()) { JoinTable.dao.findAll(listOf(JoinTable.CUSTOMERID.desc(), JoinTable.ORDERID.asc()), 0L, 10L).map { it.customerId } }
-            expect((0..9).toList()) { JoinTable.dao.findAll(listOf(JoinTable.ORDERID.desc(), JoinTable.CUSTOMERID.asc()), 0L, 10L).map { it.customerId } }
-            expect((100 downTo 91).toList()) { JoinTable.dao.findAll(listOf(JoinTable.ORDERID.asc(), JoinTable.CUSTOMERID.asc()), 0L, 10L).map { it.customerId } }
+            expect((0..9).toList()) {
+                JoinTable.dao.findAll(
+                    listOf(
+                        JoinTable.CUSTOMERID.asc()
+                    ), 0L, 10L
+                ).map { it.customerId }
+            }
+            expect((100 downTo 91).toList()) {
+                JoinTable.dao.findAll(
+                    listOf(JoinTable.CUSTOMERID.desc()),
+                    0L,
+                    10L
+                ).map { it.customerId }
+            }
+            expect((0..9).toList()) {
+                JoinTable.dao.findAll(
+                    listOf(
+                        JoinTable.CUSTOMERID.asc(),
+                        JoinTable.ORDERID.asc()
+                    ), 0L, 10L
+                ).map { it.customerId }
+            }
+            expect((100 downTo 91).toList()) {
+                JoinTable.dao.findAll(
+                    listOf(
+                        JoinTable.CUSTOMERID.desc(),
+                        JoinTable.ORDERID.asc()
+                    ),
+                    0L,
+                    10L
+                ).map { it.customerId }
+            }
+            expect((0..9).toList()) {
+                JoinTable.dao.findAll(
+                    listOf(
+                        JoinTable.ORDERID.desc(),
+                        JoinTable.CUSTOMERID.asc()
+                    ), 0L, 10L
+                ).map { it.customerId }
+            }
+            expect((100 downTo 91).toList()) {
+                JoinTable.dao.findAll(
+                    listOf(JoinTable.ORDERID.asc(), JoinTable.CUSTOMERID.asc()),
+                    0L,
+                    10L
+                ).map { it.customerId }
+            }
         }
-        group("findAllBy") {
-            test("non-paged") {
+        @Nested inner class FindAllByTests {
+            @Test fun nonPaged() {
                 val p = JoinTable(130, 10)
                 p.save()
                 expectList(p) {
@@ -48,28 +111,38 @@ fun DynaNodeGroup.joinTableTestSuite() {
                     JoinTable.dao.findAllBy("customerId = :cid") { it.bind("cid", 130) }
                 }
             }
-            test("paged") {
+            @Test fun paged() {
                 db { (0..100).forEach { JoinTable(it, it).save() } }
                 expect((20..30).toList()) {
-                    JoinTable.dao.findAllBy("customerId >= :cid", "customerId ASC",20L, 11L) { it.bind("cid", 0) }
-                            .map { it.customerId }
+                    JoinTable.dao.findAllBy(
+                        "customerId >= :cid",
+                        "customerId ASC",
+                        20L,
+                        11L
+                    ) { it.bind("cid", 0) }
+                        .map { it.customerId }
                 }
             }
         }
     }
-    group("singleBy() tests") {
-        test("succeeds if there is exactly one matching entity") {
+    @Nested inner class SingleByTests {
+        @Test fun `succeeds if there is exactly one matching entity`() {
             val p = JoinTable(130, 10)
             p.save()
             expect(p) {
-                JoinTable.dao.singleBy("customerId = :cid") { it.bind("cid", 130) }
+                JoinTable.dao.singleBy("customerId = :cid") {
+                    it.bind(
+                        "cid",
+                        130
+                    )
+                }
             }
             expect(p) {
                 JoinTable.dao.singleBy(JoinTable.CUSTOMERID.eq(130))
             }
         }
 
-        test("fails if there is no such entity") {
+        @Test fun `fails if there is no such entity`() {
             expectThrows<IllegalStateException>("no row matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:10}, finder:[]}") {
                 JoinTable.dao.singleBy("customerId = :cid") { it.bind("cid", 10) }
             }
@@ -78,7 +151,7 @@ fun DynaNodeGroup.joinTableTestSuite() {
             }
         }
 
-        test("fails if there are two matching entities") {
+        @Test fun `fails if there are two matching entities`() {
             repeat(2) { JoinTable(100, 100).save() }
             expectThrows<IllegalStateException>("too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:100}, finder:[]}") {
                 JoinTable.dao.singleBy("customerId = :cid") { it.bind("cid", 100) }
@@ -88,7 +161,7 @@ fun DynaNodeGroup.joinTableTestSuite() {
             }
         }
 
-        test("fails if there are ten matching entities") {
+        @Test fun `fails if there are ten matching entities`() {
             repeat(10) { JoinTable(100, 100).save() }
             expectThrows<IllegalStateException>("too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:100}, finder:[]}") {
                 JoinTable.dao.singleBy("customerId = :cid") { it.bind("cid", 100) }
@@ -98,8 +171,8 @@ fun DynaNodeGroup.joinTableTestSuite() {
             }
         }
     }
-    group("single() tests") {
-        test("succeeds if there is exactly one matching entity") {
+    @Nested inner class SingleTests {
+        @Test fun `succeeds if there is exactly one matching entity`() {
             val p = JoinTable(130, 10)
             p.save()
             expect(p) {
@@ -107,28 +180,28 @@ fun DynaNodeGroup.joinTableTestSuite() {
             }
         }
 
-        test("fails if there is no such entity") {
+        @Test fun `fails if there is no such entity`() {
             expectThrows<IllegalStateException>("no row matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
                 JoinTable.dao.single()
             }
         }
 
-        test("fails if there are two matching entities") {
+        @Test fun `fails if there are two matching entities`() {
             repeat(2) { JoinTable(100, 100).save() }
             expectThrows<IllegalStateException>("too many rows matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
                 JoinTable.dao.single()
             }
         }
 
-        test("fails if there are ten matching entities") {
+        @Test fun `fails if there are ten matching entities`() {
             repeat(10) { JoinTable(100, 100).save() }
             expectThrows<IllegalStateException>("too many rows matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
                 JoinTable.dao.single()
             }
         }
     }
-    group("findSingle() tests") {
-        test("succeeds if there is exactly one matching entity") {
+    @Nested inner class FindSingleTests() {
+        @Test fun `succeeds if there is exactly one matching entity`() {
             val p = JoinTable(130, 10)
             p.save()
             expect(p) {
@@ -136,69 +209,81 @@ fun DynaNodeGroup.joinTableTestSuite() {
             }
         }
 
-        test("returns null if there is no such entity") {
+        @Test fun `returns null if there is no such entity`() {
             expect(null) { JoinTable.dao.findSingle() }
         }
 
-        test("fails if there are two matching entities") {
+        @Test fun `fails if there are two matching entities`() {
             repeat(2) { JoinTable(100, 100).save() }
             expectThrows<IllegalStateException>("too many rows matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
                 JoinTable.dao.findSingle()
             }
         }
 
-        test("fails if there are ten matching entities") {
+        @Test fun `fails if there are ten matching entities`() {
             repeat(10) { JoinTable(100, 100).save() }
             expectThrows<IllegalStateException>("too many rows matching JoinTable: ''{positional:{}, named:{}, finder:[]}") {
                 JoinTable.dao.findSingle()
             }
         }
     }
-    group("count") {
-        test("basic count") {
+    @Nested inner class CountTests {
+        @Test fun basicCount() {
             expect(0) { JoinTable.dao.count() }
             listOf(1, 2, 3).forEach { JoinTable(it, it).save() }
             expect(3) { JoinTable.dao.count() }
         }
-        test("count with filters") {
+        @Test fun countWithFilters() {
             expect(0) { JoinTable.dao.countBy("customerId > 3") {} }
             listOf(2, 3, 4).forEach { JoinTable(it, it).save() }
             expect(1) { JoinTable.dao.countBy("customerId > 3") {} }
         }
     }
-    test("DeleteAll") {
+    @Test fun deleteAll() {
         listOf(1, 2, 3).forEach { JoinTable(it, it).save() }
         expect(3) { JoinTable.dao.count() }
         JoinTable.dao.deleteAll()
         expect(0) { JoinTable.dao.count() }
     }
-    test("DeleteBy") {
+    @Test fun deleteBy() {
         listOf(1, 2, 3).forEach { JoinTable(it, it).save() }
         JoinTable.dao.deleteBy("customerId = :cid") { q -> q.bind("cid", 2) }
-        expect(listOf(1, 3)) { JoinTable.dao.findAll().map { it.customerId } .sorted() }
+        expect(listOf(1, 3)) {
+            JoinTable.dao.findAll().map { it.customerId }.sorted()
+        }
     }
-    group("findSingleBy() tests") {
-        test("succeeds if there is exactly one matching entity") {
+    @Nested inner class FindSingleByTests() {
+        @Test fun `succeeds if there is exactly one matching entity`() {
             val p = JoinTable(130, 130)
             p.save()
             expect(p) {
-                JoinTable.dao.findSingleBy("customerId = :cid") { it.bind("cid", 130) }
+                JoinTable.dao.findSingleBy("customerId = :cid") {
+                    it.bind(
+                        "cid",
+                        130
+                    )
+                }
             }
             expect(p) {
                 JoinTable.dao.findSingleBy(JoinTable.CUSTOMERID.eq(130))
             }
         }
 
-        test("returns null if there is no such entity") {
+        @Test fun `returns null if there is no such entity`() {
             expect(null) {
-                JoinTable.dao.findSingleBy("customerId = :cid") { it.bind("cid", 130) }
+                JoinTable.dao.findSingleBy("customerId = :cid") {
+                    it.bind(
+                        "cid",
+                        130
+                    )
+                }
             }
             expect(null) {
                 JoinTable.dao.findSingleBy(JoinTable.CUSTOMERID.eq(130))
             }
         }
 
-        test("fails if there are two matching entities") {
+        @Test fun `fails if there are two matching entities`() {
             repeat(2) { JoinTable(130, 130).save() }
             expectThrows(IllegalStateException::class, "too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:130}, finder:[]}") {
                 JoinTable.dao.findSingleBy("customerId = :cid") { it.bind("cid", 130) }
@@ -208,7 +293,7 @@ fun DynaNodeGroup.joinTableTestSuite() {
             }
         }
 
-        test("fails if there are ten matching entities") {
+        @Test fun `fails if there are ten matching entities`() {
             repeat(10) { JoinTable(130, 130).save() }
             expectThrows(IllegalStateException::class, "too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:130}, finder:[]}") {
                 JoinTable.dao.findSingleBy("customerId = :cid") { it.bind("cid", 130) }
@@ -218,8 +303,8 @@ fun DynaNodeGroup.joinTableTestSuite() {
             }
         }
     }
-    group("findFirst() tests") {
-        test("succeeds if there is exactly one entity") {
+    @Nested inner class FindFirstTests {
+        @Test fun `succeeds if there is exactly one entity`() {
             val p = JoinTable(130, 130)
             p.save()
             expect(p) {
@@ -227,68 +312,83 @@ fun DynaNodeGroup.joinTableTestSuite() {
             }
         }
 
-        test("returns null if there is no such entity") {
+        @Test fun `returns null if there is no such entity`() {
             expect(null) {
                 JoinTable.dao.findFirst()
             }
         }
 
-        test("returns random if there are two matching entities") {
+        @Test fun `returns random if there are two matching entities`() {
             repeat(2) { JoinTable(130, 130).save() }
             expect(JoinTable(130, 130)) {
                 JoinTable.dao.findFirst()
             }
         }
     }
-    group("findFirstBy() tests") {
-        test("succeeds if there is exactly one matching entity") {
+    @Nested inner class FindFirstByTests() {
+        @Test fun `succeeds if there is exactly one matching entity`() {
             val p = JoinTable(130, 130)
             p.save()
             expect(p) {
-                JoinTable.dao.findFirstBy("customerId = :cid") { it.bind("cid", 130) }
+                JoinTable.dao.findFirstBy("customerId = :cid") {
+                    it.bind(
+                        "cid",
+                        130
+                    )
+                }
             }
             expect(p) {
                 JoinTable.dao.findFirstBy(JoinTable.CUSTOMERID.eq(130))
             }
         }
 
-        test("returns null if there is no such entity") {
+        @Test fun `returns null if there is no such entity`() {
             expect(null) {
-                JoinTable.dao.findFirstBy("customerId = :cid") { it.bind("cid", 130) }
+                JoinTable.dao.findFirstBy("customerId = :cid") {
+                    it.bind(
+                        "cid",
+                        130
+                    )
+                }
             }
             expect(null) {
                 JoinTable.dao.findFirstBy(JoinTable.CUSTOMERID.eq(130))
             }
         }
 
-        test("returns random if there are two matching entities") {
+        @Test fun `returns random if there are two matching entities`() {
             repeat(2) { JoinTable(130, 130).save() }
             expect(JoinTable(130, 130)) {
-                JoinTable.dao.findFirstBy("customerId = :cid") { it.bind("cid", 130) }
+                JoinTable.dao.findFirstBy("customerId = :cid") {
+                    it.bind(
+                        "cid",
+                        130
+                    )
+                }
             }
             expect(JoinTable(130, 130)) {
                 JoinTable.dao.findFirstBy(JoinTable.CUSTOMERID.eq(130))
             }
         }
     }
-    group("exists") {
-        test("returns false on empty table") {
+    @Nested inner class ExistsTests {
+        @Test fun `returns false on empty table`() {
             expect(false) { JoinTable.dao.existsAny() }
             expect(false) { JoinTable.dao.existsBy("customerId=0") {} }
         }
-        test("returns true on matching entity") {
+        @Test fun `returns true on matching entity`() {
             val p = JoinTable(100, 100)
             p.save()
             expect(true) { JoinTable.dao.existsAny() }
             expect(true) { JoinTable.dao.existsBy("customerId>=50") {} }
         }
-        test("returns false on non-matching entity") {
+        @Test fun `returns false on non-matching entity`() {
             val p = JoinTable(100, 100)
             p.save()
             expect(false) { JoinTable.dao.existsBy("customerId>=200") {} }
         }
     }
-    test("serializable") {
+    @Test fun serializable() {
         DaoOfAny(JoinTable::class.java).cloneBySerialization()
     }
 }

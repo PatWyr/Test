@@ -2,8 +2,6 @@ package com.gitlab.mvysny.jdbiorm
 
 import com.github.mvysny.dynatest.*
 import com.gitlab.mvysny.jdbiorm.condition.AbstractFindByConditionTests
-import com.gitlab.mvysny.jdbiorm.condition.conditionTests
-import com.gitlab.mvysny.jdbiorm.quirks.DatabaseVariant
 import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -24,7 +22,6 @@ class AllDatabaseTests : DynaTest({
             dbDaoTests()
         }
         group("JoinTable") {
-            joinTableTestSuite()
         }
         group("Conditions") {
         }
@@ -37,6 +34,7 @@ class AllDatabaseTests : DynaTest({
 abstract class AbstractDatabaseTests(val info: DatabaseInfo) {
     @Nested inner class JdbiTests : AbstractJdbiTests()
     @Nested inner class DbDaoTests : AbstractDbDaoTests()
+    @Nested inner class JoinTableTests : AbstractJoinTableTests()
     @Nested inner class FindByConditionTests : AbstractFindByConditionTests(info)
 }
 
