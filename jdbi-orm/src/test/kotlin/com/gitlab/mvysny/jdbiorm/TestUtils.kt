@@ -29,3 +29,5 @@ fun clearDb() {
 }
 
 fun <T> db(block: Handle.() -> T): T = jdbi().inTransaction<T, Exception>(block)
+
+val isX86_64: Boolean get() = System.getProperty("os.arch") == "amd64"
