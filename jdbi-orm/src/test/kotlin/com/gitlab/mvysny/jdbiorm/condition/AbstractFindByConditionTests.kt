@@ -1,10 +1,6 @@
 package com.gitlab.mvysny.jdbiorm.condition
 
-import com.github.mvysny.dynatest.expectList
-import com.gitlab.mvysny.jdbiorm.DatabaseInfo
-import com.gitlab.mvysny.jdbiorm.JoinTable
-import com.gitlab.mvysny.jdbiorm.Person
-import com.gitlab.mvysny.jdbiorm.Person2
+import com.gitlab.mvysny.jdbiorm.*
 import com.gitlab.mvysny.jdbiorm.quirks.DatabaseVariant
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Nested

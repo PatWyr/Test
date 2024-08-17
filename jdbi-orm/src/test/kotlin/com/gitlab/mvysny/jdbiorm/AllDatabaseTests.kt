@@ -1,10 +1,10 @@
 package com.gitlab.mvysny.jdbiorm
 
-import com.github.mvysny.dynatest.*
 import com.gitlab.mvysny.jdbiorm.condition.AbstractFindByConditionTests
 import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.io.IOException
 import kotlin.test.expect
 
@@ -28,7 +28,7 @@ abstract class AbstractJdbiTests {
     }
     @Test
     fun exceptionRollsBack() {
-        expectThrows(IOException::class) {
+        assertThrows<IOException> {
             db {
                 Person(name = "foo", age = 25).save()
                 expectList(25) { db { Person.findAll().map { it.age } } }
@@ -50,7 +50,7 @@ abstract class AbstractJdbiTests {
     }
     @Test
     fun exceptionRollsBackInNestedDbBlocks() {
-        expectThrows(IOException::class) {
+        assertThrows<IOException> {
             db {
                 db {
                     db {

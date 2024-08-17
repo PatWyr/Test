@@ -13,7 +13,6 @@ dependencies {
     testImplementation(libs.bundles.hibernate.validator)
 
     // tests
-    testImplementation(libs.dynatest)
     testImplementation(libs.bundles.gson)
     testImplementation(libs.hikaricp)
     testImplementation(libs.slf4j.simple)
@@ -23,6 +22,7 @@ dependencies {
     testImplementation(libs.bundles.jdbc)
     testImplementation(libs.bundles.testcontainers)
 
+    testImplementation(kotlin("test"))
     testImplementation(libs.junit.jupiter.engine)
     testRuntimeOnly(libs.junit.platform.launcher)
 
