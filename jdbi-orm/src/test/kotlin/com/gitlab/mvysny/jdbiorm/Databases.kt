@@ -72,8 +72,6 @@ fun hikari(block: HikariConfig.() -> Unit) {
     JdbiOrm.setDataSource(HikariDataSource(HikariConfig().apply(block)))
 }
 
-abstract class AbstractDockerizedPostgreSQL
-
 @DynaTestDsl
 private fun DynaNodeGroup.usingDockerizedPosgresql() {
     check(DockerClientFactory.instance().isDockerAvailable()) { "Docker not available" }
