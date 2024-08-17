@@ -228,7 +228,7 @@ fun DynaNodeGroup.usingDockerizedMysql() {
     }
 }
 
-private fun clearDb() {
+fun clearDb() {
     Person.deleteAll()
     EntityWithAliasedId.dao.deleteAll()
     NaturalPerson.deleteAll()
