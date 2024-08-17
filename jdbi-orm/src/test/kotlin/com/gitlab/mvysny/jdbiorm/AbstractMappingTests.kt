@@ -17,6 +17,9 @@ import kotlin.test.expect
 abstract class AbstractMappingTests {
     @Nested inner class PersonTests : AbstractPersonTests2()
     @Nested inner class AliasedIdTests : AbstractAliasedIdTests()
+    @Nested inner class NaturalPersonTests : AbstractNaturalPersonTests()
+    @Nested inner class LogRecordTests : AbstractLogRecordTests()
+    @Nested inner class CompositePKTests : AbstractCompositePKTests()
     @Nested inner class TypeMappingTests {
         @Test fun `java enum to native db enum`() {
             for (it in MaritalStatus.entries + listOf(null)) {
@@ -27,27 +30,14 @@ abstract class AbstractMappingTests {
             }
         }
     }
+    @Test fun customSelect() {
+        Person(name = "Albedo", age = 130).save()
+        expectList("Albedo") { Person.dao.findAll2().map { it.name } }
+    }
 }
 
 @DynaTestDsl
 fun DynaNodeGroup.dbMappingTests() {
-    group("EntityWithAliasedId") {
-    }
-    group("NaturalPerson") {
-        naturalPersonTests()
-    }
-    group("LogRecord") {
-        logRecordTestBattery()
-    }
-    group("Composite PK") {
-        compositePKTestBattery()
-    }
-    group("TypeMapping") {
-    }
-    test("custom select") {
-        Person(name = "Albedo", age = 130).save()
-        expectList("Albedo") { Person.dao.findAll2().map { it.name } }
-    }
 }
 
 abstract class AbstractPersonTests2 {
@@ -170,16 +160,15 @@ abstract class AbstractAliasedIdTests {
     }
 }
 
-@DynaTestDsl
-private fun DynaNodeGroup.compositePKTestBattery() {
-    test("FindAll") {
+abstract class AbstractCompositePKTests2 {
+    @Test fun findAll() {
         expectList() { MappingTable.dao.findAll() }
         val p = MappingTable(1, 2, "Zaphod")
         p.create()
         expect(true) { p.id != null }
         expectList("MappingTable{id=1, 2, Zaphod}") { MappingTable.dao.findAll().map { it.toString() } }
     }
-    test("Save") {
+    @Test fun save() {
         val p = MappingTable(1, 2, "Albedo")
         p.create()
         expectList("MappingTable{id=1, 2, Albedo}") { MappingTable.dao.findAll().map { it.toString() } }
@@ -189,13 +178,13 @@ private fun DynaNodeGroup.compositePKTestBattery() {
         MappingTable(1, 3, "Nigredo").create()
         expectList("Rubedo", "Nigredo") { MappingTable.dao.findAll().map { it.someData } }
     }
-    test("delete") {
+    @Test fun delete() {
         val p = MappingTable(1, 2, "Albedo")
         p.create()
         p.delete()
         expect(listOf()) { MappingTable.dao.findAll() }
     }
-    test("Meta") {
+    @Test fun meta() {
         val meta = EntityMeta.of(MappingTable::class.java)
         expect("mapping_table") { meta.databaseTableName }
         expect(2) { meta.idProperty.size }
@@ -206,7 +195,7 @@ private fun DynaNodeGroup.compositePKTestBattery() {
         expect(Long::class.java) { meta.idProperty[1].valueType }
         expect(setOf("person_id", "department_id", "some_data")) { meta.persistedFieldDbNames.map { it.unqualifiedName } .toSet() }
     }
-    test("reload") {
+    @Test fun reload() {
         val p = MappingTable(1, 2, "Albedo")
         p.create()
         p.someData = "Foo"
@@ -217,15 +206,14 @@ private fun DynaNodeGroup.compositePKTestBattery() {
     }
 }
 
-@DynaTestDsl
-private fun DynaNodeGroup.naturalPersonTests() {
-    test("save fails") {
+abstract class AbstractNaturalPersonTests {
+    @Test fun saveFails() {
         val p = NaturalPerson(id = "12345678", name = "Albedo", bytes = byteArrayOf(5))
         expectThrows<IllegalStateException>("We expected to update only one row but we updated 0 - perhaps there is no row with id 12345678?") {
             p.save()
         }
     }
-    test("Save") {
+    @Test fun save() {
         val p = NaturalPerson(id = "12345678", name = "Albedo", bytes = byteArrayOf(5))
         p.create()
         expectList("Albedo") { NaturalPerson.findAll().map { it.name } }
@@ -235,13 +223,13 @@ private fun DynaNodeGroup.naturalPersonTests() {
         NaturalPerson(id = "aaa", name = "Nigredo", bytes = byteArrayOf(5)).create()
         expectList("Rubedo", "Nigredo") { NaturalPerson.findAll().map { it.name } }
     }
-    test("delete") {
+    @Test fun delete() {
         val p = NaturalPerson(id = "foo", name = "Albedo", bytes = byteArrayOf(5))
         p.create()
         p.delete()
         expectList() { NaturalPerson.findAll() }
     }
-    test("reload") {
+    @Test fun reload() {
         val p = NaturalPerson(id = "foo", name = "Albedo")
         p.create()
         p.name = "Nigredo"
@@ -251,16 +239,15 @@ private fun DynaNodeGroup.naturalPersonTests() {
     }
 }
 
-@DynaTestDsl
-private fun DynaNodeGroup.logRecordTestBattery() {
-    test("save succeeds since create() auto-generates ID") {
+abstract class AbstractLogRecordTests {
+    @Test fun `save succeeds since create() auto-generates ID`() {
         val p = LogRecord(text = "foo")
         // [id] is mapped to UUID in MySQL which is binary(16). This tests
         // that a converter kicks in.
         p.save()
         expectList("foo") { LogRecord.findAll().map { it.text } }
     }
-    test("Save") {
+    @Test fun save() {
         val p = LogRecord(text = "Albedo")
         p.save()
         expectList("Albedo") { LogRecord.findAll().map { it.text } }
@@ -270,13 +257,13 @@ private fun DynaNodeGroup.logRecordTestBattery() {
         LogRecord(text = "Nigredo").save()
         expect(setOf("Rubedo", "Nigredo")) { LogRecord.findAll().map { it.text } .toSet() }
     }
-    test("delete") {
+    @Test fun delete() {
         val p = LogRecord(text = "foo")
         p.save()
         p.delete()
         expectList() { LogRecord.findAll() }
     }
-    test("reload") {
+    @Test fun reload() {
         val p = LogRecord(text = "foo")
         expect(null) { p.id }
         p.save()
