@@ -7,7 +7,7 @@ import org.junit.jupiter.api.*
  * Tests JDBI-ORM on H2.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class H2DatabaseTest {
+abstract class AbstractH2DatabaseTest {
     @BeforeAll
     fun setupJdbi() {
         hikari {
@@ -58,11 +58,9 @@ class H2DatabaseTest {
     fun expectH2Variant() {
         kotlin.test.expect(DatabaseVariant.H2) { db { DatabaseVariant.from(this) } }
     }
+}
 
+class H2DatabaseTest : AbstractH2DatabaseTest() {
     @Nested
-    inner class AllDatabaseTests : AbstractDatabaseTests(
-        DatabaseInfo(
-            DatabaseVariant.H2
-        )
-    )
+    inner class AllDatabaseTests : AbstractDatabaseTests(DatabaseInfo(DatabaseVariant.H2))
 }
