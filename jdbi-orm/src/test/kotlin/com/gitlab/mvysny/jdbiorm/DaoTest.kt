@@ -26,7 +26,214 @@ fun DynaNodeGroup.dbDaoTests() {
 }
 
 abstract class AbstractDbDaoTests {
+    @Nested inner class PersonTests : AbstractPersonTests()
     @Nested inner class CompositePKTests : AbstractCompositePKTests()
+}
+
+abstract class AbstractPersonTests {
+    @Nested inner class FindAllTests {
+        @Test fun `no rows returned on empty table`() {
+            expectList() { Person.findAll() }
+        }
+        @Test fun `all rows returned`() {
+            db { (0..300).forEach { Person(name = "Albedo", age = it).save() } }
+            expect((0..300).toList()) { Person.findAll().map { it.age } .sorted() }
+        }
+        @Test fun `empty paging`() {
+            db { (0..100).forEach { Person(name = "Albedo", age = it).save() } }
+            expectList() { Person.findAll(0L, 0L) }
+            expectList() { Person.findAll(20L, 0L) }
+            expectList() { Person.findAll(2000L, 0L) }
+        }
+        @Test fun paging() {
+            db { (0..100).forEach { Person(name = "Albedo", age = it).save() } }
+            expect((0..9).toList()) { Person.findAll(0L, 10L).map { it.age } }
+            expect((20..49).toList()) { Person.findAll(20L, 30L).map { it.age } }
+            expect((90..100).toList()) { Person.findAll(90L, 300L).map { it.age } }
+            expectList() { Person.findAll(2000L, 50L) }
+        }
+        @Nested inner class FindAllBy {
+            @Test fun nonPaged() {
+                val p = Person2(name = "Albedo", age = 130)
+                p.save()
+                expectList(p) {
+                    Person2.findAllBy("name = :name", null, null) { it.bind("name", "Albedo") }
+                }
+            }
+            @Test fun paged() {
+                db { (0..100).forEach { Person(name = "Albedo", age = it).save() } }
+                expect((20..30).toList()) {
+                    Person.findAllBy("name = :name", 20L, 11L) { it.bind("name", "Albedo") }
+                        .map { it.age }
+                }
+            }
+            @Test fun sorted() {
+                db { (0..10).forEach { Person(name = "Albedo", age = it).save() } }
+                expect((0..10).toList()) {
+                    Person.findAllBy("name = :name", "age ASC") { it.bind("name", "Albedo") }
+                        .map { it.age }
+                }
+                expect((0..10).toList().reversed()) {
+                    Person.findAllBy("name = :name", "age DESC") { it.bind("name", "Albedo") }
+                        .map { it.age }
+                }
+                expect((0..10).toList()) {
+                    Person.findAllBy(Person.NAME.eq("Albedo"), listOf(Person.AGE.asc()))
+                        .map { it.age }
+                }
+                expect((0..10).toList().reversed()) {
+                    Person.findAllBy(Person.NAME.eq("Albedo"), listOf(Person.AGE.desc()))
+                        .map { it.age }
+                }
+            }
+        }
+    }
+    @Test fun findById() {
+        expect(null) { Person.findById(25) }
+        val p = Person2(name = "Albedo", age = 130)
+        p.save()
+        expect(p) { Person2.findById(p.id!!) }
+    }
+    @Test fun getById() {
+        val p = Person2(name = "Albedo", age = 130)
+        p.save()
+        expect(p) { Person2.getById(p.id!!) }
+    }
+    @Test fun `GetById fails if there is no such entity`() {
+        expectThrows<IllegalStateException>("There is no Person for id 25") {
+            Person.getById(25L)
+        }
+    }
+    @Nested inner class GetByTests {
+        @Test fun `succeeds if there is exactly one matching entity`() {
+            val p = Person2(name = "Albedo", age = 130)
+            p.save()
+            expect(p) {
+                Person2.singleBy("name = :name") { it.bind("name", "Albedo") }
+            }
+        }
+
+        @Test fun `fails if there is no such entity`() {
+            expectThrows<IllegalStateException>("no row matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
+                Person.singleBy("name = :name") { it.bind("name", "Albedo") }
+            }
+        }
+
+        @Test fun `fails if there are two matching entities`() {
+            repeat(2) { Person(name = "Albedo", age = 130).save() }
+            expectThrows<IllegalStateException>("too many rows matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
+                Person.singleBy("name = :name") { it.bind("name", "Albedo") }
+            }
+        }
+
+        @Test fun `fails if there are ten matching entities`() {
+            repeat(10) { Person(name = "Albedo", age = 130).save() }
+            expectThrows<IllegalStateException>("too many rows matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
+                Person.singleBy("name = :name") { it.bind("name", "Albedo") }
+            }
+        }
+    }
+    @Nested inner class CountTests {
+        @Test fun basicCount() {
+            expect(0) { Person.count() }
+            listOf("Albedo", "Nigredo", "Rubedo").forEach { Person(name = it, age = 130).save() }
+            expect(3) { Person.count() }
+        }
+        @Test fun countWithFilters() {
+            expect(0) { Person.countBy("age > :age") { q -> q.bind("age", 6) } }
+            listOf("Albedo", "Nigredo", "Rubedo").forEach { Person(name = it, age = it.length).save() }
+            expect(1) { Person.countBy("age > :age") { q -> q.bind("age", 6) } }
+        }
+        @Test fun countWithCondition() {
+            expect(0) { Person.countBy(Person.AGE.gt(6)) }
+            listOf("Albedo", "Nigredo", "Rubedo").forEach { Person(name = it, age = it.length).save() }
+            expect(1) { Person.countBy(Person.AGE.gt(6)) }
+        }
+    }
+    @Test fun deleteAll() {
+        listOf("Albedo", "Nigredo", "Rubedo").forEach { Person(name = it, age = 130).save() }
+        expect(3) { Person.count() }
+        Person.deleteAll()
+        expect(0) { Person.count() }
+    }
+    @Nested inner class DeleteByIdTests {
+        @Test fun simple() {
+            listOf("Albedo", "Nigredo", "Rubedo").forEach { Person(name = it, age = 130).save() }
+            expect(3) { Person.count() }
+            Person.deleteById(Person.findAll().first { it.name == "Albedo" }.id!!)
+            expect(listOf("Nigredo", "Rubedo")) { Person.findAll().map { it.name } }
+        }
+        @Test fun doesNothingOnUnknownId() {
+            db { Person.deleteById(25L) }
+            expect(listOf()) { Person.findAll() }
+        }
+    }
+    @Test fun deleteBy() {
+        listOf("Albedo", "Nigredo", "Rubedo").forEach { Person(name = it, age = 130).save() }
+        Person.deleteBy("name = :name") { q -> q.bind("name", "Albedo") }
+        expect(listOf("Nigredo", "Rubedo")) { Person.findAll().map { it.name } }
+    }
+    @Nested inner class FindSingleByTests {
+        @Test fun `succeeds if there is exactly one matching entity`() {
+            val p = Person(name = "Albedo", age = 130)
+            p.save()
+            expect(p.withZeroNanos()) {
+                Person.findSingleBy("name = :name") { it.bind("name", "Albedo") } ?.withZeroNanos()
+            }
+        }
+
+        @Test fun `returns null if there is no such entity`() {
+            expect(null) { Person.findSingleBy("name = :name") { it.bind("name", "Albedo") } }
+        }
+
+        @Test fun `fails if there are two matching entities`() {
+            repeat(2) { Person(name = "Albedo", age = 130).save() }
+            expectThrows(IllegalStateException::class, "too many rows matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
+                Person.findSingleBy("name = :name") { it.bind("name", "Albedo") }
+            }
+        }
+
+        @Test fun `fails if there are ten matching entities`() {
+            repeat(10) { Person(name = "Albedo", age = 130).save() }
+            expectThrows(IllegalStateException::class, "too many rows matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
+                Person.findSingleBy("name = :name") { it.bind("name", "Albedo") }
+            }
+        }
+
+        @Test fun `test filter by date`() {
+            val p = Person(name = "Albedo", age = 130, dateOfBirth = LocalDate.of(1980, 2, 2))
+            p.save()
+            expect(p.withZeroNanos()) {
+                Person.findSingleBy("dateOfBirth = :dateOfBirth") { q -> q.bind("dateOfBirth", LocalDate.of(1980, 2, 2)) } ?.withZeroNanos()
+            }
+            // here I don't care about whether it selects something or not, I'm only testing the database compatibility
+            Person.findSingleBy("dateOfBirth = :dateOfBirth") { q -> q.bind("dateOfBirth", Instant.now()) }
+            Person.findSingleBy("dateOfBirth = :dateOfBirth") { q -> q.bind("dateOfBirth", Date()) }
+        }
+    }
+    @Nested inner class ExistsTests {
+        @Test fun `returns false on empty table`() {
+            expect(false) { Person.existsAny() }
+            expect(false) { Person.existsById(25) }
+            expect(false) { Person.existsBy("age=:age") { it.bind("age", 26) } }
+        }
+        @Test fun `returns true on matching entity`() {
+            val p = Person(name = "Albedo", age = 130)
+            p.save()
+            p.modified = p.modified!!.withZeroNanos
+            expect(true) { Person.existsAny() }
+            expect(true) { Person.existsById(p.id!!) }
+            expect(true) { Person.existsBy("age>=:age") { it.bind("age", 26) } }
+        }
+        @Test fun `returns true on non-matching entity`() {
+            val p = Person(name = "Albedo", age = 130)
+            p.save()
+            p.modified = p.modified!!.withZeroNanos
+            expect(true) { Person.existsAny() }
+            expect(false) { Person.existsById(p.id!! + 1) }
+            expect(false) { Person.existsBy("age<=:age") { it.bind("age", 26) } }
+        }
+    }
 }
 
 @DynaTestDsl
