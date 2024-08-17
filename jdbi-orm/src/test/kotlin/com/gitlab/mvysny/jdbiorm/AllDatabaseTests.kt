@@ -8,33 +8,13 @@ import org.junit.jupiter.api.Test
 import java.io.IOException
 import kotlin.test.expect
 
-/**
- * Only start/stop docker databases once, to speed up tests dramatically.
- */
-class AllDatabaseTests : DynaTest({
-    withAllDatabases { dbInfo ->
-        group("jdbi() tests") {
-        }
-        group("DB Mapping Tests") {
-        }
-        group("DAO") {
-        }
-        group("JoinTable") {
-        }
-        group("Conditions") {
-        }
-        group("DaoOfJoin") {
-            daoOfJoinTests()
-        }
-    }
-})
-
 abstract class AbstractDatabaseTests(val info: DatabaseInfo) {
     @Nested inner class JdbiTests : AbstractJdbiTests()
     @Nested inner class MappingTests : AbstractMappingTests()
     @Nested inner class DbDaoTests : AbstractDbDaoTests()
     @Nested inner class JoinTableTests : AbstractJoinTableTests()
     @Nested inner class FindByConditionTests : AbstractFindByConditionTests(info)
+    @Nested inner class DaoOfJoinTests : AbstractDaoOfJoinTests()
 }
 
 /**

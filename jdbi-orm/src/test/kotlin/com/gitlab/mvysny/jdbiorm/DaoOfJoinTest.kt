@@ -1,24 +1,16 @@
 package com.gitlab.mvysny.jdbiorm
 
-import com.github.mvysny.dynatest.DynaNodeGroup
-import com.github.mvysny.dynatest.DynaTest
-import com.github.mvysny.dynatest.DynaTestDsl
-import com.github.mvysny.dynatest.expectList
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import kotlin.test.expect
 
-@DynaTestDsl
-fun DynaNodeGroup.daoOfJoinTests() {
-    group("JoinOutcome") {
-        joinOutcomeTests()
-    }
-    group("NestedJoinOutcome") {
-        nestedJoinOutcomeTests()
-    }
+abstract class AbstractDaoOfJoinTests {
+    @Nested inner class JoinOutcomeTests : AbstractJoinOutcomeTests()
+    @Nested inner class NestedJoinOutcomeTests : AbstractNestedJoinOutcomeTests()
 }
 
-@DynaTestDsl
-private fun DynaNodeGroup.nestedJoinOutcomeTests() {
-    test("smoke") {
+abstract class AbstractNestedJoinOutcomeTests() {
+    @Test fun smoke() {
         val p = Person2(name = "Foo")
         p.create()
         val d = EntityWithAliasedId("My department")
@@ -31,7 +23,7 @@ private fun DynaNodeGroup.nestedJoinOutcomeTests() {
         expect(d) { joinOutcomes[0].department }
     }
 
-    test("findAll") {
+    @Test fun findAll() {
         val p = Person2(name = "Foo")
         p.create()
         val d = EntityWithAliasedId("My department")
@@ -57,7 +49,7 @@ private fun DynaNodeGroup.nestedJoinOutcomeTests() {
         expect(d) { joinOutcomes[0].department }
     }
 
-    test("findAllBy") {
+    @Test fun findAllBy() {
         val p = Person2(name = "Foo")
         p.create()
         val d = EntityWithAliasedId("My department")
@@ -85,7 +77,7 @@ private fun DynaNodeGroup.nestedJoinOutcomeTests() {
         expect(d) { joinOutcomes[0].department }
     }
 
-    test("count") {
+    @Test fun count() {
         expect(0) { NestedJoinOutcome.dao.count() }
 
         val p = Person2(name = "Foo")
@@ -96,7 +88,7 @@ private fun DynaNodeGroup.nestedJoinOutcomeTests() {
         expect(1) { NestedJoinOutcome.dao.count() }
     }
 
-    test("countBy") {
+    @Test fun countBy() {
         expect(0) { NestedJoinOutcome.dao.countBy(Person2.NAME.eq("Foo")) }
 
         val p = Person2(name = "Foo")
@@ -108,7 +100,7 @@ private fun DynaNodeGroup.nestedJoinOutcomeTests() {
         expect(0) { NestedJoinOutcome.dao.countBy(Person2.NAME.eq("Bar").and(NestedJoinOutcome.DEPARTMENT_NAME.eq("ksada")).and(NestedJoinOutcome.DEPARTMENT_ID.eq(25))) }
     }
 
-    test("existsAny") {
+    @Test fun existsAny() {
         expect(false) { NestedJoinOutcome.dao.existsAny() }
 
         val p = Person2(name = "Foo")
@@ -119,7 +111,7 @@ private fun DynaNodeGroup.nestedJoinOutcomeTests() {
         expect(true) { NestedJoinOutcome.dao.existsAny() }
     }
 
-    test("existsBy") {
+    @Test fun existsBy() {
         expect(false) { NestedJoinOutcome.dao.existsBy(Person2.NAME.eq("Foo")) }
 
         val p = Person2(name = "Foo")
@@ -139,9 +131,8 @@ private fun JoinOutcome.expect(p: Person2, d: EntityWithAliasedId) {
     expect(d.id, toString()) { departmentId }
 }
 
-@DynaTestDsl
-private fun DynaNodeGroup.joinOutcomeTests() {
-    test("smoke") {
+abstract class AbstractJoinOutcomeTests {
+    @Test fun smoke() {
         val p = Person2(name = "Foo")
         p.create()
         val d = EntityWithAliasedId("My department")
@@ -153,7 +144,7 @@ private fun DynaNodeGroup.joinOutcomeTests() {
         joinOutcomes[0].expect(p, d)
     }
 
-    test("findAll") {
+    @Test fun findAll() {
         val p = Person2(name = "Foo")
         p.create()
         val d = EntityWithAliasedId("My department")
@@ -176,7 +167,7 @@ private fun DynaNodeGroup.joinOutcomeTests() {
         joinOutcomes[0].expect(p, d)
     }
 
-    test("findAllBy") {
+    @Test fun findAllBy() {
         val p = Person2(name = "Foo")
         p.create()
         val d = EntityWithAliasedId("My department")
@@ -201,7 +192,7 @@ private fun DynaNodeGroup.joinOutcomeTests() {
         joinOutcomes[0].expect(p, d)
     }
 
-    test("count") {
+    @Test fun count() {
         expect(0) { JoinOutcome.dao.count() }
 
         val p = Person2(name = "Foo")
@@ -212,7 +203,7 @@ private fun DynaNodeGroup.joinOutcomeTests() {
         expect(1) { JoinOutcome.dao.count() }
     }
 
-    test("countBy") {
+    @Test fun countBy() {
         expect(0) { JoinOutcome.dao.countBy(Person2.NAME.eq("Foo")) }
 
         val p = Person2(name = "Foo")
@@ -224,7 +215,7 @@ private fun DynaNodeGroup.joinOutcomeTests() {
         expect(0) { JoinOutcome.dao.countBy(Person2.NAME.eq("Bar").and(JoinOutcome.DEPARTMENT_ID.eq(5)).and(JoinOutcome.DEPARTMENT_NAME.eq("adfafs"))) }
     }
 
-    test("existsAny") {
+    @Test fun existsAny() {
         expect(false) { JoinOutcome.dao.existsAny() }
 
         val p = Person2(name = "Foo")
@@ -235,7 +226,7 @@ private fun DynaNodeGroup.joinOutcomeTests() {
         expect(true) { JoinOutcome.dao.existsAny() }
     }
 
-    test("existsBy") {
+    @Test fun existsBy() {
         expect(false) { JoinOutcome.dao.existsBy(Person2.NAME.eq("Foo")) }
 
         val p = Person2(name = "Foo")
