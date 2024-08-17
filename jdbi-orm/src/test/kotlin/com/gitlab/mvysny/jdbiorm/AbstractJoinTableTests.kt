@@ -1,6 +1,5 @@
 package com.gitlab.mvysny.jdbiorm
 
-import com.github.mvysny.dynatest.cloneBySerialization
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

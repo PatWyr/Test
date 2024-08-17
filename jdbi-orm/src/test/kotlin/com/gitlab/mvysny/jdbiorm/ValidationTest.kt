@@ -1,9 +1,9 @@
 package com.gitlab.mvysny.jdbiorm
 
-import com.github.mvysny.dynatest.expectThrows
 import com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi
 import jakarta.validation.ValidationException
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import kotlin.test.expect
 import kotlin.test.fail
 
@@ -11,7 +11,7 @@ import kotlin.test.fail
 // Therefore, it's enough to run this battery on H2 only.
 class ValidationTest : AbstractH2DatabaseTest() {
     @Test fun `Validation on empty name fails`() {
-        expectThrows(ValidationException::class) {
+        assertThrows<ValidationException> {
             Person(name = "", age = 20).validate()
         }
         expect(false) { Person(name = "", age = 20).isValid() }
@@ -21,7 +21,7 @@ class ValidationTest : AbstractH2DatabaseTest() {
         expect(true) { Person(name = "Valid Name", age = 20).isValid() }
     }
     @Test fun `save() fails when the bean is invalid`() {
-        expectThrows(ValidationException::class, "name: length must be between 1 and 2147483647") {
+        expectThrows<ValidationException>("name: length must be between 1 and 2147483647") {
             Person(name = "", age = 20).save()
         }
     }

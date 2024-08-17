@@ -1,15 +1,7 @@
 package com.gitlab.mvysny.jdbiorm.condition
 
-import com.github.mvysny.dynatest.DynaNodeGroup
-import com.github.mvysny.dynatest.DynaTest
-import com.github.mvysny.dynatest.DynaTestDsl
-import com.github.mvysny.dynatest.expectList
 import com.gitlab.mvysny.jdbiorm.DaoOfAny
-import com.gitlab.mvysny.jdbiorm.DatabaseInfo
-import com.gitlab.mvysny.jdbiorm.JoinTable
 import com.gitlab.mvysny.jdbiorm.Person
-import com.gitlab.mvysny.jdbiorm.Person2
-import com.gitlab.mvysny.jdbiorm.quirks.DatabaseVariant
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import kotlin.test.expect
@@ -234,11 +226,4 @@ class ConditionTest {
         expect("'name = :name AND age = :aaa'{aaa=25, name=foo}") { NativeSQL("name = :name AND age = :aaa", mapOf("name" to "foo", "aaa" to 25)).toString() }
         expect("'name = :name AND age = :aaa'{aaa=25, name=foo}") { NativeSQL("name = :name AND age = :aaa", mapOf("name" to "foo", "aaa" to 25)).toSql().toString() }
     }
-}
-
-/**
- * A test battery which tests conditions on an actual database.
- */
-@DynaTestDsl
-fun DynaNodeGroup.conditionTests(dbInfo: DatabaseInfo) {
 }

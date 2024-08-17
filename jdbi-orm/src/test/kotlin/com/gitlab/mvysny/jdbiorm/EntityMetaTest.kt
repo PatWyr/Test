@@ -1,11 +1,10 @@
 package com.gitlab.mvysny.jdbiorm
 
-import com.github.mvysny.dynatest.DynaTest
-import com.github.mvysny.dynatest.cloneBySerialization
+import org.junit.jupiter.api.Test
 import kotlin.test.expect
 
-class EntityMetaTest : DynaTest({
-    test("serialization") {
+class EntityMetaTest {
+    @Test fun serialization() {
         expect(EntityMeta.of(JoinTable::class.java)) { EntityMeta.of(JoinTable::class.java).cloneBySerialization() }
     }
-})
+}

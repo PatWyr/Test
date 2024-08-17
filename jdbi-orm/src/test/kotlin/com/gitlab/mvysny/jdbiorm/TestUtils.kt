@@ -1,13 +1,14 @@
 package com.gitlab.mvysny.jdbiorm
 
 import com.fatboyindustrial.gsonjavatime.Converters
-import com.github.mvysny.dynatest.deserialize
-import com.github.mvysny.dynatest.serializeToBytes
 import com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi
 import com.google.gson.*
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Handle
 import org.junit.jupiter.api.assertThrows
+import java.io.ByteArrayOutputStream
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import java.io.Serializable
 import kotlin.test.expect
 
@@ -54,3 +55,12 @@ inline fun <reified E: Throwable> expectThrows(msg: String, block: () -> Unit) {
  * @return the clone of this
  */
 fun <T : Serializable> T.cloneBySerialization(): T = javaClass.cast(serializeToBytes().deserialize())
+
+inline fun <reified T: Serializable> ByteArray.deserialize(): T? = T::class.java.cast(
+    ObjectInputStream(inputStream()).readObject())
+
+/**
+ * Serializes the object to a byte array
+ * @return the byte array containing this object serialized form.
+ */
+fun Serializable?.serializeToBytes(): ByteArray = ByteArrayOutputStream().also { ObjectOutputStream(it).writeObject(this) }.toByteArray()
