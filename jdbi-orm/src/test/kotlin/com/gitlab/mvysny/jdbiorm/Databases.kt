@@ -228,18 +228,6 @@ fun DynaNodeGroup.usingDockerizedMysql() {
     }
 }
 
-fun clearDb() {
-    Person.deleteAll()
-    EntityWithAliasedId.dao.deleteAll()
-    NaturalPerson.deleteAll()
-    LogRecord.deleteAll()
-    TypeMappingEntity.deleteAll()
-    JoinTable.dao.deleteAll()
-    MappingTable.dao.deleteAll()
-}
-
-fun <T> db(block: Handle.() -> T): T = jdbi().inTransaction<T, Exception>(block)
-
 @DynaTestDsl
 fun DynaNodeGroup.usingH2Database() {
     beforeGroup {
@@ -283,10 +271,6 @@ fun DynaNodeGroup.usingH2Database() {
     test("expect H2 variant") {
         expect(DatabaseVariant.H2) { db { DatabaseVariant.from(this) } }
     }
-}
-
-fun Handle.ddl(@Language("sql") sql: String) {
-    execute(sql)
 }
 
 @DynaTestDsl
