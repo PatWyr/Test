@@ -295,4 +295,3 @@ val Date.withZeroMillis: Date get() {
     result.nanos = 0
     return result
 }
-val <T> Array<T>.plusNull: List<T?> get() = toList<T?>() + listOf(null)
