@@ -2,9 +2,9 @@
 
 package com.gitlab.mvysny.jdbiorm
 
-import com.github.mvysny.dynatest.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.lang.IllegalStateException
 import java.lang.Long
 import java.sql.Timestamp
@@ -34,10 +34,6 @@ abstract class AbstractMappingTests {
         Person(name = "Albedo", age = 130).save()
         expectList("Albedo") { Person.dao.findAll2().map { it.name } }
     }
-}
-
-@DynaTestDsl
-fun DynaNodeGroup.dbMappingTests() {
 }
 
 abstract class AbstractPersonTests2 {
@@ -86,9 +82,8 @@ abstract class AbstractPersonTests2 {
         }
         @Test fun `updating non-existing row fails`() {
             val p = Person(id = 15, name = "Zaphod", age = 20, created = Date(1000), modified = Instant.ofEpochMilli(120398123))
-            expectThrows(IllegalStateException::class, "We expected to update only one row but we updated 0 - perhaps there is no row with id 15?") {
-                p.save()
-            }
+            val ex = assertThrows<IllegalStateException> { p.save() }
+            expect("We expected to update only one row but we updated 0 - perhaps there is no row with id 15?") { ex.message }
         }
     }
     @Test fun delete() {
@@ -209,9 +204,8 @@ abstract class AbstractCompositePKTests2 {
 abstract class AbstractNaturalPersonTests {
     @Test fun saveFails() {
         val p = NaturalPerson(id = "12345678", name = "Albedo", bytes = byteArrayOf(5))
-        expectThrows<IllegalStateException>("We expected to update only one row but we updated 0 - perhaps there is no row with id 12345678?") {
-            p.save()
-        }
+        val ex = assertThrows<IllegalStateException> { p.save() }
+        expect("We expected to update only one row but we updated 0 - perhaps there is no row with id 12345678?") { ex.message }
     }
     @Test fun save() {
         val p = NaturalPerson(id = "12345678", name = "Albedo", bytes = byteArrayOf(5))

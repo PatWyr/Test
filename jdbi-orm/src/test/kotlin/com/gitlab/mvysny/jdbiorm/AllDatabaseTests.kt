@@ -16,7 +16,6 @@ class AllDatabaseTests : DynaTest({
         group("jdbi() tests") {
         }
         group("DB Mapping Tests") {
-            dbMappingTests()
         }
         group("DAO") {
             dbDaoTests()
