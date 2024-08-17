@@ -1,10 +1,9 @@
 package com.gitlab.mvysny.jdbiorm
 
 import com.github.mvysny.dynatest.cloneBySerialization
-import com.github.mvysny.dynatest.expectList
-import com.github.mvysny.dynatest.expectThrows
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.lang.IllegalStateException
 import kotlin.test.expect
 
@@ -143,19 +142,22 @@ abstract class AbstractJoinTableTests {
         }
 
         @Test fun `fails if there is no such entity`() {
-            expectThrows<IllegalStateException>("no row matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:10}, finder:[]}") {
+            var ex = assertThrows<IllegalStateException> {
                 JoinTable.dao.singleBy("customerId = :cid") { it.bind("cid", 10) }
             }
-            expectThrows<IllegalStateException>("no row matching JoinTable: '(JOIN_TABLE.customerId) = (:p") {
+            expect("no row matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:10}, finder:[]}") { ex.message }
+            ex = assertThrows<IllegalStateException>() {
                 JoinTable.dao.singleBy(JoinTable.CUSTOMERID.eq(10))
             }
+            expect(true) { ex.message!!.contains("no row matching JoinTable: '(JOIN_TABLE.customerId) = (:p") }
         }
 
         @Test fun `fails if there are two matching entities`() {
             repeat(2) { JoinTable(100, 100).save() }
-            expectThrows<IllegalStateException>("too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:100}, finder:[]}") {
+            var ex = assertThrows<IllegalStateException> {
                 JoinTable.dao.singleBy("customerId = :cid") { it.bind("cid", 100) }
             }
+            expect("too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:100}, finder:[]}") { ex.message }
             expectThrows<IllegalStateException>("too many rows matching JoinTable: '(JOIN_TABLE.customerId) = (:p") {
                 JoinTable.dao.singleBy(JoinTable.CUSTOMERID.eq(100))
             }
@@ -285,20 +287,20 @@ abstract class AbstractJoinTableTests {
 
         @Test fun `fails if there are two matching entities`() {
             repeat(2) { JoinTable(130, 130).save() }
-            expectThrows(IllegalStateException::class, "too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:130}, finder:[]}") {
+            expectThrows<IllegalStateException>("too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:130}, finder:[]}") {
                 JoinTable.dao.findSingleBy("customerId = :cid") { it.bind("cid", 130) }
             }
-            expectThrows(IllegalStateException::class, "too many rows matching JoinTable: '(JOIN_TABLE.customerId) = (:p") {
+            expectThrows<IllegalStateException>("too many rows matching JoinTable: '(JOIN_TABLE.customerId) = (:p") {
                 JoinTable.dao.findSingleBy(JoinTable.CUSTOMERID.eq(130))
             }
         }
 
         @Test fun `fails if there are ten matching entities`() {
             repeat(10) { JoinTable(130, 130).save() }
-            expectThrows(IllegalStateException::class, "too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:130}, finder:[]}") {
+            expectThrows<IllegalStateException>("too many rows matching JoinTable: 'customerId = :cid'{positional:{}, named:{cid:130}, finder:[]}") {
                 JoinTable.dao.findSingleBy("customerId = :cid") { it.bind("cid", 130) }
             }
-            expectThrows(IllegalStateException::class, "too many rows matching JoinTable: '(JOIN_TABLE.customerId) = (:p") {
+            expectThrows<IllegalStateException>("too many rows matching JoinTable: '(JOIN_TABLE.customerId) = (:p") {
                 JoinTable.dao.findSingleBy(JoinTable.CUSTOMERID.eq(130))
             }
         }

@@ -1,10 +1,14 @@
 package com.gitlab.mvysny.jdbiorm
 
 import com.fatboyindustrial.gsonjavatime.Converters
+import com.github.mvysny.dynatest.deserialize
+import com.github.mvysny.dynatest.serializeToBytes
 import com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi
 import com.google.gson.*
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Handle
+import org.junit.jupiter.api.assertThrows
+import java.io.Serializable
 import kotlin.test.expect
 
 private fun GsonBuilder.registerJavaTimeAdapters(): GsonBuilder = apply {
@@ -39,3 +43,14 @@ val isX86_64: Boolean get() = System.getProperty("os.arch") == "amd64"
 fun <T> expectList(vararg expected: T, actual: ()->List<T>) {
     expect(expected.toList(), actual)
 }
+
+inline fun <reified E: Throwable> expectThrows(msg: String, block: () -> Unit) {
+    val ex = assertThrows<E>(block)
+    expect(true) { ex.message!!.contains(msg) }
+}
+
+/**
+ * Clones this object by serialization and returns the deserialized clone.
+ * @return the clone of this
+ */
+fun <T : Serializable> T.cloneBySerialization(): T = javaClass.cast(serializeToBytes().deserialize())

@@ -1,6 +1,5 @@
 package com.gitlab.mvysny.jdbiorm
 
-import com.github.mvysny.dynatest.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.lang.IllegalStateException
@@ -174,14 +173,14 @@ abstract class AbstractPersonTests {
 
         @Test fun `fails if there are two matching entities`() {
             repeat(2) { Person(name = "Albedo", age = 130).save() }
-            expectThrows(IllegalStateException::class, "too many rows matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
+            expectThrows<IllegalStateException>("too many rows matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
                 Person.findSingleBy("name = :name") { it.bind("name", "Albedo") }
             }
         }
 
         @Test fun `fails if there are ten matching entities`() {
             repeat(10) { Person(name = "Albedo", age = 130).save() }
-            expectThrows(IllegalStateException::class, "too many rows matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
+            expectThrows<IllegalStateException>("too many rows matching Person: 'name = :name'{positional:{}, named:{name:Albedo}, finder:[]}") {
                 Person.findSingleBy("name = :name") { it.bind("name", "Albedo") }
             }
         }

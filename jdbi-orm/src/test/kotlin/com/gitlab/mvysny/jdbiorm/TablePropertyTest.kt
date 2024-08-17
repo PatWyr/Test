@@ -1,7 +1,5 @@
 package com.gitlab.mvysny.jdbiorm
 
-import com.github.mvysny.dynatest.DynaTest
-import com.github.mvysny.dynatest.cloneBySerialization
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.util.Date
