@@ -1,6 +1,8 @@
 package com.gitlab.mvysny.jdbiorm
 
 import com.github.mvysny.dynatest.*
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import java.lang.IllegalStateException
 import java.time.Instant
 import java.time.LocalDate
@@ -21,6 +23,10 @@ fun DynaNodeGroup.dbDaoTests() {
     group("Composite PK") {
         compositePKTestSuite()
     }
+}
+
+abstract class AbstractDbDaoTests {
+    @Nested inner class CompositePKTests : AbstractCompositePKTests()
 }
 
 @DynaTestDsl
@@ -388,6 +394,92 @@ private fun DynaNodeGroup.compositePKTestSuite() {
             expect(false) { MappingTable.dao.existsBy("some_data<=:name") { it.bind("name", "a") } }
         }
         test("returns true on matching entity") {
+            val p = MappingTable(3, 3, "Albedo")
+            p.create()
+            expect(true) { MappingTable.dao.existsAny() }
+            expect(true) { MappingTable.dao.existsById(p.id!!) }
+            expect(true) { MappingTable.dao.existsBy("some_data=:name") { it.bind("name", "Albedo") } }
+        }
+    }
+}
+
+abstract class AbstractCompositePKTests {
+    @Test fun findById() {
+        expect(null) { MappingTable.dao.findById(MappingTable.ID(1, 2)) }
+        val p = MappingTable(1, 2,"Albedo")
+        p.create()
+        expect(p) { MappingTable.dao.findById(MappingTable.ID(1, 2)) }
+    }
+    @Test fun getById() {
+        val p = MappingTable(1, 2,"Albedo")
+        p.create()
+        expect(p) { MappingTable.dao.getById(MappingTable.ID(1, 2)) }
+    }
+    @Nested inner class GetByTests {
+        @Test fun `succeeds if there is exactly one matching entity`() {
+            val p = MappingTable(1, 2,"Albedo")
+            p.create()
+            expect(p) { MappingTable.dao.singleBy("some_data=:name") { it.bind("name", "Albedo") } }
+        }
+    }
+    @Nested inner class CountTests {
+        @Test fun basicCount() {
+            expect(0) { MappingTable.dao.count() }
+            MappingTable(1, 1, "Albedo").create()
+            MappingTable(2, 2, "Nigredo").create()
+            MappingTable(3, 3, "Rubedo").create()
+            expect(3) { MappingTable.dao.count() }
+        }
+        @Test fun countWithFilters() {
+            expect(0) { MappingTable.dao.count() }
+            MappingTable(1, 1, "Albedo").create()
+            MappingTable(2, 2, "Nigredo").create()
+            MappingTable(3, 3, "Rubedo").create()
+            expect(1) { MappingTable.dao.countBy("some_data=:name") { it.bind("name", "Albedo") } }
+            MappingTable.dao.findAll().first { it.someData == "Albedo" }.id!!
+        }
+    }
+    @Test fun deleteAll() {
+        MappingTable(1, 1, "Albedo").create()
+        MappingTable(2, 2, "Nigredo").create()
+        MappingTable(3, 3, "Rubedo").create()
+        expect(3) { MappingTable.dao.count() }
+        MappingTable.dao.deleteAll()
+        expect(0) { MappingTable.dao.count() }
+    }
+    @Test fun deleteById() {
+        MappingTable(1, 1, "Albedo").create()
+        MappingTable(2, 2, "Nigredo").create()
+        MappingTable(3, 3, "Rubedo").create()
+        expect(3) { MappingTable.dao.count() }
+        MappingTable.dao.deleteById(MappingTable.ID(1, 1))
+        expect(listOf("Nigredo", "Rubedo")) { MappingTable.dao.findAll().map { it.someData } }
+    }
+    @Test fun deleteByIdDoesNothingOnUnknownId() {
+        MappingTable.dao.deleteById(MappingTable.ID(25, 25))
+        expect(listOf()) { MappingTable.dao.findAll() }
+    }
+    @Test fun deleteBy() {
+        MappingTable(1, 1, "Albedo").create()
+        MappingTable(2, 2, "Nigredo").create()
+        MappingTable(3, 3, "Rubedo").create()
+        MappingTable.dao.deleteBy("some_data = :name") { it.bind("name", "Albedo") }
+        expect(listOf("Nigredo", "Rubedo")) { MappingTable.dao.findAll().map { it.someData } }
+    }
+    @Nested inner class FindSpecificByTests {
+        @Test fun `succeeds if there is exactly one matching entity`() {
+            val p = MappingTable(1, 1, "Albedo")
+            p.create()
+            expect(p) { MappingTable.dao.findSingleBy("some_data=:name") { it.bind("name", "Albedo") } }
+        }
+    }
+    @Nested inner class ExistsTests {
+        @Test fun `returns false on empty table`() {
+            expect(false) { MappingTable.dao.existsAny() }
+            expect(false) { MappingTable.dao.existsById(MappingTable.ID(25, 25)) }
+            expect(false) { MappingTable.dao.existsBy("some_data<=:name") { it.bind("name", "a") } }
+        }
+        @Test fun `returns true on matching entity`() {
             val p = MappingTable(3, 3, "Albedo")
             p.create()
             expect(true) { MappingTable.dao.existsAny() }
