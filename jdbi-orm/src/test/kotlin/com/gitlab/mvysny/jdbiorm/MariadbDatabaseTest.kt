@@ -7,7 +7,7 @@ import org.testcontainers.containers.MariaDBContainer
 import kotlin.test.expect
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class MariaDBDatabaseTest {
+class MariaDBDatabaseTest {
     init {
         Assumptions.assumeTrue(DockerClientFactory.instance().isDockerAvailable(), "Docker not available")
     }
