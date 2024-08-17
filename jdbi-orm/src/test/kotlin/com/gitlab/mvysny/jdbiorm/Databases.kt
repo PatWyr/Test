@@ -8,6 +8,13 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Handle
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.testcontainers.DockerClientFactory
 import org.testcontainers.containers.CockroachContainer
 import org.testcontainers.containers.MSSQLServerContainer
@@ -71,6 +78,8 @@ fun hikari(block: HikariConfig.() -> Unit) {
     JdbiOrm.databaseVariant = null
     JdbiOrm.setDataSource(HikariDataSource(HikariConfig().apply(block)))
 }
+
+abstract class AbstractDockerizedPostgreSQL
 
 @DynaTestDsl
 private fun DynaNodeGroup.usingDockerizedPosgresql() {
@@ -281,6 +290,59 @@ fun DynaNodeGroup.usingH2Database() {
     test("expect H2 variant") {
         expect(DatabaseVariant.H2) { db { DatabaseVariant.from(this) } }
     }
+}
+
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class H2DatabaseTest {
+    @BeforeAll
+    fun setupJdbi() {
+        hikari {
+            jdbcUrl = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
+            username = "sa"
+            password = ""
+        }
+    }
+
+    @AfterAll
+    fun destroyJdbi() { JdbiOrm.destroy() }
+
+    @BeforeEach
+    fun setupDatabase() {
+        db {
+            ddl("DROP ALL OBJECTS")
+            ddl("""CREATE ALIAS IF NOT EXISTS FTL_INIT FOR "org.h2.fulltext.FullTextLucene.init";CALL FTL_INIT();""")
+            ddl("""create table Test (
+                id bigint primary key auto_increment,
+                name varchar not null,
+                age integer not null,
+                dateOfBirth date,
+                created timestamp,
+                modified timestamp,
+                alive boolean,
+                maritalStatus varchar,
+                someStringValue varchar
+                 )""")
+            ddl("""create table EntityWithAliasedId(myid bigint primary key auto_increment, name varchar not null)""")
+            ddl("""create table NaturalPerson(id varchar(10) primary key, name varchar(400) not null, bytes binary(16) not null)""")
+            ddl("""create table LogRecord(id UUID primary key, text varchar(400) not null)""")
+            ddl("""create table TypeMappingEntity(id bigint primary key auto_increment, enumTest ENUM('Single', 'Married', 'Divorced', 'Widowed'))""")
+            ddl("""create table JOIN_TABLE(customerId bigint, orderId bigint)""")
+            ddl("""create table mapping_table(person_id bigint not null, department_id bigint not null, some_data varchar(400) not null, PRIMARY KEY(person_id, department_id))""")
+            ddl("""CALL FTL_CREATE_INDEX('PUBLIC', 'TEST', 'NAME');""")
+        }
+    }
+    @AfterEach
+    fun dropDatabase() {
+        db { ddl("DROP ALL OBJECTS") }
+    }
+
+    @Test
+    fun expectH2Variant() {
+        expect(DatabaseVariant.H2) { db { DatabaseVariant.from(this) } }
+    }
+
+    @Nested
+    inner class JdbiTests : AbstractJdbiTests()
 }
 
 fun Handle.ddl(@Language("sql") sql: String) {

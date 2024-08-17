@@ -23,6 +23,7 @@ dependencies {
     testImplementation(libs.bundles.jdbc)
     testImplementation(libs.bundles.testcontainers)
 
+    testImplementation(libs.junit.jupiter.engine)
     testRuntimeOnly(libs.junit.platform.launcher)
 
     // Java has no nullable types

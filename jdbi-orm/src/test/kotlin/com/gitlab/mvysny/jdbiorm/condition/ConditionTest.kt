@@ -10,40 +10,42 @@ import com.gitlab.mvysny.jdbiorm.JoinTable
 import com.gitlab.mvysny.jdbiorm.Person
 import com.gitlab.mvysny.jdbiorm.Person2
 import com.gitlab.mvysny.jdbiorm.quirks.DatabaseVariant
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import kotlin.test.expect
 
 /**
  * Tests Java functionality of the [Condition] API. These tests won't go to the database - see [conditionTests] for that.
  */
-class ConditionTest : DynaTest({
-    group("toString") {
-        test("simple") {
+class ConditionTest {
+    @Nested inner class ToString {
+        @Test fun simple() {
             expect("Person.id") { Person.ID.toString() }
         }
-        test("expressions") {
+        @Test fun expressions() {
             expect("Person.id = 5") { Person.ID.eq(5L).toString() }
             expect("(NOT(Person.id = 5)) AND (Person.id = 6)") { Person.ID.eq(5L).not().and(Person.ID.eq(6L)).toString() }
             expect("Person.name ~ [foo]") { Person.NAME.fullTextMatches("foo").toString() }
         }
     }
-    group("NoCondition") {
-        test("and") {
+    @Nested inner class NoConditionTest {
+        @Test fun and() {
             expect(Condition.NO_CONDITION) { Condition.NO_CONDITION.and(null) }
             expect(Condition.NO_CONDITION) { Condition.NO_CONDITION.and(Condition.NO_CONDITION) }
             expect(Person.ID.eq(5L)) { Condition.NO_CONDITION.and(Person.ID.eq(5L)) }
             expect(Person.ID.eq(5L)) { Person.ID.eq(5L).and(Condition.NO_CONDITION) }
         }
-        test("or") {
+        @Test fun or() {
             expect(Condition.NO_CONDITION) { Condition.NO_CONDITION.or(null) }
             expect(Condition.NO_CONDITION) { Condition.NO_CONDITION.or(Condition.NO_CONDITION) }
             expect(Person.ID.eq(5L)) { Condition.NO_CONDITION.or(Person.ID.eq(5L)) }
             expect(Person.ID.eq(5L)) { Person.ID.eq(5L).or(Condition.NO_CONDITION) }
         }
-        test("not") {
+        @Test fun not() {
             expect(Condition.NO_CONDITION) { Condition.NO_CONDITION.not() }
         }
     }
-    test("Condition is not @FunctionalInterface") {
+    @Test fun `Condition is not @FunctionalInterface`() {
         // tests that Condition is not a FunctionalInterface.
         fun DaoOfAny<*>.deleteBy(block: String.() -> String) {}
         // if Condition is a functional interface, Kotlin will stubbornly use [DaoOfAny.deleteBy]
@@ -51,15 +53,15 @@ class ConditionTest : DynaTest({
         // This is problematic for vok-orm which can't then define its own extension methods using fancy {} syntax.
         DaoOfAny(Person::class.java).deleteBy { "" }
     }
-    group("Condition.test") {
-        test("IsFalse") {
+    @Nested inner class ConditionTest {
+        @Test fun isFalse() {
             expect(true) { IsFalse(Expression.Value(0)).test("ignored") }
             expect(true) { IsFalse(Expression.Value("0")).test("ignored") }
             expect(true) { IsFalse(Expression.Value("off")).test("ignored") }
             expect(false) { IsFalse(Expression.Value(1)).test("ignored") }
             expect(false) { IsFalse(Expression.Value(25)).test("ignored") }
         }
-        test("IsTrue") {
+        @Test fun isTrue() {
             expect(false) { IsTrue(Expression.Value(0)).test("ignored") }
             expect(false) { IsTrue(Expression.Value("0")).test("ignored") }
             expect(false) { IsTrue(Expression.Value("off")).test("ignored") }
@@ -67,24 +69,24 @@ class ConditionTest : DynaTest({
             expect(true) { IsTrue(Expression.Value("on")).test("ignored") }
             expect(false) { IsTrue(Expression.Value(25)).test("ignored") }
         }
-        test("NoCondition") {
+        @Test fun noCondition() {
             expect(true) { NoCondition.INSTANCE.test("ignored") }
         }
-        test("IsNull") {
+        @Test fun isNull() {
             expect(true) { IsNull(Expression.Value(null)).test("ignored") }
             expect(false) { IsNull(Expression.Value(4)).test("ignored") }
         }
-        test("IsNotNull") {
+        @Test fun isNotNull() {
             expect(false) { IsNotNull(Expression.Value(null)).test("ignored") }
             expect(true) { IsNotNull(Expression.Value(4)).test("ignored") }
         }
-        test("Eq") {
+        @Test fun eq() {
             expect(false) { Eq(Expression.Value(null), Expression.Value(null)).test("ignored") }
             expect(false) { Eq(Expression.Value(null), Expression.Value(2)).test("ignored") }
             expect(false) { Eq(Expression.Value("2"), Expression.Value(2)).test("ignored") }
             expect(true) { Eq(Expression.Value("2"), Expression.Value("2")).test("ignored") }
         }
-        test("Like") {
+        @Test fun like() {
             fun like(val1: Any?, val2: Any?) = Like(Expression.Value(val1), Expression.Value(val2)).test("ignored")
             expect(false) { like(null, "%") }
             expect(true) { like("a", "%") }
@@ -106,8 +108,8 @@ class ConditionTest : DynaTest({
             expect(false) { like("epsilon", "%lan%") }
             expect(false) { like("epsilon", "%LON%") }
         }
-        group("Op") {
-            test("Eq") {
+        @Nested inner class OpTest {
+            @Test fun eq() {
                 expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.EQ).test("ignored") }
                 expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.EQ).test("ignored") }
                 expect(false) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.EQ).test("ignored") }
@@ -115,35 +117,35 @@ class ConditionTest : DynaTest({
                 expect(false) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.EQ).test("ignored") }
                 expect(false) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.EQ).test("ignored") }
             }
-            test("Lt") {
+            @Test fun lt() {
                 expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.LT).test("ignored") }
                 expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.LT).test("ignored") }
                 expect(false) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.LT).test("ignored") }
                 expect(true) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.LT).test("ignored") }
                 expect(false) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.LT).test("ignored") }
             }
-            test("LE") {
+            @Test fun le() {
                 expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.LE).test("ignored") }
                 expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.LE).test("ignored") }
                 expect(true) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.LE).test("ignored") }
                 expect(true) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.LE).test("ignored") }
                 expect(false) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.LE).test("ignored") }
             }
-            test("GT") {
+            @Test fun gt() {
                 expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.GT).test("ignored") }
                 expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.GT).test("ignored") }
                 expect(false) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.GT).test("ignored") }
                 expect(false) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.GT).test("ignored") }
                 expect(true) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.GT).test("ignored") }
             }
-            test("GE") {
+            @Test fun ge() {
                 expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.GE).test("ignored") }
                 expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.GE).test("ignored") }
                 expect(true) { Op(Expression.Value("2"), Expression.Value("2"), Op.Operator.GE).test("ignored") }
                 expect(false) { Op(Expression.Value(1), Expression.Value(2), Op.Operator.GE).test("ignored") }
                 expect(true) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.GE).test("ignored") }
             }
-            test("NE") {
+            @Test fun ne() {
                 expect(false) { Op(Expression.Value(null), Expression.Value(null), Op.Operator.NE).test("ignored") }
                 expect(false) { Op(Expression.Value(null), Expression.Value(2), Op.Operator.NE).test("ignored") }
                 expect(true) { Op(Expression.Value("2"), Expression.Value(2), Op.Operator.NE).test("ignored") }
@@ -152,7 +154,7 @@ class ConditionTest : DynaTest({
                 expect(true) { Op(Expression.Value(3), Expression.Value(2), Op.Operator.NE).test("ignored") }
             }
         }
-        test("LikeIgnoreCase") {
+        @Test fun likeIgnoreCase() {
             fun ilike(val1: Any?, val2: Any?) = LikeIgnoreCase(Expression.Value(val1), Expression.Value(val2)).test("ignored")
             expect(false) { ilike(null, "%") }
             expect(true) { ilike("a", "%") }
@@ -175,7 +177,7 @@ class ConditionTest : DynaTest({
             expect(true) { ilike("epsilon", "%LON%") }
             expect(false) { ilike("epsilon", "%LAN%") }
         }
-        test("FullTextCondition") {
+        @Test fun fullTextCondition() {
             fun ft(val1: Any?, query: String) = FullTextCondition.of(Expression.Value(val1), query).test("ignored")
             expect(false) { ft("", "foo") }
             expect(false) { ft(null, "foo") }
@@ -187,38 +189,38 @@ class ConditionTest : DynaTest({
             expect(false) { ft("fat cat", "f k") }
         }
     }
-    group("Expression.calculate()") {
-        test("Value") {
+    @Nested inner class ExpressionCalculateTest {
+        @Test fun value() {
             expect(null) { Expression.Value(null).calculate("ignored") }
             expect("Foo") { Expression.Value("Foo").calculate("ignored") }
             expect(5) { Expression.Value(5).calculate("ignored") }
         }
-        test("Lower") {
+        @Test fun lower() {
             expect("foo") { Expression.Value("FOO").lower().calculate("ignored") }
             expect(null) { Expression.Value(null).lower().calculate("ignored") }
         }
-        test("Coalesce") {
+        @Test fun coalesce() {
             expect("FOO") { Expression.Value("FOO").coalesce("foo").calculate("ignored") }
             expect(null) { Expression.Value<String>(null).coalesce(null).calculate("ignored") }
             expect("foo") { Expression.Value<String>("foo").coalesce("foo").calculate("ignored") }
             expect("foo") { Expression.Value<String>(null).coalesce("foo").calculate("ignored") }
             expect(null) { Expression.Value<String>(null).coalesce(null).calculate("ignored") }
         }
-        test("IfNull") {
+        @Test fun ifNull() {
             expect("FOO") { Expression.Value("FOO").ifNull("foo").calculate("ignored") }
             expect(null) { Expression.Value<String>(null).ifNull(null).calculate("ignored") }
             expect("foo") { Expression.Value<String>("foo").ifNull("foo").calculate("ignored") }
             expect("foo") { Expression.Value<String>(null).ifNull("foo").calculate("ignored") }
             expect(null) { Expression.Value<String>(null).ifNull(null).calculate("ignored") }
         }
-        test("NullIf") {
+        @Test fun nullIf() {
             expect("FOO") { Expression.Value("FOO").nullIf("foo").calculate("ignored") }
             expect(null) { Expression.Value<String>(null).nullIf("foo").calculate("ignored") }
             expect(null) { Expression.Value<String>("foo").nullIf("foo").calculate("ignored") }
             expect("foo") { Expression.Value<String>("foo").nullIf(null).calculate("ignored") }
             expect(null) { Expression.Value<String>(null).nullIf(null).calculate("ignored") }
         }
-        test("Cast") {
+        @Test fun cast() {
             expect("FOO") { Expression.Value("FOO").castAsVarchar().calculate("ignored") }
             expect(null) { Expression.Value<String>(null).castAsVarchar().calculate("ignored") }
             expect("5") { Expression.Value(5).castAsVarchar().calculate("ignored") }
@@ -226,13 +228,13 @@ class ConditionTest : DynaTest({
             expect("true") { Expression.Value(true).castAsVarchar().calculate("ignored") }
         }
     }
-    test("NativeSQL") {
+    @Test fun nativeSQL() {
         expect("'name = :name'{name=foo}") { NativeSQL("name = :name", mapOf("name" to "foo")).toString() }
         expect("'name = :name'{name=foo}") { NativeSQL("name = :name", mapOf("name" to "foo")).toSql().toString() }
         expect("'name = :name AND age = :aaa'{aaa=25, name=foo}") { NativeSQL("name = :name AND age = :aaa", mapOf("name" to "foo", "aaa" to 25)).toString() }
         expect("'name = :name AND age = :aaa'{aaa=25, name=foo}") { NativeSQL("name = :name AND age = :aaa", mapOf("name" to "foo", "aaa" to 25)).toSql().toString() }
     }
-})
+}
 
 /**
  * A test battery which tests conditions on an actual database.
