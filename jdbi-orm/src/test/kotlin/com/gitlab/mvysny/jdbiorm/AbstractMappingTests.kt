@@ -16,12 +16,22 @@ import kotlin.test.expect
 
 abstract class AbstractMappingTests {
     @Nested inner class PersonTests : AbstractPersonTests2()
+    @Nested inner class AliasedIdTests : AbstractAliasedIdTests()
+    @Nested inner class TypeMappingTests {
+        @Test fun `java enum to native db enum`() {
+            for (it in MaritalStatus.entries + listOf(null)) {
+                val id: kotlin.Long? =
+                    TypeMappingEntity(enumTest = it).run { save(); id }
+                val loaded = TypeMappingEntity.findById(id!!)!!
+                expect(it) { loaded.enumTest }
+            }
+        }
+    }
 }
 
 @DynaTestDsl
 fun DynaNodeGroup.dbMappingTests() {
     group("EntityWithAliasedId") {
-        aliasedIdTestBattery()
     }
     group("NaturalPerson") {
         naturalPersonTests()
@@ -33,14 +43,6 @@ fun DynaNodeGroup.dbMappingTests() {
         compositePKTestBattery()
     }
     group("TypeMapping") {
-        test("java enum to native db enum") {
-            for (it in MaritalStatus.values().plusNull) {
-                val id: kotlin.Long? =
-                    TypeMappingEntity(enumTest = it).run { save(); id }
-                val loaded = TypeMappingEntity.findById(id!!)!!
-                expect(it) { loaded.enumTest }
-            }
-        }
     }
     test("custom select") {
         Person(name = "Albedo", age = 130).save()
@@ -130,16 +132,15 @@ abstract class AbstractPersonTests2 {
     }
 }
 
-@DynaTestDsl
-private fun DynaNodeGroup.aliasedIdTestBattery() {
-    test("FindAll") {
+abstract class AbstractAliasedIdTests {
+    @Test fun findAll() {
         expectList() { EntityWithAliasedId.dao.findAll() }
         val p = EntityWithAliasedId("Zaphod")
         p.save()
         expect(true) { p.id != null }
         expectList("Zaphod") { EntityWithAliasedId.dao.findAll().map { it.name } }
     }
-    test("Save") {
+    @Test fun save() {
         val p = EntityWithAliasedId(null, "Albedo")
         p.save()
         expectList("Albedo") { EntityWithAliasedId.dao.findAll().map { it.name } }
@@ -149,16 +150,16 @@ private fun DynaNodeGroup.aliasedIdTestBattery() {
         EntityWithAliasedId(null, "Nigredo").save()
         expectList("Rubedo", "Nigredo") { EntityWithAliasedId.dao.findAll().map { it.name } }
     }
-    test("delete") {
+    @Test fun delete() {
         val p = EntityWithAliasedId(null, "Albedo")
         p.save()
         p.delete()
         expect(listOf()) { EntityWithAliasedId.dao.findAll() }
     }
-    test("JsonSerializationIgnoresMeta") {
+    @Test fun jsonSerializationIgnoresMeta() {
         expect("""{"name":"Zaphod"}""") { gson.toJson(EntityWithAliasedId(null, "Zaphod")) }
     }
-    test("Meta") {
+    @Test fun meta() {
         val meta = EntityMeta.of(EntityWithAliasedId::class.java)
         expect("EntityWithAliasedId") { meta.databaseTableName }
         expect(1) { meta.idProperty.size }
