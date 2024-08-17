@@ -77,6 +77,8 @@ class MssqlDatabaseTest {
         }
     }
 
+    // unfortunately the default Docker image doesn't support the FULLTEXT index:
+    // https://stackoverflow.com/questions/60489784/installing-mssql-server-express-using-docker-with-full-text-search-support
     @Nested
-    inner class AllDatabaseTests : AbstractDatabaseTests(DatabaseInfo(DatabaseVariant.MSSQL))
+    inner class AllDatabaseTests : AbstractDatabaseTests(DatabaseInfo(DatabaseVariant.MSSQL, supportsFullText = false))
 }
