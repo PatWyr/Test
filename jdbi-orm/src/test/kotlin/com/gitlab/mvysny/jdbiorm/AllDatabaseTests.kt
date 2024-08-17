@@ -18,7 +18,6 @@ class AllDatabaseTests : DynaTest({
         group("DB Mapping Tests") {
         }
         group("DAO") {
-            dbDaoTests()
         }
         group("JoinTable") {
         }

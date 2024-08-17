@@ -9,22 +9,10 @@ import java.time.LocalDate
 import java.util.*
 import kotlin.test.expect
 
-@DynaTestDsl
-fun DynaNodeGroup.dbDaoTests() {
-    group("Person") {
-    }
-
-    // quick tests which test that DAO methods generally work with entities with aliased ID columns
-    group("EntityWithAliasedId") {
-        entityWithAliasedIdTestSuite()
-    }
-
-    group("Composite PK") {
-    }
-}
-
 abstract class AbstractDbDaoTests {
     @Nested inner class PersonTests : AbstractPersonTests()
+    // quick tests which test that DAO methods generally work with entities with aliased ID columns
+    @Nested inner class EntityWithAliasedIdTests : AbstractEntityWithAliasedIdTests()
     @Nested inner class CompositePKTests : AbstractCompositePKTests()
 }
 
@@ -234,33 +222,32 @@ abstract class AbstractPersonTests {
     }
 }
 
-@DynaTestDsl
-private fun DynaNodeGroup.entityWithAliasedIdTestSuite() {
-    test("FindById") {
+abstract class AbstractEntityWithAliasedIdTests {
+    @Test fun findById() {
         expect(null) { EntityWithAliasedId.dao.findById(25) }
         val p = EntityWithAliasedId("Albedo")
         p.save()
         expect(p) { EntityWithAliasedId.dao.findById(p.id!!) }
     }
-    test("GetById") {
+    @Test fun getById() {
         val p = EntityWithAliasedId("Albedo")
         p.save()
         expect(p) { EntityWithAliasedId.dao.getById(p.id!!) }
     }
-    group("getBy() tests") {
-        test("succeeds if there is exactly one matching entity") {
+    @Nested inner class GetByTests {
+        @Test fun `succeeds if there is exactly one matching entity`() {
             val p = EntityWithAliasedId("Albedo")
             p.save()
             expect(p) { EntityWithAliasedId.dao.singleBy("name=:name") { it.bind("name", "Albedo") } }
         }
     }
-    group("count") {
-        test("basic count") {
+    @Nested inner class CountTests {
+        @Test fun basicCount() {
             expect(0) { EntityWithAliasedId.dao.count() }
             listOf("Albedo", "Nigredo", "Rubedo").forEach { EntityWithAliasedId(it).save() }
             expect(3) { EntityWithAliasedId.dao.count() }
         }
-        test("count with filters") {
+        @Test fun countWithFilters() {
             expect(0) { EntityWithAliasedId.dao.count() }
             listOf("Albedo", "Nigredo", "Rubedo").forEach { EntityWithAliasedId(it).save() }
             expect(1) { EntityWithAliasedId.dao.countBy("name=:name") { it.bind("name", "Albedo") } }
@@ -268,42 +255,42 @@ private fun DynaNodeGroup.entityWithAliasedIdTestSuite() {
             expect(1) { EntityWithAliasedId.dao.countBy("myid=:id") { it.bind("id", id) } }
         }
     }
-    test("DeleteAll") {
+    @Test fun deleteAll() {
         listOf("Albedo", "Nigredo", "Rubedo").forEach { EntityWithAliasedId(it).save() }
         expect(3) { EntityWithAliasedId.dao.count() }
         EntityWithAliasedId.dao.deleteAll()
         expect(0) { EntityWithAliasedId.dao.count() }
     }
-    test("DeleteById") {
+    @Test fun deleteById() {
         listOf("Albedo", "Nigredo", "Rubedo").forEach { EntityWithAliasedId(it).save() }
         expect(3) { EntityWithAliasedId.dao.count() }
         EntityWithAliasedId.dao.deleteById(EntityWithAliasedId.dao.findAll().first { it.name == "Albedo" }.id!!)
         expect(listOf("Nigredo", "Rubedo")) { EntityWithAliasedId.dao.findAll().map { it.name } }
     }
-    test("DeleteByIdDoesNothingOnUnknownId") {
+    @Test fun deleteByIdDoesNothingOnUnknownId() {
         EntityWithAliasedId.dao.deleteById(25L)
         expect(listOf()) { EntityWithAliasedId.dao.findAll() }
     }
-    test("DeleteBy") {
+    @Test fun deleteBy() {
         listOf("Albedo", "Nigredo", "Rubedo").forEach { EntityWithAliasedId(it).save() }
         EntityWithAliasedId.dao.deleteBy("name = :name") { it.bind("name", "Albedo") }  // raw sql where
         expect(listOf("Nigredo", "Rubedo")) { EntityWithAliasedId.dao.findAll().map { it.name } }
     }
-    group("findSpecificBy() tests") {
-        test("succeeds if there is exactly one matching entity") {
+    @Nested inner class FindSpecificByTests {
+        @Test fun `succeeds if there is exactly one matching entity`() {
             val p = EntityWithAliasedId("Albedo")
             p.save()
             expect(p) { EntityWithAliasedId.dao.findSingleBy("name=:name") { it.bind("name", "Albedo") } }
             expect(p) { EntityWithAliasedId.dao.findSingleBy("myid=:id") { it.bind("id", p.id!!) } }
         }
     }
-    group("exists") {
-        test("returns false on empty table") {
+    @Nested inner class ExistsTests {
+        @Test fun `returns false on empty table`() {
             expect(false) { EntityWithAliasedId.dao.existsAny() }
             expect(false) { EntityWithAliasedId.dao.existsById(25) }
             expect(false) { EntityWithAliasedId.dao.existsBy("name<=:name") { it.bind("name", "a") } }
         }
-        test("returns true on matching entity") {
+        @Test fun `returns true on matching entity`() {
             val p = EntityWithAliasedId("Albedo")
             p.save()
             expect(true) { EntityWithAliasedId.dao.existsAny() }
