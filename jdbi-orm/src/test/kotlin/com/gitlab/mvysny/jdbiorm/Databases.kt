@@ -3,6 +3,7 @@ package com.gitlab.mvysny.jdbiorm
 import com.github.mvysny.dynatest.DynaNodeGroup
 import com.github.mvysny.dynatest.DynaTestDsl
 import com.gitlab.mvysny.jdbiorm.JdbiOrm.jdbi
+import com.gitlab.mvysny.jdbiorm.condition.AbstractFindByConditionTests
 import com.gitlab.mvysny.jdbiorm.quirks.DatabaseVariant
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
@@ -342,7 +343,7 @@ class H2DatabaseTest {
     }
 
     @Nested
-    inner class JdbiTests : AbstractJdbiTests()
+    inner class AllDatabaseTests : AbstractDatabaseTests(DatabaseInfo(DatabaseVariant.H2))
 }
 
 fun Handle.ddl(@Language("sql") sql: String) {

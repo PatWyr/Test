@@ -1,8 +1,11 @@
 package com.gitlab.mvysny.jdbiorm
 
 import com.github.mvysny.dynatest.*
+import com.gitlab.mvysny.jdbiorm.condition.AbstractFindByConditionTests
 import com.gitlab.mvysny.jdbiorm.condition.conditionTests
+import com.gitlab.mvysny.jdbiorm.quirks.DatabaseVariant
 import org.jdbi.v3.core.Handle
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.io.IOException
 import kotlin.test.expect
@@ -32,6 +35,14 @@ class AllDatabaseTests : DynaTest({
         }
     }
 })
+
+abstract class AbstractDatabaseTests(val info: DatabaseInfo) {
+    @Nested
+    inner class JdbiTests : AbstractJdbiTests()
+
+    @Nested
+    inner class FindByConditionTests : AbstractFindByConditionTests(info)
+}
 
 /**
  * Tests the `db{}` method whether it manages transactions properly.
