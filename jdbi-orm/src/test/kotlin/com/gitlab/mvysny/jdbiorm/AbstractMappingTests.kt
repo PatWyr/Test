@@ -3,6 +3,8 @@
 package com.gitlab.mvysny.jdbiorm
 
 import com.github.mvysny.dynatest.*
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import java.lang.IllegalStateException
 import java.lang.Long
 import java.sql.Timestamp
@@ -12,11 +14,12 @@ import java.time.temporal.ChronoField
 import java.util.*
 import kotlin.test.expect
 
+abstract class AbstractMappingTests {
+    @Nested inner class PersonTests : AbstractPersonTests2()
+}
+
 @DynaTestDsl
 fun DynaNodeGroup.dbMappingTests() {
-    group("Person") {
-        personTestBattery()
-    }
     group("EntityWithAliasedId") {
         aliasedIdTestBattery()
     }
@@ -45,9 +48,8 @@ fun DynaNodeGroup.dbMappingTests() {
     }
 }
 
-@DynaTestDsl
-private fun DynaNodeGroup.personTestBattery() {
-    test("FindAll") {
+abstract class AbstractPersonTests2 {
+    @Test fun findAll() {
         expectList() { Person.findAll() }
         val p = Person(name = "Zaphod", age = 42, ignored2 = Object())
         p.save()
@@ -55,8 +57,8 @@ private fun DynaNodeGroup.personTestBattery() {
         p.ignored2 = null
         expectList(p.withZeroNanos()) { Person.findAll().map { it.withZeroNanos() } }
     }
-    group("save") {
-        test("Save") {
+    @Nested inner class SaveTests {
+        @Test fun save() {
             val p = Person(name = "Albedo", age = 130)
             p.save()
             expectList("Albedo") { Person.findAll().map { it.name } }
@@ -66,7 +68,7 @@ private fun DynaNodeGroup.personTestBattery() {
             Person(name = "Nigredo", age = 130).save()
             expectList("Rubedo", "Nigredo") { Person.findAll().map { it.name } }
         }
-        test("SaveEnum") {
+        @Test fun saveEnum() {
             val p = Person2(name = "Zaphod", age = 42, maritalStatus = MaritalStatus.Divorced)
             p.save()
             class Foo(var maritalStatus: String? = null) {
@@ -79,34 +81,34 @@ private fun DynaNodeGroup.personTestBattery() {
             }
             expect(p) { db { Person2.findAll()[0] } }
         }
-        test("SaveLocalDate") {
+        @Test fun saveLocalDate() {
             val p = Person(name = "Zaphod", age = 42, dateOfBirth = LocalDate.of(1990, 1, 14))
             p.save()
             expect(LocalDate.of(1990, 1, 14)) { db { Person.findAll()[0].dateOfBirth!! } }
         }
-        test("save date and instant") {
+        @Test fun saveDateAndInstant() {
             val p = Person(name = "Zaphod", age = 20, created = Date(1000), modified = Instant.ofEpochMilli(120398123))
             p.save()
             expect(1000) { db { Person.findAll()[0].created!!.time } }
             expect(Instant.ofEpochMilli(120398123)) { db { Person.findAll()[0].modified!! } }
         }
-        test("updating non-existing row fails") {
+        @Test fun `updating non-existing row fails`() {
             val p = Person(id = 15, name = "Zaphod", age = 20, created = Date(1000), modified = Instant.ofEpochMilli(120398123))
             expectThrows(IllegalStateException::class, "We expected to update only one row but we updated 0 - perhaps there is no row with id 15?") {
                 p.save()
             }
         }
     }
-    test("delete") {
+    @Test fun delete() {
         val p = Person(name = "Albedo", age = 130)
         p.save()
         p.delete()
         expectList() { Person.findAll() }
     }
-    test("JsonSerializationIgnoresMeta") {
+    @Test fun jsonSerializationIgnoresMeta() {
         expect("""{"name":"Zaphod","age":42}""") { gson.toJson(Person(name = "Zaphod", age = 42)) }
     }
-    test("Meta") {
+    @Test fun meta() {
         val meta = Person.meta
         expect("Test") { meta.databaseTableName }  // since Person is annotated with @Entity("Test")
         expect(1) { meta.idProperty.size }
@@ -117,7 +119,7 @@ private fun DynaNodeGroup.personTestBattery() {
             meta.persistedFieldDbNames.map { it.qualifiedName } .toSet()
         }
     }
-    test("reload") {
+    @Test fun reload() {
         val p = Person(name = "Albedo", age = 130)
         p.save()
         p.age = 25

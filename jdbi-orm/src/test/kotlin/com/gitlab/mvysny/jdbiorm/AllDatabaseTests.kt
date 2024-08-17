@@ -33,6 +33,7 @@ class AllDatabaseTests : DynaTest({
 
 abstract class AbstractDatabaseTests(val info: DatabaseInfo) {
     @Nested inner class JdbiTests : AbstractJdbiTests()
+    @Nested inner class MappingTests : AbstractMappingTests()
     @Nested inner class DbDaoTests : AbstractDbDaoTests()
     @Nested inner class JoinTableTests : AbstractJoinTableTests()
     @Nested inner class FindByConditionTests : AbstractFindByConditionTests(info)
