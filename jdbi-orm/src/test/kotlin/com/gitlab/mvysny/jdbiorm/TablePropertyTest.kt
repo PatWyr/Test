@@ -43,6 +43,11 @@ class TablePropertyTest {
         expect(Person2.ID) { Property.fromExternalString(Person2.ID.toExternalString()) }
         expect(Person2.ID.tableAlias("d")) { Property.fromExternalString(Person2.ID.tableAlias("d").toExternalString()) }
     }
+    @Test fun `external form WithKotlinOddlyNamedClasses`() {
+        data class `Person with a space`(var name: String)
+        val ID = TableProperty.of<`Person with a space`, Long>(`Person with a space`::class.java, "name")
+        expect(ID) { Property.fromExternalString(ID.toExternalString()) }
+    }
     @Test fun valueType() {
         expect(String::class.java) { Person2.NAME.valueType }
         expect(java.lang.Long::class.java) { Person2.ID.valueType }

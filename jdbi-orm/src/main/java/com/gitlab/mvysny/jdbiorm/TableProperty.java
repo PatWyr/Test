@@ -98,7 +98,7 @@ public final class TableProperty<E, V> implements Property<V> {
 
     @NotNull
     public String toExternalString() {
-        return "TableProperty:" + entityClass.getName() + " " + propertyName.getName();
+        return "TableProperty:" + entityClass.getName() + EXTERNAL_STRING_SEPARATOR + propertyName.getName();
     }
 
     @Override
@@ -169,7 +169,7 @@ public final class TableProperty<E, V> implements Property<V> {
 
         @NotNull
         public String toExternalString() {
-            return "TablePropertyAlias:" + tableNameAlias + " " + tableProperty.toExternalString();
+            return "TablePropertyAlias:" + tableNameAlias + EXTERNAL_STRING_SEPARATOR + tableProperty.toExternalString();
         }
 
         @Override

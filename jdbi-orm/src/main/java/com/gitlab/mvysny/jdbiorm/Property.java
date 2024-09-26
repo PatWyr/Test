@@ -214,17 +214,27 @@ public interface Property<V> extends Expression<V> {
     @NotNull
     String toExternalString();
 
+    /**
+     * Used to separate parts of the external string. Safe to use with Kotlin class names as well:
+     * remember that Kotlin can have classes named such as "I am a lovely - person".
+     */
+    @NotNull
+    String EXTERNAL_STRING_SEPARATOR = ":";
+
     @NotNull
     static Property<?> fromExternalString(@NotNull String externalForm) {
         if (externalForm.startsWith("TableProperty:")) {
-            final String[] parts = externalForm.substring(14).split("\\s+");
+            final String[] parts = externalForm.substring(14).split(EXTERNAL_STRING_SEPARATOR + "+");
+            if (parts.length != 2) {
+                throw new IllegalArgumentException("Parameter externalForm: invalid value " + externalForm + ": incorrect format");
+            }
             try {
                 return TableProperty.of(Class.forName(parts[0]), parts[1]);
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
         } else if (externalForm.startsWith("TablePropertyAlias:")) {
-            final String[] parts = externalForm.substring(19).split("\\s+", 2);
+            final String[] parts = externalForm.substring(19).split(EXTERNAL_STRING_SEPARATOR + "+", 2);
             final String alias = parts[0];
             final TableProperty<?, ?> p = (TableProperty<?, ?>) fromExternalString(parts[1]);
             return p.tableAlias(alias);
