@@ -191,6 +191,14 @@ abstract class AbstractFindByConditionTests(val dbInfo: DatabaseInfo) {
         expectList(person) { Person2.dao.findAllBy(Person2.NAME.like("Foo")) }
         expectList() { Person2.dao.findAllBy(Person2.NAME.like("o")) }
     }
+    @Test fun startsWith() {
+        val person = Person2(name = "Foo", age = 25, isAlive25 = true)
+        person.save()
+        expectList() { Person2.dao.findAllBy(Person2.NAME.startsWith("Bar")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.startsWith("Foo")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.startsWith("F")) }
+        expectList() { Person2.dao.findAllBy(Person2.NAME.startsWith("o")) }
+    }
     @Test fun likeIgnoreCase() {
         val person = Person2(name = "Foo", age = 25, isAlive25 = true)
         person.save()
@@ -200,6 +208,15 @@ abstract class AbstractFindByConditionTests(val dbInfo: DatabaseInfo) {
         expectList(person) { Person2.dao.findAllBy(Person2.NAME.likeIgnoreCase("Foo")) }
         expectList(person) { Person2.dao.findAllBy(Person2.NAME.likeIgnoreCase("foo")) }
         expectList() { Person2.dao.findAllBy(Person2.NAME.likeIgnoreCase("o")) }
+    }
+    @Test fun startsWithIgnoreCase() {
+        val person = Person2(name = "Foo", age = 25, isAlive25 = true)
+        person.save()
+        expectList() { Person2.dao.findAllBy(Person2.NAME.startsWithIgnoreCase("Bar")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.startsWithIgnoreCase("Foo")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.startsWithIgnoreCase("foo")) }
+        expectList(person) { Person2.dao.findAllBy(Person2.NAME.startsWithIgnoreCase("F")) }
+        expectList() { Person2.dao.findAllBy(Person2.NAME.startsWithIgnoreCase("o")) }
     }
     @Test fun isNull() {
         val person = Person2(name = "Foo", age = 25)

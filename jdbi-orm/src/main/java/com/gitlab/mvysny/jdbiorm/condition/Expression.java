@@ -499,6 +499,26 @@ public interface Expression<V> extends Serializable {
     }
 
     /**
+     * The <code>LIKE value%</code>
+     * @param value the value
+     * @return the condition, not null.
+     */
+    @NotNull
+    default Condition startsWith(@Nullable String value) {
+        return like(value == null ? null : value.trim() + "%");
+    }
+
+    /**
+     * The <code>ILIKE value%</code>
+     * @param value the value
+     * @return the condition, not null.
+     */
+    @NotNull
+    default Condition startsWithIgnoreCase(@Nullable String value) {
+        return likeIgnoreCase(value == null ? null : value.trim() + "%");
+    }
+
+    /**
      * The <code>IS_NULL</code> operator.
      * @return the condition, not null.
      */
@@ -572,7 +592,7 @@ public interface Expression<V> extends Serializable {
     }
 
     /**
-     * The <code>NULLIF</code> function.
+     * The <code>NULLIF</code> function returns NULL if two expressions are equal, otherwise it returns the first expression.
      * @param other other value.
      * @return the NULLIF expression.
      */
@@ -582,7 +602,7 @@ public interface Expression<V> extends Serializable {
     }
 
     /**
-     * The <code>NULLIF</code> function.
+     * The <code>NULLIF</code> function returns NULL if two expressions are equal, otherwise it returns the first expression.
      * @param other other value.
      * @return the NULLIF expression.
      */
