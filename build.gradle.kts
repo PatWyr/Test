@@ -13,7 +13,7 @@ defaultTasks("clean", "build")
 
 allprojects {
     group = "com.gitlab.mvysny.jdbiorm"
-    version = "2.9"
+    version = "2.10-SNAPSHOT"
 
     repositories {
         mavenCentral()
