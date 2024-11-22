@@ -5,7 +5,7 @@ Please feel free to open bug reports to discuss new features; PRs are welcome as
 
 ## Tests
 
-Uses [DynaTest](https://github.com/mvysny/dynatest). Simply run `./gradlew test` to run all tests.
+Run `./gradlew test` to run all tests.
 
 Running `./gradlew` or `./gradlew test` will run all tests on all databases (given that
 Docker is available on the host system). To run the tests on H2 only
